@@ -92,3 +92,8 @@ class CreditCache(models.Model):
 
 	# Credit value
 	credit = models.IntegerField()
+
+class CreditSlot(models.Model):
+	"""
+	A credit slot is allocated by a project server and consumed by a client
+	"""
