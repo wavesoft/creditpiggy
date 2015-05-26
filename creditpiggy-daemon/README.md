@@ -51,7 +51,7 @@ COMMAND[,parameter=value[,...]]
 For example, you can allocate a job in your scheduler using:
 
 ```bash
-echo "ALLOC,uuid=job_unique_id" | nc -U /var/run/creditapi.socket
+echo "ALLOC,job=job_unique_id" | nc -U /var/run/creditapi.socket
 ```
 
 ### API Reference
@@ -66,7 +66,7 @@ The following commands are supported by the CreditPiggy daemon:
     </tr>
     <tr>
         <td>&nbsp;</td>
-        <th>uuid=</th>
+        <th>job=</th>
         <td>The unique id of the job. This ID must be unique in your project, but it does not need to be unique in the CreditPiggy system.</td>
     </tr>
     <tr>
@@ -92,7 +92,7 @@ The following commands are supported by the CreditPiggy daemon:
     </tr>
     <tr>
         <td>&nbsp;</td>
-        <th>uuid=</th>
+        <th>job=</th>
         <td>The unique id of the job. This job ID must be allocated first using the ALLOC command.</td>
     </tr>
     <tr>
@@ -112,7 +112,7 @@ The following commands are supported by the CreditPiggy daemon:
     </tr>
     <tr>
         <td>&nbsp;</td>
-        <th>uuid=</th>
+        <th>job=</th>
         <td>The unique id of the job. This job ID must be allocated first using the ALLOC command.</td>
     </tr>
     <tr>
@@ -128,7 +128,7 @@ The following commands are supported by the CreditPiggy daemon:
     </tr>
     <tr>
         <td>&nbsp;</td>
-        <th>uuid=</th>
+        <th>job=</th>
         <td>The unique id of the job. This job ID must be allocated first using the ALLOC command.</td>
     </tr>
     <tr>
