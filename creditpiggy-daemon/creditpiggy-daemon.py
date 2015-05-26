@@ -37,12 +37,13 @@ class CPRemoteAPIServer(threading.Thread):
 	to the remote CreditPiggy server.
 	"""
 
-	def __init__(self, url="", project_id="", project_key=""):
+	def __init__(self, config):
 		"""
 		Initialize remote API
 		"""
 
 		# Prepare properties
+		self.config = config
 		self.shutdownFlag = False
 		self.ingress_queue = Queue.Queue()
 
@@ -93,7 +94,7 @@ class CPRemoteAPIServer(threading.Thread):
 				cmd_counter += 1
 
 				# Flush in 5 seconds
-				flush_time = time.time() + 5.0
+				flush_time = time.time() + self.config['flush_interval']
 
 				# Debug
 				self.logger.debug("Stacking command '%s'" % msg["cmd"])
@@ -299,11 +300,7 @@ class CPDaemonBase:
 		logger = logging.getLogger("daemon")
 
 		# Create a remote API server thread
-		remote = CPRemoteAPIServer(
-			url=self.config['url'],
-			project_id=self.config['project_id'],
-			project_key=self.config['project_auth']
-			)
+		remote = CPRemoteAPIServer(self.config)
 		remote_thread = threading.Thread(target=remote.run)
 
 		# Handshake with creditpiggy to get an authentication token
@@ -560,14 +557,17 @@ if __name__ == "__main__":
 		print "ERROR: The config file %s does not exist!" % config_file
 		sys.exit(1)
 
-	# Load config
-	config = ConfigParser.ConfigParser({
-		'url': 'https://creditpiggy.cern.ch/api', 
-		'socket': 'udp',
-		'bind': '127.0.0.1:9999',
-		'loglevel': logging.DEBUG,
-		'logfile': '/dev/null'
-	})
+	# Load config and defaults
+	config = ConfigParser.RawConfigParser()
+	config.add_section('api')
+	config.set('api', 'url', 'https://creditpiggy.cern.ch/api')
+	config.set('api', 'flush_interval', 5)
+	config.add_section('server')
+	config.set('server', 'pidfile', '/var/run/creditserver.pid')
+	config.set('server', 'bind', '/var/run/creditapi.socket')
+	config.set('server', 'socket', 'unix')
+	config.set('server', 'loglevel', logging.INFO)
+	config.set('server', 'logfile', '/dev/null')
 	config.read(config_file)
 
 	# Load all expected config parameters, so any exception is
