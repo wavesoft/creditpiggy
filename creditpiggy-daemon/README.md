@@ -3,6 +3,8 @@
 
 This folder contains the project-side daemon that is responsible for batching and throttling the requests to the creditpiggy server, minimizing the delays when interfacing with the application batch system.
 
+The daemon is designed to be self-contained and with minimal python requirements in order to be easily deployed in any environment.
+
 ## Configuration
 
 In order to use the CreditPiggy daemon you will need to provide the following minimal configuration:

@@ -261,11 +261,15 @@ class CPThreadedLocalAPIServer(SocketServer.ThreadingMixIn):
 				"args": args
 			}))
 
-class CPUNIXServer(CPThreadedLocalAPIServer, SocketServer.UnixStreamServer):
-	def __init__(self, server_address, RequestHandlerClass, ingress_queue):
-		# Initialize superclasses
-		SocketServer.UnixStreamServer.__init__(self, server_address, RequestHandlerClass)
-		CPThreadedLocalAPIServer.__init__(self, ingress_queue)
+try:
+	class CPUNIXServer(CPThreadedLocalAPIServer, SocketServer.UnixStreamServer):
+		def __init__(self, server_address, RequestHandlerClass, ingress_queue):
+			# Initialize superclasses
+			SocketServer.UnixStreamServer.__init__(self, server_address, RequestHandlerClass)
+			CPThreadedLocalAPIServer.__init__(self, ingress_queue)
+except Exception as e:
+	# Windows versions do not have SocketServer.UnixStreamServer defined
+	pass
 
 class CPUDPServer(CPThreadedLocalAPIServer, SocketServer.UDPServer):
 	def __init__(self, server_address, RequestHandlerClass, ingress_queue):
