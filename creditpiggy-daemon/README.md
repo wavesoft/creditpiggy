@@ -5,6 +5,16 @@ This folder contains the project-side daemon that is responsible for batching an
 
 The daemon is designed to be self-contained and with minimal python requirements in order to be easily deployed in any environment.
 
+## Starting
+
+The daemon can be used both on windows and UNIX platforms. On UNIX platforms it behaves like a system daemon, with the `creditpiggy-daemon.py` script being the controlling utility. So, to start the deamon on Linux and Mac OSX use:
+
+```
+./creditpiggy-daemon.py --config=path/to/creditpiggy.conf start
+```
+
+On windows, where the POSIX daemon approach is not applicable, the script runs blocking as the daemon process.
+
 ## Configuration
 
 In order to use the CreditPiggy daemon you will need to provide the following minimal configuration:
