@@ -55,3 +55,5 @@ target/
 
 # Local junk
 *.sqlite3
+
+creditpiggy-daemon/creditpiggy.conf
