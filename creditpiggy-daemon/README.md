@@ -105,7 +105,7 @@ The following commands are supported by the CreditPiggy daemon:
     </tr>
     <tr>
         <td>&nbsp;</td>
-        <th>[counter]=&plusmn;n</th>
+        <th>[name]=&plusmn;n</th>
         <td>Any other parameter is considered to be named counter. The value of this counter will be aggregated on the machines and the user profile. This is useful if you want to customise awards and badges.</td>
     </tr>
 
@@ -121,7 +121,7 @@ The following commands are supported by the CreditPiggy daemon:
     </tr>
     <tr>
         <td>&nbsp;</td>
-        <th>[param]=</th>
+        <th>[name]=</th>
         <td>Any other parameter is considered to be metadata property. These values remain bound with the job and are not aggregated to the user's or machine's profile.</td>
     </tr>
 
