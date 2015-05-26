@@ -20,16 +20,16 @@ Initialises the CreditPiggy api library. This function should be called in order
         <th>Desc</th>
     </tr>
     <tr>
-        <tr><code>server_endpoint</code></tr>
-        <tr><code>string</code></tr>
-        <tr>
+        <th><code>server_endpoint</code></th>
+        <th><code>string</code></th>
+        <td>
             The daemon endpoint. Depending on the format of the string, three different types of endpoints can be defined:
             <ul>
                 <li><code>URL</code> (ex. "https://cp.org/api"): Indicate that no intermediate daemon should be used, but the library should directly contact the CreditPiggy server under the specified API URL. When you use this option, <code>credentials</code> should contain a tuple with your <code>(project_id, project_auth)</code>.</li>
                 <li><code>UNIX Socket</code> (ex. "/var/run/creditapi.socket"): Indicate that the daemon runs locally under the specified UNIX socket.</li>
                 <li><code>Network Endpoint</code> (ex. "1.2.3.4:5667"): Indicate that the daemon runs remotely under the specified network endpoint.</li>
             </ul>
-        </tr>
+        </td>
     </tr>
 </table>
 
@@ -44,26 +44,26 @@ Allocate a slot with the specified ID and give the specified credits or credit r
         <th>Desc</th>
     </tr>
     <tr>
-        <tr><code>slot_id</code></tr>
-        <tr><code>string</code></tr>
-        <tr>
+        <th><code>slot_id</code></th>
+        <th><code>string</code></th>
+        <td>
             A unique ID that identifies the slot to allocate. This ID should be unique throughout your project but it doesn't need to be globally unique.
-        </tr>
+        </td>
     </tr>
     <tr>
-        <tr><code>min, max</code></tr>
-        <tr><code>integer</code></tr>
-        <tr>
+        <th><code>min, max</code></th>
+        <th><code>integer</code></th>
+        <td>
             The minimum and maximum number of credits this slot is capable of
             giving. The exact amount is defined during claim, but cannot be out of the specified bounds.
-        </tr>
+        </td>
     </tr>
     <tr>
-        <tr><code>credits</code></tr>
-        <tr><code>integer</code></tr>
-        <tr>
+        <th><code>credits</code></th>
+        <th><code>integer</code></th>
+        <td>
             The exact number of credits this slot will give to the machine that claims it.
-        </tr>
+        </td>
     </tr>
 </table>
 
@@ -78,25 +78,25 @@ Claim a slot previously allocated with `cpapi_alloc` by the machine with the spe
         <th>Desc</th>
     </tr>
     <tr>
-        <tr><code>slot_id</code></tr>
-        <tr><code>string</code></tr>
-        <tr>
+        <th><code>slot_id</code></th>
+        <th><code>string</code></th>
+        <td>
             A unique ID that identifies the slot to allocate. This ID should be unique throughout your project but it doesn't need to be globally unique.
-        </tr>
+        </td>
     </tr>
     <tr>
-        <tr><code>machine_id</code></tr>
-        <tr><code>string</code></tr>
-        <tr>
+        <th><code>machine_id</code></th>
+        <th><code>string</code></th>
+        <td>
             The unique ID of the machine that did the computation. This ID is later translated to a user ID by the CreditPiggy server.
-        </tr>
+        </td>
     </tr>
     <tr>
-        <tr><code>credits</code></tr>
-        <tr><code>integer</code></tr>
-        <tr>
+        <th><code>credits</code></th>
+        <th><code>integer</code></th>
+        <td>
             The number of credits to give to the machine. If <code>credits</code> was defined when allocating the slot, this is ignored. If a <code>min,max</code> pair was defined when allocating the slot the value is going to be limited within its bounds.  
-        </tr>
+        </td>
     </tr>
 </table>
 
@@ -113,18 +113,18 @@ This can be useful when giving badges or marking other achievements to the users
         <th>Desc</th>
     </tr>
     <tr>
-        <tr><code>slot_id</code></tr>
-        <tr><code>string</code></tr>
-        <tr>
+        <th><code>slot_id</code></th>
+        <th><code>string</code></th>
+        <td>
             A unique ID that identifies the slot to allocate. This ID should be unique throughout your project but it doesn't need to be globally unique.
-        </tr>
+        </td>
     </tr>
     <tr>
-        <tr><code>**kwargs</code></tr>
-        <tr><code>int</code></tr>
-        <tr>
+        <th><code>**kwargs</code></th>
+        <th><code>int</code></th>
+        <td>
             Any other argument is a named counter, whose value will be accumulated upon claiming.
-        </tr>
+        </td>
     </tr>
 </table>
 
@@ -139,17 +139,17 @@ Specify one or more metadata for the specified slot. These metadata are mapped t
         <th>Desc</th>
     </tr>
     <tr>
-        <tr><code>slot_id</code></tr>
-        <tr><code>string</code></tr>
-        <tr>
+        <th><code>slot_id</code></th>
+        <th><code>string</code></th>
+        <td>
             A unique ID that identifies the slot to allocate. This ID should be unique throughout your project but it doesn't need to be globally unique.
-        </tr>
+        </td>
     </tr>
     <tr>
-        <tr><code>**kwargs</code></tr>
-        <tr><code>string</code></tr>
-        <tr>
+        <th><code>**kwargs</code></th>
+        <th><code>string</code></th>
+        <td>
             Any other argument is a named metadata parameter, whose value will be accumulated upon claiming.
-        </tr>
+        </td>
     </tr>
 </table>
