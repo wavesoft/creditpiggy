@@ -57,3 +57,5 @@ target/
 *.sqlite3
 
 creditpiggy-daemon/creditpiggy.conf
+
+*.pid
