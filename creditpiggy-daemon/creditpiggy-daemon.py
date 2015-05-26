@@ -323,7 +323,12 @@ class CPDaemonBase:
 
 		# Pick the appropriate server to start (unix,tcp,udp)
 		s_type = self.config['socket'].lower()
-		servers = { "unix": CPUNIXServer, "tcp": CPTCPServer, "udp": CPUDPServer }
+		servers = { "tcp": CPTCPServer, "udp": CPUDPServer }
+		try:
+			# Unix server is missing on windows
+			servers["unix"] = CPUNIXServer
+		except Exception as e:
+			pass
 		if not s_type in servers:
 			logger.error("Invalid socket type '%s'. Expecting one of: %s" % (s_type, ",".join(servers.keys()) ) )
 			sys.exit(1)
