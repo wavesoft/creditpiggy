@@ -402,7 +402,11 @@ class CPDaemonBase:
 				remoteAlive = False
 
 			# Sleep a bit
-			time.sleep(0.1)
+			try:
+				time.sleep(0.1)
+			except IOError:
+				# Interupted
+				break
 
 		# If we had a linux socket, unlink it now
 		if s_type == 'unix':
