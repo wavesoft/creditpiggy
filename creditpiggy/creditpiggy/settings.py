@@ -46,6 +46,10 @@ SOCIAL_AUTH_FACEBOOK_SECRET = _CONFIG_.SOCIAL_AUTH_FACEBOOK_SECRET
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'locale': 'en_US'}
 
+# MSN Live Authentication
+SOCIAL_AUTH_LIVE_KEY = _CONFIG_.SOCIAL_AUTH_LIVE_KEY
+SOCIAL_AUTH_LIVE_SECRET = _CONFIG_.SOCIAL_AUTH_LIVE_SECRET
+
 # Social login redirection URLs
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/profile/'
@@ -92,6 +96,7 @@ AUTHENTICATION_BACKENDS = (
     'social.backends.google.GoogleOAuth2',
     'social.backends.facebook.FacebookOAuth2',
     'social.backends.twitter.TwitterOAuth',
+    'social.backends.live.LiveOAuth2',
     # -----------------
 
     'django.contrib.auth.backends.ModelBackend',
