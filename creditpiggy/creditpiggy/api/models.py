@@ -1,7 +1,7 @@
 import random
 import time
 from django.db import models
-from frontend.models import PiggyUser, Project, ProjectRevision
+from creditpiggy.frontend.models import PiggyUser, Project, ProjectRevision
 
 def gen_token_key():
 	"""

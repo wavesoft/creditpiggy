@@ -1,5 +1,5 @@
 from django.contrib import admin
-from frontend.models import PiggyUser, Project, ProjectRevision, ProjectMember
+from creditpiggy.frontend.models import PiggyUser, Project, ProjectRevision, ProjectMember
 
 # Register your models here.
 

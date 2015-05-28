@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-from api.utils.jsonapi import APIResponse, APIError
-from api.utils.token import requireUserAuthToken
+from creditpiggy.api.utils.jsonapi import APIResponse, APIError
+from creditpiggy.api.utils.token import requireUserAuthToken
 
 @requireUserAuthToken("project_id")
 def project_serve(request, project_id, token_id):

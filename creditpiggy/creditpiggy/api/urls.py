@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, include, url
-from api import views
+from creditpiggy.api import views
 
 urlpatterns = patterns('',
 	url(r'^(?P<project_id>[0-9a-f]+)/serve/(?P<token_id>[\w]+)$', views.project_serve),

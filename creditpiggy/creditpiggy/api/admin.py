@@ -1,8 +1,8 @@
 import hashlib
 
 from django.contrib import admin
-from frontend.models import PiggyUser
-from api.models import CreditCache, AuthToken, ProjectAuthToken
+from creditpiggy.frontend.models import PiggyUser
+from creditpiggy.api.models import CreditCache, AuthToken, ProjectAuthToken
 
 admin.site.register(ProjectAuthToken)
 

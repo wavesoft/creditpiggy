@@ -1,8 +1,8 @@
 
 import hashlib
-from frontend.models import ProjectRevision
-from api.utils.jsonapi import APIError
-from api.models import AuthToken, ProjectAuthToken
+from creditpiggy.frontend.models import ProjectRevision
+from creditpiggy.api.utils.jsonapi import APIError
+from creditpiggy.api.models import AuthToken, ProjectAuthToken
 
 def getRequestCredentials(request):
 	"""

@@ -7,7 +7,7 @@ urlpatterns = patterns('',
 	# url(r'^blog/', include('blog.urls')),
 
 	url(r'^admin/', include(admin.site.urls)),
-	url(r'^api/', include('api.urls')),
-	url(r'^$', 'frontend.views.home', name='home'),
+	url(r'^api/', include('creditpiggy.api.urls')),
+	url(r'^$', 'creditpiggy.frontend.views.home', name='home'),
 
 )

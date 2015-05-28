@@ -36,8 +36,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'frontend',
-    'api',
+    'creditpiggy.core',
+    'creditpiggy.api',
+    'creditpiggy.frontend',
 )
 
 MIDDLEWARE_CLASSES = (
