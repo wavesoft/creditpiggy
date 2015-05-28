@@ -55,6 +55,8 @@ target/
 
 # Local junk
 *.sqlite3
+*.local
+django_example/
 
 creditpiggy-daemon/creditpiggy.conf
 

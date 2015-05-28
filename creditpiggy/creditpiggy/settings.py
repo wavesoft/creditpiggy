@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import creditpiggy.config as _CONFIG_
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -26,6 +27,9 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# - Social Auth ---
+AUTH_USER_MODEL = 'core.AuthUser'
+# -----------------
 
 # Application definition
 
@@ -39,6 +43,10 @@ INSTALLED_APPS = (
     'creditpiggy.core',
     'creditpiggy.api',
     'creditpiggy.frontend',
+
+    # - Social Auth ---
+    'social.apps.django_app.default',
+    # -----------------
 )
 
 MIDDLEWARE_CLASSES = (
@@ -50,6 +58,35 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+AUTHENTICATION_BACKENDS = (
+
+    # - Social Auth ---
+    'social.backends.google.GoogleOAuth2',
+    # -----------------
+
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.contrib.messages.context_processors.messages',
+    # - Social Auth ---
+    'social.apps.django_app.context_processors.backends',
+    'social.apps.django_app.context_processors.login_redirect',
+    # -----------------
+)
+
+# Google Social Authentication Details
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = _CONFIG_.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = _CONFIG_.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/profile/'
 
 ROOT_URLCONF = 'creditpiggy.urls'
 

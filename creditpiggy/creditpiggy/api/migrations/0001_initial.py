@@ -8,7 +8,6 @@ import creditpiggy.api.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('frontend', '0001_initial'),
     ]
 
     operations = [
@@ -20,7 +19,6 @@ class Migration(migrations.Migration):
                 ('auth_salt', models.CharField(default=creditpiggy.api.models.gen_token_salt, help_text=b'The salt for authenticaton checksum token', max_length=64)),
                 ('auth_hash', models.CharField(help_text=b"A validation checksum hash for the secret key in the user's computer", max_length=256, verbose_name=b'Secret')),
                 ('tokenType', models.CharField(default=b'US', max_length=2, choices=[(b'US', b'User'), (b'DE', b'Devleoper'), (b'SV', b'Service')])),
-                ('user', models.ForeignKey(to='frontend.PiggyUser')),
             ],
         ),
         migrations.CreateModel(
@@ -28,8 +26,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('credit', models.IntegerField()),
-                ('project', models.ForeignKey(to='frontend.ProjectRevision')),
-                ('user', models.ForeignKey(to='frontend.PiggyUser')),
             ],
         ),
         migrations.CreateModel(
@@ -43,8 +39,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('tokenType', models.CharField(default=b'US', max_length=2, choices=[(b'US', b'User'), (b'DE', b'Devleoper'), (b'SV', b'Service')])),
-                ('project', models.ForeignKey(to='frontend.Project')),
-                ('token', models.ForeignKey(to='api.AuthToken')),
             ],
         ),
     ]
