@@ -21,14 +21,36 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = '9_$bpiycshlc8!otn771kf4+kumlvx0sc(ynqfyb@6(g2*^)*o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ "creditpiggy.cern.ch" ]
 
 # - Social Auth ---
+
+# Authentication user model
 AUTH_USER_MODEL = 'core.AuthUser'
+
+# Google Social Authentication Details
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = _CONFIG_.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = _CONFIG_.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
+
+# Twitter Social Authentication Details
+SOCIAL_AUTH_TWITTER_KEY = _CONFIG_.SOCIAL_AUTH_TWITTER_KEY
+SOCIAL_AUTH_TWITTER_SECRET = _CONFIG_.SOCIAL_AUTH_TWITTER_SECRET
+
+# Facebook Social Authentication Details
+SOCIAL_AUTH_FACEBOOK_KEY = _CONFIG_.SOCIAL_AUTH_FACEBOOK_KEY
+SOCIAL_AUTH_FACEBOOK_SECRET = _CONFIG_.SOCIAL_AUTH_FACEBOOK_SECRET
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'locale': 'en_US'}
+
+# Social login redirection URLs
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/profile/'
+LOGIN_ERROR_URL = '/login/'
+
 # -----------------
 
 # Application definition
@@ -57,12 +79,19 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # - Social Auth ---
+    'social.apps.django_app.middleware.SocialAuthExceptionMiddleware'
+    # -----------------
+
 )
 
 AUTHENTICATION_BACKENDS = (
 
     # - Social Auth ---
     'social.backends.google.GoogleOAuth2',
+    'social.backends.facebook.FacebookOAuth2',
+    'social.backends.twitter.TwitterOAuth',
     # -----------------
 
     'django.contrib.auth.backends.ModelBackend',
@@ -81,12 +110,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     # -----------------
 )
 
-# Google Social Authentication Details
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = _CONFIG_.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = _CONFIG_.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
-
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/profile/'
 
 ROOT_URLCONF = 'creditpiggy.urls'
 

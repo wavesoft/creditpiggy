@@ -1,4 +1,5 @@
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout
 
@@ -19,11 +20,23 @@ def logout(request):
     auth_logout(request)
     return redirect('/')
 
-@render_to("home.html")
 def home(request):
 	"""
 	Landing page
 	"""
+	if request.user.is_authenticated():
+		return redirect(reverse("frontend.profile"))
+	else:
+		return redirect(reverse("frontend.login"))
+
+@render_to("home.html")
+def login(request):
+	"""
+	Login page
+	"""
+	if request.user.is_authenticated():
+		return redirect(reverse("frontend.profile"))
+
 	return { }
 
 @render_to("profile.html")
@@ -31,4 +44,7 @@ def profile(request):
 	"""
 	User profile page
 	"""
+	if not request.user.is_authenticated():
+		return redirect(reverse("frontend.login"))
+
 	return { }

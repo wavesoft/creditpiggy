@@ -57,6 +57,7 @@ target/
 *.sqlite3
 *.local
 django_example/
+config.py
 
 creditpiggy-daemon/creditpiggy.conf
 
