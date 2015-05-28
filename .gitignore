@@ -59,3 +59,4 @@ target/
 creditpiggy-daemon/creditpiggy.conf
 
 *.pid
+*.~vsd
