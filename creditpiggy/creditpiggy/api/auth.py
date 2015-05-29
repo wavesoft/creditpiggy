@@ -2,6 +2,7 @@
 import hashlib
 
 from creditpiggy.api.protocol import APIError
+from creditpiggy.core.models import ProjectCredentials
 from functools import wraps
 
 def validate_signature(payload, auth):
@@ -15,10 +16,15 @@ def validate_signature(payload, auth):
 		raise APIError("Could not parse authentication information")
 
 	# get the digest algoritm used
-	(algo, project, digest) = auth_parts
+	(algo, token, digest) = auth_parts
 
 	# Lookup project
-	
+	try:
+		project = ProjectCredentials.objects.get(token=token)
+	except ProjectCredentials.DoesNotExist:
+		raise APIError("Your credentials are invalid")
+
+	# Find hash function
 
 	print ">>> Payload: '%s'" % payload
 	print ">>> Auth: '%s'" % auth

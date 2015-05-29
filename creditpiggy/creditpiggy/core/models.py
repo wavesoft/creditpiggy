@@ -1,13 +1,28 @@
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from creditpiggy.core.analytics import AnalyticsModelMixin
+
 import uuid
+import random
 
 def new_uuid():
 	"""
 	UUID Generator
 	"""
 	return uuid.uuid4().hex
+
+def gen_token_key():
+	"""
+	Token key generator
+	"""
+	# Token charset
+	charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+	key = ""
+	for i in range(0, 48):
+		key += charset[random.randint(0, len(charset)-1)]
+	# Return a unique key
+	return key
 
 class PiggyUser(AnalyticsModelMixin, AbstractUser):
 	"""
@@ -87,8 +102,20 @@ class ProjectUserRole(models.Model):
 
 class ProjectCredentials(models.Model):
 	"""
-	
+	Credentials for each project
 	"""
+
+	#: Authentication token
+	token = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
+		help_text="Anonymous authentication token for the credentials")
+
+	#: Shared secret between
+	secret = models.CharField(max_length=48, default=gen_token_key, 
+		help_text="Shared secret between project and administrator")
+
+	#: The project
+	project = models.ForeignKey( PiggyProject )
+
 
 class CreditSlot(models.Model):
 	"""

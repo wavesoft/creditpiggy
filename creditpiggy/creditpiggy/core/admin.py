@@ -1,5 +1,5 @@
 from django.contrib import admin
-from creditpiggy.core.models import PiggyUser, ComputingUnit, PiggyProject, ProjectUserRole
+from creditpiggy.core.models import PiggyUser, ComputingUnit, PiggyProject, ProjectUserRole, ProjectCredentials
 
 # Register your models here.
 
@@ -11,3 +11,5 @@ class ProjectUserRoleAdmin(admin.ModelAdmin):
 	list_display = ('user', 'project', 'role')
 
 admin.site.register(ProjectUserRole, ProjectUserRoleAdmin)
+
+admin.site.register(ProjectCredentials)
