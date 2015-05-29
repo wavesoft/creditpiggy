@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django.utils.timezone
-import django.core.validators
+import creditpiggy.core.analytics
 import django.contrib.auth.models
+import django.utils.timezone
+from django.conf import settings
+import django.core.validators
 
 
 class Migration(migrations.Migration):
@@ -15,7 +17,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AuthUser',
+            name='PiggyUser',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('password', models.CharField(max_length=128, verbose_name='password')),
@@ -28,31 +30,27 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
+                ('display_name', models.CharField(default=b'', max_length=200)),
                 ('groups', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Group', blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', verbose_name='groups')),
+                ('user_permissions', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Permission', blank=True, help_text='Specific permissions for this user.', verbose_name='user permissions')),
             ],
             options={
                 'abstract': False,
                 'verbose_name': 'user',
                 'verbose_name_plural': 'users',
             },
+            bases=(creditpiggy.core.analytics.AnalyticsModelMixin, models.Model),
             managers=[
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
         migrations.CreateModel(
-            name='UserProfile',
+            name='ComputingUnit',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('uuid', models.CharField(default=b'', help_text=b'A unique ID generated from within the computing unit and delivered to CP through the batch system', unique=True, max_length=32, db_index=True)),
+                ('owner', models.ForeignKey(default=None, to=settings.AUTH_USER_MODEL, null=True)),
             ],
-        ),
-        migrations.AddField(
-            model_name='authuser',
-            name='profile',
-            field=models.ForeignKey(to='core.UserProfile', null=True),
-        ),
-        migrations.AddField(
-            model_name='authuser',
-            name='user_permissions',
-            field=models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Permission', blank=True, help_text='Specific permissions for this user.', verbose_name='user permissions'),
+            bases=(creditpiggy.core.analytics.AnalyticsModelMixin, models.Model),
         ),
     ]

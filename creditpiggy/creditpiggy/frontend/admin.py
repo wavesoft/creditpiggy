@@ -1,18 +1,18 @@
 from django.contrib import admin
-from creditpiggy.frontend.models import PiggyUser, Project, ProjectRevision, ProjectMember
+#from creditpiggy.frontend.models import PiggyUser, Project, ProjectRevision, ProjectMember
 
 # Register your models here.
 
-admin.site.register(PiggyUser)
-admin.site.register(Project)
+#admin.site.register(PiggyUser)
+# admin.site.register(Project)
 
-class ProjectRevisionAdmin(admin.ModelAdmin):
-	list_display = ('project', 'revision', 'uuid')
-	readonly_fields = ('uuid',)
+# class ProjectRevisionAdmin(admin.ModelAdmin):
+# 	list_display = ('project', 'revision', 'uuid')
+# 	readonly_fields = ('uuid',)
 
-admin.site.register(ProjectRevision, ProjectRevisionAdmin)
+# admin.site.register(ProjectRevision, ProjectRevisionAdmin)
 
-class ProjectMemberAdmin(admin.ModelAdmin):
-	list_display = ('user', 'project', 'role')
+# class ProjectMemberAdmin(admin.ModelAdmin):
+# 	list_display = ('user', 'project', 'role')
 
-admin.site.register(ProjectMember, ProjectMemberAdmin)
+# admin.site.register(ProjectMember, ProjectMemberAdmin)

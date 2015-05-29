@@ -20,6 +20,12 @@ def logout(request):
     auth_logout(request)
     return redirect('/')
 
+def link(request, provider):
+    """
+    Link currently registered profile with another provider
+    """
+    return redirect( "/login/%s/?mode=link" % provider )
+
 def home(request):
 	"""
 	Landing page
@@ -29,7 +35,7 @@ def home(request):
 	else:
 		return redirect(reverse("frontend.login"))
 
-@render_to("home.html")
+@render_to("login.html")
 def login(request):
 	"""
 	Login page
