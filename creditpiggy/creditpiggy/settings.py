@@ -10,12 +10,13 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+# Try to import config
 try:
 	import creditpiggy.config as _CONFIG_
 except ImportError as e:
 	raise Exception("Apply your settings to config.py using config.py.example as reference!")
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -34,10 +35,7 @@ ALLOWED_HOSTS = [ "creditpiggy.cern.ch" ]
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-	}
+	'default': _CONFIG_.DEFAULT_DATABASE
 }
 
 # REDIS Database Configuration
