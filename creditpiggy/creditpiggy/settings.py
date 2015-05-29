@@ -10,7 +10,10 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-import creditpiggy.config as _CONFIG_
+try:
+	import creditpiggy.config as _CONFIG_
+except ImportError as e:
+	raise Exception("Apply your settings to config.py using config.py.example as reference!")
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
