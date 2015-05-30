@@ -1,64 +1,23 @@
+################################################################
+# CreditPiggy - Volunteering Computing Credit Bank Project
+# Copyright (C) 2015 Ioannis Charalampidis
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+################################################################
+
 from django.db import models
 from django.conf import settings
-#import uuid
 
-# def project_uuid():
-# 	"""
-# 	UUID Generator
-# 	"""
-# 	return uuid.uuid4().hex
 
-# class PiggyUser(models.Model):
-# 	"""
-# 	Extended user profile
-# 	"""
-# 	user = models.OneToOneField(settings.AUTH_USER_MODEL)
-# 	display_name = models.CharField(max_length=200)
-# 	email = models.CharField(max_length=200)
-
-# 	def __unicode__(self):
-# 		return u"%s (%s)" % (self.display_name, self.user.username)
-
-# class Project(models.Model):
-# 	"""
-# 	THe project ID
-# 	"""
-# 	name = models.CharField(max_length=50, unique=True, help_text="A short identifier for the project")
-# 	display_name = models.CharField(max_length=200, help_text="Project's full name")
-# 	contact = models.CharField(max_length=500, help_text="The associated website for this project")
-
-# 	def __unicode__(self):
-# 		return u"%s (%s)" % (self.display_name, self.name)
-
-# class ProjectRevision(models.Model):
-# 	"""
-# 	Various revisions of the main project
-# 	"""
-
-# 	uuid = models.CharField(max_length=32, default=project_uuid, unique=True, db_index=True, help_text="A unique key for this project version")
-# 	project = models.ForeignKey('Project')
-# 	revision = models.IntegerField()
-	
-# 	project_text = models.TextField()
-# 	website = models.CharField(max_length=500, help_text="The associated website for this project")
-
-# 	def __unicode__(self):
-# 		return u"%s (rev %s)" % (self.project.name, self.revision)
-
-# class ProjectMember(models.Model):
-# 	"""
-# 	Links between projects and people in projects
-# 	"""
-# 	OWNER = 'OW'
-# 	ADMIN = 'AD'
-# 	MODERATOR = 'MO'
-# 	MEMBER = 'ME'
-# 	MEMBER_ROLE = (
-# 		(OWNER, 'Owner'),
-# 		(ADMIN, 'Administrator'),
-# 		(MODERATOR, 'Moderator'),
-# 		(MEMBER, 'Member'),
-# 	)
-# 	user = models.ForeignKey('PiggyUser')
-# 	project = models.ForeignKey('ProjectRevision')
-# 	role = models.CharField(max_length=2, choices=MEMBER_ROLE, default=MEMBER)

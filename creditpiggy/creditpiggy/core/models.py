@@ -1,7 +1,26 @@
+################################################################
+# CreditPiggy - Volunteering Computing Credit Bank Project
+# Copyright (C) 2015 Ioannis Charalampidis
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+################################################################
+
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from creditpiggy.core.analytics import AnalyticsModelMixin
+from creditpiggy.core.metrics import MetricsModelMixin
 
 import uuid
 import random
@@ -24,7 +43,7 @@ def gen_token_key():
 	# Return a unique key
 	return key
 
-class PiggyUser(AnalyticsModelMixin, AbstractUser):
+class PiggyUser(MetricsModelMixin, AbstractUser):
 	"""
 	Public profile of the user. One or more Social Authentiion back-ends
 	can be linked to this profile.
@@ -33,7 +52,7 @@ class PiggyUser(AnalyticsModelMixin, AbstractUser):
 	#: How the user will be visible to the public
 	display_name = models.CharField(max_length=200, default="")
 
-class ComputingUnit(AnalyticsModelMixin, models.Model):
+class ComputingUnit(MetricsModelMixin, models.Model):
 	"""
 	A computing unit that can bring credits to a user.
 	"""
@@ -48,7 +67,7 @@ class ComputingUnit(AnalyticsModelMixin, models.Model):
 	#: Analytics registry
 	### ???
 
-class PiggyProject(models.Model):
+class PiggyProject(MetricsModelMixin, models.Model):
 	"""
 	THe project ID
 	"""
@@ -117,8 +136,23 @@ class ProjectCredentials(models.Model):
 	project = models.ForeignKey( PiggyProject )
 
 
-class CreditSlot(models.Model):
+class CreditSlot(MetricsModelMixin, models.Model):
 	"""
-	A slot 
+	A slot allocated and claimed by the server
 	"""
-	pass
+
+	# The slot unique ID
+	uuid = models.CharField(max_length=256, unique=False, db_index=True, 
+		help_text="The globally unique slot ID as specified by the project owner")
+
+	# The project associated with this credits slot
+	project = models.ForeignKey( PiggyProject )
+
+	# The credits associated to this slot
+	credits = models.IntegerField(null=True, default=None)
+
+	# The minimum boundary of credits associated to this slot
+	minBound = models.IntegerField(null=True, default=None)
+
+	# The maximum boundary of credits associated to this slot
+	maxBound = models.IntegerField(null=True, default=None)

@@ -24,6 +24,7 @@ import json
 import atexit
 import time
 import logging
+import hashlib
 import requests
 import threading
 import signal
@@ -61,7 +62,45 @@ class CPRemoteAPIServer(threading.Thread):
 		Send a command to CreditPiggy
 		"""
 
-		pass
+		# Generate POST payload
+		payload = json.dumps(arguments)
+		# Sign
+		signature = hashlib.sha256( payload + self.config['api_secret'] ).hexdigest()
+
+		# Make request
+		r = requests.post( "%s/%s" % (self.config['api_url'], command), 
+				data=payload,
+				headers={
+					'Authorization': 'sha-256,%s,%s' % (self.config['api_key'], signature)
+				})
+
+		# Check responses
+		if r.status_code != requests.codes.ok:
+			self.logger.error("Got unexpected HTTP/%i from server: %s" % (r.status_code, r.text))
+			return False
+
+		# Parse response
+		try:
+			ans = r.json()
+		except ValueError:
+			self.logger.error("Got unparsable JSON string from server: '%s'" % r.text)
+			return False
+
+		# Check for errors
+		if not 'result' in ans:
+			self.logger.error("Missing 'staus' field in response from server: '%s'" % r.text)
+			return False
+		if ans['result'] != 'ok':
+			if not 'message' in ans:
+				self.logger.error("Server responded with an error")
+				return False
+
+			# Display error
+			self.logger.error("Server responded with an error: %s" % ans['message'])
+			return False
+
+		# We are good
+		return True
 
 	def run(self):
 		"""
@@ -107,9 +146,9 @@ class CPRemoteAPIServer(threading.Thread):
 			# Flush stacks periodically
 			if (flush_time > 0) and (time.time() > flush_time) and stacks:
 
-				# Send a batch command
+				# Send a bulk command
 				self.logger.info("Flushing %i commands on stack" % cmd_counter)
-				self.send("batch", stacks)
+				self.send("project/bulk", stacks)
 
 				# Reset variables
 				stacks = {}
@@ -119,7 +158,7 @@ class CPRemoteAPIServer(threading.Thread):
 		# Send stacks if pending
 		if stacks:
 			self.logger.warn("Flushing %i commands on stack" % cmd_counter)
-			self.send("batch", stacks)
+			self.send("project/bulk", stacks)
 
 	def shutdown(self):
 		"""
@@ -161,74 +200,115 @@ class CPLocalRequestHandler(SocketServer.BaseRequestHandler):
 		logger.debug("Handing command '%s'" % c_command)
 
 		# Handle commands
-		if c_command == "ALLOC":
-			# --------------------------------------------------
-			#
-			# Syntax: ALLOC,job=<uuid>,[min=n,max=n|credits=n]
-			#
-			#   Desc: Denote that the specified UUID is a valid
-			#         job ID assigned to this project.
-			#
-			# Params:   job= : The project's job unique ID
-			#			min= : The minimum accepted value of 
-			#                  credits to accept for this job.
-			#           max= : The maximum accepted value of
-			#                  credits to accept for this job.
-			#       credits= : The excact value of credits to
-			#                  give upon completing the job.
-			#
-			# --------------------------------------------------
+		try:
+			if c_command == "ALLOC":
+				# --------------------------------------------------
+				#
+				# Syntax: ALLOC,slot=<uuid>,[min=n,max=n|credits=n]
+				#
+				#   Desc: Denote that the specified UUID is a valid
+				#         slot ID assigned to this project.
+				#
+				# Params:   slot= : The project's slot unique ID
+				#			min= : The minimum accepted value of 
+				#                  credits to accept for this slot.
+				#           max= : The maximum accepted value of
+				#                  credits to accept for this slot.
+				#       credits= : The excact value of credits to
+				#                  give upon completing the slot.
+				#
+				# --------------------------------------------------
 
-			# Forward the request to the remote server
-			self.server.queue_message("alloc", k_args )
+				# Validate request
+				if not 'slot' in k_args:
+					raise ValueError("Missing 'slot' argument")
 
-			# Send 'OK'
-			self.request.sendall("OK")
+				# Forward the request to the remote server
+				self.server.queue_message("alloc", k_args )
 
-		elif c_command == "CLAIM":
-			# --------------------------------------------------
-			#
-			# Syntax: CLAIM,job=<uuid>,machine=<machine_id>,[credit=n]
-			#
-			#   Desc: Mark the specified job as 'claimed' by the
-			#         specified machine ID. Optionally, specify
-			#         the credits granted to this machine from
-			#         the results of the job. If not specified,
-			#         it's expected to match the credits allocated
-			#         to the job in the 'ALLOC' phase.
-			#
-			# --------------------------------------------------
+				# Send 'OK'
+				self.request.sendall("OK")
 
-			# Forward the request to the remote server
-			self.server.queue_message("claim", k_args )
+			elif c_command == "CLAIM":
+				# --------------------------------------------------
+				#
+				# Syntax: CLAIM,slot=<uuid>,machine=<machine_id>,[credit=n]
+				#
+				#   Desc: Mark the specified slot as 'claimed' by the
+				#         specified machine ID. Optionally, specify
+				#         the credits granted to this machine from
+				#         the results of the slot. If not specified,
+				#         it's expected to match the credits allocated
+				#         to the slot in the 'ALLOC' phase.
+				#
+				# --------------------------------------------------
 
-			# Send 'OK'
-			self.request.sendall("OK")
+				# Validate request
+				if not 'slot' in k_args:
+					raise ValueError("Missing 'slot' argument")
+				if not 'machine' in k_args:
+					raise ValueError("Missing 'machine' argument")
 
-		elif c_command == "COUNTERS":
-			# --------------------------------------------------
-			#
-			# Syntax: COUNTERS,job=<uuid>,[name=n]
-			#
-			#   Desc: Define or update counters for the specified
-			#         job. Such counters might be errors, events,
-			#         or other metrics useful in calculating goals.
-			#
-			#         Such counters are aggregated to the user's
-			#         profile.
-			#
-			# --------------------------------------------------
+				# Forward the request to the remote server
+				self.server.queue_message("claim", k_args )
 
-			# Forward the request to the remote server
-			self.server.queue_message("counters", k_args )
+				# Send 'OK'
+				self.request.sendall("OK")
 
-			# Send 'OK'
-			self.request.sendall("OK")
+			elif c_command == "COUNTERS":
+				# --------------------------------------------------
+				#
+				# Syntax: COUNTERS,slot=<uuid>,[name=n]
+				#
+				#   Desc: Define or update counters for the specified
+				#         slot. Such counters might be errors, events,
+				#         or other metrics useful in calculating goals.
+				#
+				#         Such counters are aggregated to the user's
+				#         profile.
+				#
+				# --------------------------------------------------
 
-		else:
+				# Validate request
+				if not 'slot' in k_args:
+					raise ValueError("Missing 'slot' argument")
 
-			# Unknown command, send 'ER' to indicate that
-			# an error occured.
+				# Forward the request to the remote server
+				self.server.queue_message("counters", k_args )
+
+				# Send 'OK'
+				self.request.sendall("OK")
+
+			elif c_command == "META":
+				# --------------------------------------------------
+				#
+				# Syntax: META,slot=<uuid>,[name=n]
+				#
+				#   Desc: Define or update metadata for the specified
+				#         slot. 
+				#
+				# --------------------------------------------------
+
+				# Validate request
+				if not 'slot' in k_args:
+					raise ValueError("Missing 'slot' argument")
+
+				# Forward the request to the remote server
+				self.server.queue_message("meta", k_args )
+
+				# Send 'OK'
+				self.request.sendall("OK")
+
+			else:
+
+				# Unknown command, send 'ER' to indicate that
+				# an error occured.
+				self.request.sendall("ER")
+
+		except ValueError as e:
+
+			# On errors send 'ER' to indicate failure
+			logger.warn("Protocol error: %s" % str(e))
 			self.request.sendall("ER")
 
 class CPThreadedLocalAPIServer(SocketServer.ThreadingMixIn):
@@ -573,7 +653,7 @@ if __name__ == "__main__":
 	# Load config and defaults
 	config = ConfigParser.RawConfigParser()
 	config.add_section('api')
-	config.set('api', 'url', 'https://creditpiggy.cern.ch/api')
+	config.set('api', 'api_url', 'https://creditpiggy.cern.ch/api')
 	config.set('api', 'flush_interval', 5)
 	config.add_section('server')
 	config.set('server', 'pidfile', '/var/run/creditserver.pid')
@@ -587,9 +667,9 @@ if __name__ == "__main__":
 	# thrown right now
 	try:
 		config = {
-			'url' 			: config.get('api', 'url'),
-			'project_id' 	: config.get('api', 'project_id'),
-			'project_auth'	: config.get('api', 'project_auth'),
+			'api_url' 		: config.get('api', 'api_url'),
+			'api_key' 		: config.get('api', 'api_key'),
+			'api_secret'	: config.get('api', 'api_secret'),
 			'flush_interval': config.getint('api', 'flush_interval'),
 			'pidfile' 		: config.get('server', 'pidfile'),
 			'socket' 		: config.get('server', 'socket'),

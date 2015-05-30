@@ -41,7 +41,7 @@ class APIProtocol:
 		self.request = request
 		self.context = context
 
-	def get(self, parameter, default=None):
+	def get(self, parameter, default=None, required=False):
 		"""
 		Get a request parameter, or use the default if missing
 		"""
@@ -128,6 +128,10 @@ def render_with_api(context):
 		@wraps(func)
 		def wrapper(request, api="json", *args, **kwargs):
 
+			# Skip if already processed
+			if hasattr(request, 'proto'):
+				return func(request, api, *args, **kwargs)
+
 			# Ensure the protocol exists and is valid
 			prot = _get_supported_protocols()
 			if not api in prot:
@@ -140,8 +144,10 @@ def render_with_api(context):
 			# Instantiate and store protocol in request
 			request.proto = prot[api]( request, context )
 
-			# Handle request
+			# Exception guard
 			try:
+
+				# Handle request
 				out = func(request, api, *args, **kwargs)
 
 				# Render with protocol renderer if result is a dict or None

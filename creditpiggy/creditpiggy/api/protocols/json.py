@@ -1,10 +1,30 @@
+################################################################
+# CreditPiggy - Volunteering Computing Credit Bank Project
+# Copyright (C) 2015 Ioannis Charalampidis
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+################################################################
 
-from creditpiggy.api.protocol import APIProtocol
+from __future__ import absolute_import
+
+from creditpiggy.api.protocol import APIProtocol, APIError
 from django.http import HttpResponse
 
 import json
 
-class JSON(APIProtocol):
+class JSONProtocol(APIProtocol):
 	"""
 	Base class for implementing API protocols
 	"""
@@ -19,16 +39,22 @@ class JSON(APIProtocol):
 		APIProtocol.__init__(self, request, context)
 
 		# If we have a POST request, get the JSON payload
-		self.data = {}
-		if request.method == 'POST':
-			self.data = json.loads( request.body )
+		self.data = None
 
 	def getAll(self):
 		"""
 		Return all the parameters from the request
 		"""
 
-		if request.method == 'POST':
+		if self.request.method == 'POST':
+
+			# Populate missing self.data
+			if not self.data:
+				try:
+					self.data = json.loads( self.request.body )
+				except ValueError:
+					raise APIError("Could not parse JSON request", code=400)
+
 			# On POST requests, return the parsed body
 			return self.data
 			
@@ -36,7 +62,7 @@ class JSON(APIProtocol):
 			# On GET requests return the query dict
 			return self.GET.dict()
 
-	def get(self, parameter, default=None):
+	def get(self, parameter, default=None, required=False):
 		"""
 		Get a request parameter, or use the default if missing
 		"""
@@ -44,14 +70,29 @@ class JSON(APIProtocol):
 		# On POST request check for the parameter in the body
 		if self.request.method == 'POST':
 
+			# Populate missing self.data
+			if not self.data:
+				try:
+					self.data = json.loads( self.request.body )
+				except ValueError:
+					raise APIError("Could not parse JSON request", code=400)
+
 			# Check if we have this parameter in the data
 			if parameter in self.data:
 				return self.data[ parameter ]
 			else:
+				if required:
+					return APIError("Missing required parameter '%s'" % parameter)
 				return default
 
 		# On GET requests check for the parameter in the URL
 		elif self.request.method == 'GET':
+
+			# Require parameter if requested
+			if required and not parameter in self.request.GET:
+				return APIError("Missing required parameter '%s'" % parameter)
+
+			# Otherwise get with default
 			return self.request.GET.get( parameter, default )
 
 	def render_success(self, data):

@@ -4,11 +4,11 @@
 [api]
 
 # Base URL for the creditpiggy server
-url=http://test.local:8080/api
+api_url=http://test.local:8080/api
 
 # Project authentication 
-project_id=d6db27eb65704bb6acb3b83ceaf95e40
-project_auth=561c18dedd604057b9f4852fda842faba5abbc09e7674bc5a4716d3d9d3a236f
+api_key=d6db27eb65704bb6acb3b83ceaf95e40
+api_secret=561c18dedd604057b9f4852fda842faba5abbc09e7674bc5a4716d3d9d3a236f
 
 # How frequently to flush the remote buffers (in seconds)
 flush_interval=5
