@@ -18,25 +18,22 @@
 ################################################################
 
 from django.conf.urls import patterns, include, url
-from creditpiggy.api.views import project
+from creditpiggy.api.views import batch
 
 urlpatterns = patterns('',
 	
 	# Default Protocol
-	url(r'^project/alloc$',						project.slot_alloc,			name="api.project.alloc" ),
-	url(r'^project/claim$',						project.slot_claim,			name="api.project.claim" ),
-	url(r'^project/meta$',						project.slot_meta,			name="api.project.meta" ),
-	url(r'^project/counters$',					project.slot_counters,		name="api.project.counters" ),
-	url(r'^project/bulk$',						project.bulk_commands,		name="api.project.bulk" ),
+	url(r'^batch/alloc$',						batch.slot_alloc,			name="api.batch.alloc" ),
+	url(r'^batch/claim$',						batch.slot_claim,			name="api.batch.claim" ),
+	url(r'^batch/meta$',						batch.slot_meta,			name="api.batch.meta" ),
+	url(r'^batch/counters$',					batch.slot_counters,		name="api.batch.counters" ),
+	url(r'^batch/bulk$',						batch.bulk_commands,		name="api.batch.bulk" ),
 
 	# Explicit protocol
-	url(r'^project/alloc\.(?P<api>[^/]+)$',		project.slot_alloc,			name="api.project.alloc" ),
-	url(r'^project/claim\.(?P<api>[^/]+)$',		project.slot_claim,			name="api.project.claim" ),
-	url(r'^project/meta\.(?P<api>[^/]+)$',		project.slot_meta,			name="api.project.meta" ),
-	url(r'^project/counters\.(?P<api>[^/]+)$',	project.slot_counters,		name="api.project.counters" ),
-	url(r'^project/bulk\.(?P<api>[^/]+)$',		project.bulk_commands,		name="api.project.bulk" ),
+	url(r'^batch/alloc\.(?P<api>[^/]+)$',		batch.slot_alloc,			name="api.batch.alloc" ),
+	url(r'^batch/claim\.(?P<api>[^/]+)$',		batch.slot_claim,			name="api.batch.claim" ),
+	url(r'^batch/meta\.(?P<api>[^/]+)$',		batch.slot_meta,			name="api.batch.meta" ),
+	url(r'^batch/counters\.(?P<api>[^/]+)$',	batch.slot_counters,		name="api.batch.counters" ),
+	url(r'^batch/bulk\.(?P<api>[^/]+)$',		batch.bulk_commands,		name="api.batch.bulk" ),
 
-
-	# url(r'^(?P<project_id>[0-9a-f]+)/serve/(?P<token_id>[\w]+)$', views.project_serve),
-	# url(r'^(?P<project_id>[0-9a-f]+)/report/(?P<token_id>[\w]+)$', views.project_report),
 )

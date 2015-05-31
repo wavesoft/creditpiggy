@@ -17,27 +17,37 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-def claim_slot( slot, machine ):
-	"""
-	Claim slot 'slot' by the machine 'machine'
-	"""
+from django.core.management.base import BaseCommand, CommandError
+from creditpiggy.core.housekeeping import HouseKeeping
 
-	# Get credits to add
-	credits = slot.credits
+# Get a logger
+import logging
+logger = logger.getLogger(__name__)
 
-	# Update credits on the machine
-	machine.metrics().incr("credits", credits)
-	# Squash all counters of slot to the machine
-	machine.metrics().incr( slot.metrics().counters() )
+class Command(BaseCommand):
+	help = 'Processes the housekeeping periodical tasks of the CreditPiggy server.'
 
-	# Update credits on the project
-	slot.project.metrics().incr("credits", credits)
+	def add_arguments(self, parser):
+		"""
+		Register the --daemon argument
+		"""
+		parser.add_argument('--daemon', action='store_true')
 
-	# Check if there is a user associated with this machine
-	if not machine.owner is None:
+	def handle(self, *args, **options):
+		"""
+		Execute the housekeeping command
+		"""
 
-		# Update credits on the user
-		machine.owner.metrics().incr("credits", credits)
-		# Squash all counters of slot to the owner
-		machine.owner.metrics().incr( slot.metrics().counters() )
+		# Check daemon option
+		if options['daemon']:
+			logger.warn("Running as a demon")
+		else:
+			logger.warn("Running as a cron job")
+
+		# Create a housekeeping class
+		hk = HouseKeeping()
+
+		# Run until there are no more dirty tasks
+		while not hk.run():
+			pass
 

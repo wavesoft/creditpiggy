@@ -65,7 +65,12 @@ REDIS_KEYS_PREFIX = _CONFIG_.REDIS_KEYS_PREFIX
 
 # CreditPiggy API Protocols
 CREDITPIGGY_API_PROTOCOLS = (
-	'creditpiggy.api.protocols.basic.JSON',
+	'creditpiggy.api.protocols.json.JSONProtocol',
+)
+
+# Housekeeping clases 
+CREDITPIGGY_HOUSEKEEPING_CLASSES = (
+	'creditpiggy.core.metrics.MetricsHousekeeping',
 )
 
 # - Social Auth ---

@@ -51,11 +51,11 @@ def _validate_project_auth( payload, auth ):
 	elif algo == "sha-1":
 		digest = hashlib.sha1(payload + cred.secret).hexdigest()
 	else:
-		raise APIError("Unknown authorization protocol specified", code=400)
+		raise APIError("Unknown hashing algorithm used", code=400)
 
-	print ">>> Payload: '%s' (%s='%s')" % (payload, algo, digest)
-	print ">>> Auth: '%s'" % auth
-	print ">>> V-Digest: '%s'" % vdigest
+	# print ">>> Payload: '%s' (%s='%s')" % (payload, algo, digest)
+	# print ">>> Auth: '%s'" % auth
+	# print ">>> V-Digest: '%s'" % vdigest
 
 	# Return project if digest is validated
 	if digest == vdigest:

@@ -1,0 +1,226 @@
+################################################################
+# CreditPiggy - Volunteering Computing Credit Bank Project
+# Copyright (C) 2015 Ioannis Charalampidis
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+################################################################
+
+import time
+import importlib
+
+from django.conf import settings
+from functools import wraps
+
+from creditpiggy.core.redis import share_redis_connection
+
+def periodical(seconds=None, minutes=None, hours=None, days=None, months=None, priority=0):
+	"""
+	Decorator that registers a housekeeping function to be executed periodically,
+	with the interval specified.
+	"""
+	def decorator(func):
+
+		# Calculate interval
+		interval = 0
+		if seconds != None:
+			interval += seconds
+		if minutes != None:
+			interval += minutes * 60
+		if hours != None:
+			interval += hours * 3600
+		if days != None:
+			interval += days * 86400
+
+		# Register the function for post-processing by the class decorator
+		func._periodical = True
+		func._interval = interval
+		func._priority = priority
+
+		# Do not actually decorate the function
+		return func
+	return decorator
+
+class HousekeepingTask:
+	"""
+	Base class where the housekeeping tasks derrive from
+	"""
+	
+	# ==============================
+	#  API Methods
+	# ==============================
+
+	def run(self, delta):
+		"""
+		Function executed when the housekeeping is running.
+		The delta parameter contains the time since the last
+		invocation of the housekeeping mechanism (in seconds)
+		"""
+		pass
+
+	# ==============================
+	#  Internal Methods
+	# ==============================
+
+	#: Functions with @periodical decorator
+	_auto_periodicals = []
+
+	def _locate_periodicals(self):
+		"""
+		Return an ordered list of automatically discovered methods with
+		the @periodical decorator applied.
+	
+		This function inspects all the methods in the class and locates
+		the ones decorated with the @periodical function. It then creates
+		a description dictionary and bounds the method to the instance.
+		"""
+
+		# Lookup periodical functions
+		periodicals = []
+		for name, method in self.__class__.__dict__.iteritems():
+			if hasattr(method, "_periodical"):
+				print "--- Found %s" % name
+
+				# Store method in periodicals
+				periodicals.append({
+						"id": "p-" + self.__class__.__module__ + "." + self.__class__.__name__ + "." + name,
+						"method": method.__get__(self, self.__class__),
+						"interval": method._interval,
+						"priority": method._priority,
+					})
+
+		# Sort periodicals by priority
+		periodicals = sorted( periodicals, key=lambda k: k['priority'] )
+
+		# Return description
+		return periodicals
+
+
+class HouseKeeping:
+	"""
+	The base HouseKeeping class that takes care of all the housekeeping
+	operations in the CreditPiggy system.
+
+	Register your HouseKeeping tasks in the CREDITPIGGY_HOUSEKEEPING_CLASSES
+	tuple in the settings module.
+	"""
+
+	def __init__(self):
+		"""
+		Initialize the HouseKeeping class
+		"""
+
+		# Get a REDIS connection
+		self.redis = share_redis_connection()
+
+		# Housekeeping tasks
+		self.tasks = []
+
+		# Automated tasks (registered by decorators)
+		self.auto = {
+			'periodicals': []
+		}
+
+		# Iterate over registered api protocols
+		for hk_cls in settings.CREDITPIGGY_HOUSEKEEPING_CLASSES:
+
+			# Split module/class
+			parts = hk_cls.split(".")
+			p_module = ".".join(parts[0:-1])
+			p_class = parts[-1]
+
+			# Import module
+			mod = importlib.import_module(p_module)
+
+			# Get class reference
+			cls = getattr(mod, p_class, None)
+			if not cls:
+				raise ImportError("Could not find class %s in module %s" % (p_class, p_module))
+
+			# Instantiate housekeeping module
+			inst = cls()
+			self.tasks.append( inst )
+
+			# Collect automated tasks
+			self.auto['periodicals'] += inst._locate_periodicals()
+
+	def run(self):
+		"""
+		Run the housekeeping tasks
+		"""
+
+		# Flag if run was clean or dirty
+		clean = True
+
+		# Get all the housekeeping timer indices
+		last_times = self.redis.hgetall( "%shousekeeping/times" % settings.REDIS_KEYS_PREFIX )
+		if not last_times:
+			last_times = {}
+
+		# Require some properties
+		start_time = time.time()
+		if not 'last' in last_times:
+			last_times['last'] = start_time
+
+		# Calculate the delta since last invocation & update last_times
+		delta = start_time - float(last_times['last'])
+		last_times['last'] = start_time
+
+		# Run all the tasks
+		# -------------------
+		for t in self.tasks:
+			t.run( delta )
+
+		# Run automated tasks
+		# -------------------
+		#
+		# 1) @periodical functions
+		#
+		for a_periodical in self.auto['periodicals']:
+
+			# Check when it was invoked last
+			last_time = 0
+			if a_periodical['id'] in last_times:
+				last_time = float(last_times[a_periodical['id']])
+
+			# Check if enough time has passed for invocation
+			delta = start_time - last_time
+			print "~ Delta=%f / %f" % (delta, a_periodical['interval'])
+			if delta >= a_periodical['interval']:
+
+				# Run automated task method
+				a_periodical['method']()
+
+				# Check if more than one intervals has passed
+				if (delta >= a_periodical['interval'] * 2) and (last_time > 0):
+
+					# Then don't update last_time to NOW, but just advance it one interval,
+					# in order to call the processing logic once again on next run, which
+					# is hopefully quick enough.
+					last_times[a_periodical['id']] = a_periodical['interval'] + float(last_times[a_periodical['id']])
+
+					# Mark the run as 'dirty', letting the caller know that it should
+					# be called once again
+					clean = False
+
+				else:
+
+					# Otherwise just update last_times of this function
+					last_times[a_periodical['id']] = start_time
+
+		# Update last_times in redis
+		self.redis.hmset( "%shousekeeping/times" % settings.REDIS_KEYS_PREFIX, last_times )
+
+		# Return TRUE if run was clean
+		return clean

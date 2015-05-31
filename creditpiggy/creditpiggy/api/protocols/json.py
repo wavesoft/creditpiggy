@@ -26,7 +26,10 @@ import json
 
 class JSONProtocol(APIProtocol):
 	"""
-	Base class for implementing API protocols
+	JSON Implementation of the CreditPiggy API Protocol
+
+	Supports POST requests with JSON payload or GET requests 
+	with classic GET messages.
 	"""
 
 	#: The identification name of the protocol

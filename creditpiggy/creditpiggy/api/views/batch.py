@@ -20,14 +20,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
 
 from creditpiggy.core.models import CreditSlot
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import require_project_auth
-
-from creditpiggy.api.credits import claim_slot
-
-from django.views.decorators.csrf import csrf_exempt
+import creditpiggy.api.credits as credits
 
 
 def _alloc_slot(project, args):
@@ -81,8 +79,13 @@ def _claim_slot(project, args):
 
 	# If slot does not have credits, but we do have
 	# credits specified in the arguments, apply them now
-	if (slot.credits is None) and 'credits' in args:
-		slot.credits = int(args['credits'])
+	if (slot.credits is None):
+		if 'credits' in args:
+			slot.credits = int(args['credits'])
+		else:
+			# Forgot to define credits? Assume the fact that the job
+			# was claimed is succicient enough to give 1 credit.
+			slot.credits = 1
 
 	# Wrap credits in bounds if existing
 	if not (slot.minBound is None) and (slot.credits < slot.minBound):
@@ -91,15 +94,48 @@ def _claim_slot(project, args):
 		slot.credits = slot.maxBound
 
 	# Claim this slot by the specified machine
-	claim_slot( slot, machine )
+	credits.claim_slot( slot, machine )
+
+	# Delete slot
+	slot.delete()
 
 def _counters_slot(project, args):
+	"""
+	Update counters of the specified credit slot
+	"""
+
+	# Require 'slot' and 'machine'
+	if not 'slot' in args:
+		raise APIError("Missing 'slot' argument")
+
+	# Lookup slot
+	slots = CreditSlot.objects.filter(uuid = args['slot'], project = project)
+	if len(slots) == 0:
+		raise APIError("Updating counters in a non-existing slot: '%s' for project: '%s'" % (args['slot'], str(project)))
+
+	# Get first slot
+	slot = slots[0]
+
+	# Update metrics
+	metrics = slot.metrics()
+	for k,v in args.iteritems():
+
+		# Skip 'slot' argument
+		if k == "slot":
+			continue
+
+		# Everything else is used as a counter
+		metrics.incr( k, int(v) )
 
 def _meta_slot(project, args):
+	pass
 
+##########################################
+# Batch System API Commands
+##########################################
 
 @csrf_exempt
-@render_with_api(context="project.alloc")
+@render_with_api(context="batch.alloc")
 @require_project_auth()
 def slot_alloc(request, api):
 	"""
@@ -110,38 +146,45 @@ def slot_alloc(request, api):
 	_alloc_slot( request.project, request.proto.getAll() )
 
 @csrf_exempt
-@render_with_api(context="project.claim")
+@render_with_api(context="batch.claim")
 @require_project_auth()
 def slot_claim(request, api):
 	"""
 	Claim a slot
 	"""
-	return { }
+
+	# Claim slot or raise APIErrors
+	_claim_slot( request.project, request.proto.getAll() )
 
 @csrf_exempt
-@render_with_api(context="project.meta")
+@render_with_api(context="batch.meta")
 @require_project_auth()
 def slot_meta(request, api):
 	"""
 	Define slot metadata
 	"""
-	return { }
+
+	# Update slot metadata or raise APIErrors
+	_meta_slot( request.project, request.proto.getAll() )
 
 @csrf_exempt
-@render_with_api(context="project.counters")
+@render_with_api(context="batch.counters")
 @require_project_auth()
 def slot_counters(request, api):
 	"""
 	Append slot coutners
 	"""
-	return { }
+
+	# Update slot counters or raise APIErrors
+	_counters_slot( request.project, request.proto.getAll() )
 
 @csrf_exempt
-@render_with_api(context="project.bulk")
+@render_with_api(context="batch.bulk")
 @require_project_auth()
 def bulk_commands(request, api):
 	"""
-	Execute a bulk of commands
+	Execute a command bulk, possibly sent by the CreditPiggy
+	daemon in the application server.
 	"""
 
 	# Get commands
@@ -174,4 +217,8 @@ def bulk_commands(request, api):
 			# Multiple metadata update
 			for args in cmdlist:
 				_meta_slot( request.project, args )
+
+		else:
+			# Unknown
+			raise APIError("Unknown command '%s' in bulk set" % cmd)
 

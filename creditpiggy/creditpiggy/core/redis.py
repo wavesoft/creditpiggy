@@ -17,7 +17,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-
 from __future__ import absolute_import
 
 from django.conf import settings
@@ -28,7 +27,7 @@ shared_pool = None
 
 def share_redis_connection():
 	"""
-	Get a shared REDIS connection by using a central redis pool
+	Get a shared REDIS connection by using a reusable, common redis pool
 	"""
 
 	# Initialize the shared_pool if not yet initialized
