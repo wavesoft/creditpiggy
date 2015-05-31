@@ -55,6 +55,34 @@ def _alloc_slot(project, args):
 	# Save slot
 	slot.save()
 
+def _discard_slot(project, args):
+	"""
+	Discard slot (ex. because of an error)
+	"""
+
+	# Require 'slot' and 'machine'
+	if not 'slot' in args:
+		raise APIError("Missing 'slot' argument")
+
+	# Get 'reason'
+	reason = 'unspecified'
+	if 'reason' in args:
+		reason = args['reason']
+
+	# Lookup slot
+	slots = CreditSlot.objects.filter(uuid = args['slot'], project = project)
+	if len(slots) == 0:
+		raise APIError("Discarding non-existing slot: '%s' for project: '%s'" % (args['slot'], str(project)))
+
+	# Get first slot
+	slot = slots[0]
+
+	# The slot was discarded
+	credits.discard_slot( slot, reason )
+
+	# Delete slot
+	slot.delete()
+
 def _claim_slot(project, args):
 	"""
 	Claim a slot to the project
@@ -157,6 +185,17 @@ def slot_claim(request, api):
 	_claim_slot( request.project, request.proto.getAll() )
 
 @csrf_exempt
+@render_with_api(context="batch.discard")
+@require_project_auth()
+def slot_claim(request, api):
+	"""
+	Discard a slot
+	"""
+
+	# Claim slot or raise APIErrors
+	_discard_slot( request.project, request.proto.getAll() )
+
+@csrf_exempt
 @render_with_api(context="batch.meta")
 @require_project_auth()
 def slot_meta(request, api):
@@ -190,35 +229,58 @@ def bulk_commands(request, api):
 	# Get commands
 	commands = request.proto.getAll()
 
-	# Handle 'alloc' commands in priority
+	# Handle 'alloc' commands in priority #1
 	if 'alloc' in commands:
 
-		# Satisfy all allocations
+		# Satisfy all requests
 		for args in commands['alloc']:
 			_alloc_slot( request.project, args )
 
 		# Delete alloc command
 		del commands['alloc']
 
-	# Handle rest of the commands
-	for cmd, cmdlist in commands.iteritems():
+	# Handle 'counters' commands in priority #2
+	if 'counters' in commands:
 
-		if cmd == "claim":
-			# Multiple claims
-			for args in cmdlist:
-				_claim_slot( request.project, args )
+		# Satisfy all requests
+		for args in commands['counters']:
+			_alloc_slot( request.project, args )
 
-		elif cmd == "counters":
-			# Multiple counters update
-			for args in cmdlist:
-				_counters_slot( request.project, args )
+		# Delete counters command
+		del commands['counters']
 
-		elif cmd == "meta":
-			# Multiple metadata update
-			for args in cmdlist:
-				_meta_slot( request.project, args )
+	# Handle 'meta' commands in priority #3
+	if 'meta' in commands:
 
-		else:
-			# Unknown
-			raise APIError("Unknown command '%s' in bulk set" % cmd)
+		# Satisfy all requests
+		for args in commands['meta']:
+			_alloc_slot( request.project, args )
+
+		# Delete meta command
+		del commands['meta']
+
+	# Handle 'discard' commands in priority #4
+	if 'discard' in commands:
+
+		# Satisfy all requests
+		for args in commands['discard']:
+			_alloc_slot( request.project, args )
+
+		# Delete discard command
+		del commands['discard']
+
+	# Handle 'claim' commands in priority #5
+	if 'claim' in commands:
+
+		# Satisfy all requests
+		for args in commands['claim']:
+			_alloc_slot( request.project, args )
+
+		# Delete claim command
+		del commands['claim']
+
+	# Everything else is invalid command
+	if commands:
+		# Unknown
+		raise APIError("Unknown command '%s' in bulk set" % commands.keys()[0])
 
