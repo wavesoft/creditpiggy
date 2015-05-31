@@ -1,13 +1,5 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Python Social Auth</title>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-  </head>
-  <body>
-
+{% extends "base/html.html" %}
+{% block content %}
     <div class="container">
       <h1>CreditPiggy</h1>
       {% if user.is_authenticated %}
@@ -26,6 +18,4 @@
       </p>
 
     </div>
-
-  </body>
-</html>
+{% endblock %}

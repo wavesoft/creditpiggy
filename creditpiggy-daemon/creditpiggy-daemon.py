@@ -148,7 +148,7 @@ class CPRemoteAPIServer(threading.Thread):
 
 				# Send a bulk command
 				self.logger.info("Flushing %i commands on stack" % cmd_counter)
-				self.send("project/bulk", stacks)
+				self.send("batch/bulk", stacks)
 
 				# Reset variables
 				stacks = {}
@@ -158,7 +158,7 @@ class CPRemoteAPIServer(threading.Thread):
 		# Send stacks if pending
 		if stacks:
 			self.logger.warn("Flushing %i commands on stack" % cmd_counter)
-			self.send("project/bulk", stacks)
+			self.send("batch/bulk", stacks)
 
 	def shutdown(self):
 		"""

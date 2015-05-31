@@ -21,12 +21,14 @@ import uuid
 import random
 import time
 
-import creditpiggy.core.credits as credits
-
 from django.db import models, transaction
 from django.contrib.auth.models import AbstractUser
 from creditpiggy.core.metrics import MetricsModelMixin
 from creditpiggy.core.housekeeping import HousekeepingTask, periodical
+
+###################################################################
+# Utlity Functions
+###################################################################
 
 def new_uuid():
 	"""
@@ -39,12 +41,16 @@ def gen_token_key():
 	Token key generator
 	"""
 	# Token charset
-	charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+	charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
 	key = ""
 	for i in range(0, 48):
 		key += charset[random.randint(0, len(charset)-1)]
 	# Return a unique key
 	return key
+
+###################################################################
+# Database Models
+###################################################################
 
 class PiggyUser(MetricsModelMixin, AbstractUser):
 	"""
@@ -66,9 +72,6 @@ class ComputingUnit(MetricsModelMixin, models.Model):
 
 	#: Owner of this computing unit
 	owner = models.ForeignKey( PiggyUser, default=None, null=True )
-
-	#: Analytics registry
-	### ???
 
 class PiggyProject(MetricsModelMixin, models.Model):
 	"""
@@ -138,6 +141,19 @@ class ProjectCredentials(models.Model):
 	#: The project
 	project = models.ForeignKey( PiggyProject )
 
+class ProjectUserCredit(MetricsModelMixin, models.Model):
+	"""
+	Credits given to a user for the participation in the project
+	"""
+
+	#: The user
+	user = models.ForeignKey( PiggyUser )
+
+	#: The project
+	project = models.ForeignKey( PiggyProject )
+
+	#: The credits of the user in this model
+	credits = models.IntegerField(default=0)
 
 class CreditSlot(MetricsModelMixin, models.Model):
 	"""
@@ -162,6 +178,16 @@ class CreditSlot(MetricsModelMixin, models.Model):
 
 	# The maximum boundary of credits associated to this slot
 	maxBound = models.IntegerField(null=True, default=None)
+
+	#: If the credits are claimed
+	claimedBy = models.ForeignKey( PiggyUser, null=True,default=None )
+
+###################################################################
+# Utility Classes
+###################################################################
+
+# This module requires the above models
+import creditpiggy.core.credits as credits
 
 class ModelHousekeeping(HousekeepingTask):
 	"""

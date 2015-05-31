@@ -21,17 +21,16 @@ from django.contrib import admin
 from creditpiggy.core.models import *
 
 # Register your models here.
-
 admin.site.register(PiggyUser)
 admin.site.register(ComputingUnit)
 admin.site.register(PiggyProject)
+admin.site.register(ProjectUserCredit)
+admin.site.register(ProjectCredentials)
 
 class ProjectUserRoleAdmin(admin.ModelAdmin):
 	list_display = ('user', 'project', 'role')
 
 admin.site.register(ProjectUserRole, ProjectUserRoleAdmin)
-
-admin.site.register(ProjectCredentials)
 
 class CreditSlotAdmin(admin.ModelAdmin):
 	list_display = ('uuid', 'project', 'credits', 'minBound', 'maxBound')

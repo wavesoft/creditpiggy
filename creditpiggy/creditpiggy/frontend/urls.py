@@ -25,5 +25,7 @@ urlpatterns = patterns('',
 	url(r'^profile/$', 					views.profile, 		name="frontend.profile"),
 	url(r'^logout/$', 					views.logout, 		name="frontend.logout"),
 	url(r'^login/$', 					views.login, 		name="frontend.login"),
+	url(r'^status/$', 					views.status, 		name="frontend.status"),
+	url(r'^credits/$', 					views.credits, 		name="frontend.credits"),
 	url(r'^link/(?P<provider>[^/]+)/$',	views.link,			name="frontend.link"),
 )

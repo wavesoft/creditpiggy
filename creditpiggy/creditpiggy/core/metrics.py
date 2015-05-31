@@ -29,12 +29,54 @@ class MetricsHousekeeping(HousekeepingTask):
 	Metrics housekeeping class
 	"""
 
+	def __init__(self):
+		"""
+		Initialize the housekeeping class
+		"""
+
+		# Get a connection to the REDIS server
+		self.redis = share_redis_connection()
+
+		# Enumerate all the housekeeping namespaces
+		self.namespaces = self.redis.smembers( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping" )
+
+	def merge(self, src, dst):
+		"""
+		Merge all counters from src to dst
+		"""
+
+		for k,v in src.iteritems():
+
+			# Create missing keys
+			if not k in dst:
+				dst[k] = 0
+
+			# Add values
+			dst[k] = int(dst[k]) + int(v)
+
+		# Return dst
+		return dst
+
 	@periodical(hours=1, priority=1)
 	def rotate_hourly(self):
 		"""
 		Rotate hourly data
 		"""
-		print "-- Periodical: Hourly"
+
+		# Iterate over the namespaces
+		for ns in self.namespaces:
+
+			# Get counters
+			counters = self.redis.hgetall( "%s/counters" % ns )
+
+			# Push counters to 'hourly'
+			hourly = self.merge(
+					counters,
+					self.redis.hgetall( "%s/series/hourly" % ns )
+				)
+
+			# Update counters
+			self.redis.hmset( "%s/series/hourly" % ns, hourly )
 
 	@periodical(days=1, priority=2)
 	def rotate_daily(self):
@@ -88,17 +130,25 @@ class Metrics:
 		Delete instance metrics
 		"""
 
+		# Get all keys under this namespace
+		del_keys = self.redis.keys("%s*" % self.namespace)
+
 		# Delete within a pipeline
 		pipe = self.redis.pipeline()
 
 		# Remove from housekeeping
 		pipe.srem( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping", self.namespace )
-		pipe.delete( "%s/history" % self.namespace )
-		pipe.delete( "%s/counters" % self.namespace )
-		pipe.delete( "%s/meta" % self.namespace )
+
+		# Remove all keys under this namespace
+		for key in del_keys:
+			pipe.delete(key)
 
 		# Run pipeline
 		pipe.execute()
+
+	######################################
+	# Counters
+	######################################
 
 	def counters(self):
 		"""
@@ -126,7 +176,14 @@ class Metrics:
 			return default
 		return value
 
-	def incr(self, metric, value=1):
+	def cset(self, metric, value):
+		"""
+		Set a counter value
+		"""
+		# Increment metric by <value>
+		self.redis.hset( "%s/counters" % self.namespace, metric, value )
+
+	def cincr(self, metric, value=1):
 		"""
 		Increment a counter
 		"""
@@ -149,12 +206,54 @@ class Metrics:
 			# Increment metric by <value>
 			self.redis.hincrby( "%s/counters" % self.namespace, metric, int(value) )
 
-	def set(self, metric, value):
+	######################################
+	# Histograms
+	######################################
+
+	def histograms(self):
 		"""
-		Set a counter value
+		Return all histograms under this namespace
 		"""
-		# Increment metric by <value>
-		self.redis.hset( "%s/counters" % self.namespace, metric, value )
+
+		# Find histograms
+		h_keys = self.redis.keys("%s/histo/*" % self.namespace)
+
+		# Create dictionary of histograms
+		ans = {}
+		for k in h_keys:
+
+			# Get histogram
+			parts = k.split("/histo/", 1)
+			ans[parts[1]] = self.redis.hgetall( k )
+
+		# Return them
+		return ans
+
+	def histogram(self, histogram):
+		"""
+		Return the histogram under the specified name
+		"""
+
+		# Get all histogram bins
+		bins = self.redis.hgetall( "%s/histo/%s" % (self.namespace, histogram) )
+
+		# Return them
+		return bins
+
+	def hadd(self, histogram, bin, value=1):
+		"""
+		Add value 'value' to histogram 'histogram's bin named 'bin'.
+
+		This function does not take care of any binning process, you will need
+		to perform this binning prior on calling this.
+		"""
+
+		# Update the histogram bin
+		self.redis.hincrby(
+				"%s/histo/%s" % (self.namespace, histogram), 
+				str(bin), 
+				int(value)
+			)
 
 class MetricsModelMixin(object):
 	"""
@@ -205,7 +304,7 @@ class MetricsModelMixin(object):
 		"""
 		Return the metrics tracking class
 		"""
-		
+
 		# Create a metrics instance only once
 		if not hasattr(self,'_metricsInstance'):
 			self._metricsInstance = Metrics( self.metrics_ns() )

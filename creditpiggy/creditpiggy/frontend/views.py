@@ -23,6 +23,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout
 
 from creditpiggy.core.decorators import render_to
+from creditpiggy.core.models import *
 
 def context(**extra):
 	"""
@@ -62,7 +63,8 @@ def login(request):
 	if request.user.is_authenticated():
 		return redirect(reverse("frontend.profile"))
 
-	return { }
+	# Return context
+	return context()
 
 @render_to("profile.html")
 def profile(request):
@@ -72,4 +74,40 @@ def profile(request):
 	if not request.user.is_authenticated():
 		return redirect(reverse("frontend.login"))
 
-	return { }
+	# Return context
+	return context()
+
+@render_to("status.html")
+def status(request):
+	"""
+	User status page
+	"""
+	if not request.user.is_authenticated():
+		return redirect(reverse("frontend.login"))
+
+	# Get projects
+	projects = ProjectUserCredit.objects.filter( user=request.user )
+
+	# Return context
+	return context(
+			projects=projects
+		)
+
+@render_to("credits.html")
+def credits(request):
+	"""
+	User status page
+	"""
+	if not request.user.is_authenticated():
+		return redirect(reverse("frontend.login"))
+
+	# Get credit slots
+	slots = CreditSlot.objects \
+		.filter( project=request.GET.get('project', None) ) \
+		.order_by( '-claimed' )
+
+	# Return context
+	return context(
+		slots=slots
+		)
+

@@ -63,7 +63,7 @@ class JSONProtocol(APIProtocol):
 			
 		elif self.request.method == 'GET':
 			# On GET requests return the query dict
-			return self.GET.dict()
+			return self.request.GET.dict()
 
 	def get(self, parameter, default=None, required=False):
 		"""

@@ -1,4 +1,3 @@
-################################################################
 # CreditPiggy - Volunteering Computing Credit Bank Project
 # Copyright (C) 2015 Ioannis Charalampidis
 # 
@@ -17,27 +16,29 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-def claim_slot( slot, machine ):
+import time
+from django import template
+
+# Get registry
+register = template.Library()
+
+@register.filter(name='time_delta')
+def time_delta(value): # Only one argument.
 	"""
-	Claim slot 'slot' by the machine 'machine'
+	Return time delta
 	"""
 
-	# Get credits to add
-	credits = slot.credits
+	t_sec = int(value) - int(time.time())
+	t_min = 0
+	t_hour = 0
 
-	# Update credits on the machine
-	machine.metrics().incr("credits", credits)
-	# Squash all counters of slot to the machine
-	machine.metrics().incr( slot.metrics().counters() )
+	if t_sec >= 60:
+		t_min = int(t_sec / 60)
+		t_sec = t_sec % 60
 
-	# Update credits on the project
-	slot.project.metrics().incr("credits", credits)
+		if t_min >= 60:
+			t_hour = int(t_min / 60)
+			t_min = t_min % 60
 
-	# Check if there is a user associated with this machine
-	if not machine.owner is None:
-
-		# Update credits on the user
-		machine.owner.metrics().incr("credits", credits)
-		# Squash all counters of slot to the owner
-		machine.owner.metrics().incr( slot.metrics().counters() )
+	return "%i:%02i:%02i" % (t_hour, t_min, t_sec)
 

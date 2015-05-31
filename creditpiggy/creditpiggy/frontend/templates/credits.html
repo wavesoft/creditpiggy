@@ -1,0 +1,33 @@
+{% extends "base/html.html" %}
+{% load piggy_extras %}
+{% block content %}
+    <div class="container">
+
+		<h1>Status</h1>
+		<table class="table">
+			<tr>
+				<th>UUID</th>
+				<th>Expires in</th>
+				<th>Credits</th>
+			</tr>
+			{% if slots %}
+				{% for s in slots %}
+				<tr {% if s.claimed %}class="text-success"{% endif %}>
+					{% if s.claimed %}
+						<td><s>{{ s.uuid }}</s></td>
+					{% else %}
+						<td>{{ s.uuid }}</td>
+					{% endif %}
+					<td>{{ s.expireTime | time_delta }}</td>
+					<td>{{ s.credits }}</td>
+				</tr>
+				{% endfor %}
+			{% else %}
+				<tr>
+					<td colspan="3" class="text-muted text-center">(No slots allocated)</td>
+				</tr>
+			{% endif %}
+		</table>
+
+    </div>
+{% endblock %}

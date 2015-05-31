@@ -28,6 +28,7 @@ urlpatterns = patterns('',
 	url(r'^batch/discard$',						batch.slot_discard,			name="api.batch.discard" ),
 	url(r'^batch/meta$',						batch.slot_meta,			name="api.batch.meta" ),
 	url(r'^batch/counters$',					batch.slot_counters,		name="api.batch.counters" ),
+	url(r'^batch/slots$',						batch.enum_slots,			name="api.batch.slots" ),
 	url(r'^batch/bulk$',						batch.bulk_commands,		name="api.batch.bulk" ),
 
 	# Explicit protocol
@@ -36,6 +37,7 @@ urlpatterns = patterns('',
 	url(r'^batch/discard\.(?P<api>[^/]+)$',		batch.slot_discard,			name="api.batch.discard" ),
 	url(r'^batch/meta\.(?P<api>[^/]+)$',		batch.slot_meta,			name="api.batch.meta" ),
 	url(r'^batch/counters\.(?P<api>[^/]+)$',	batch.slot_counters,		name="api.batch.counters" ),
+	url(r'^batch/slots\.(?P<api>[^/]+)$',		batch.enum_slots,			name="api.batch.slots" ),
 	url(r'^batch/bulk\.(?P<api>[^/]+)$',		batch.bulk_commands,		name="api.batch.bulk" ),
 
 )

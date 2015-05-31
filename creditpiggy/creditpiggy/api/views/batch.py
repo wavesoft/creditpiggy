@@ -29,6 +29,9 @@ from creditpiggy.core.models import CreditSlot
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import require_project_auth
 
+##########################################
+# Reusable functions that implement API
+##########################################
 
 def _alloc_slot(project, args):
 	"""
@@ -62,6 +65,9 @@ def _alloc_slot(project, args):
 	# Set the slot expire time
 	slot.expireTime = int(time.time()) + expire_time * 60
 
+	# The slot was allocated
+	credits.alloc_slot( slot )
+
 	# Save slot
 	slot.save()
 
@@ -90,8 +96,9 @@ def _discard_slot(project, args):
 	# The slot was discarded
 	credits.discard_slot( slot, reason )
 
-	# Delete slot
-	slot.delete()
+	# Claim slot
+	slot.claimed = True
+	slot.save()
 
 def _claim_slot(project, args):
 	"""
@@ -134,8 +141,9 @@ def _claim_slot(project, args):
 	# Claim this slot by the specified machine
 	credits.claim_slot( slot, machine )
 
-	# Delete slot
-	slot.delete()
+	# Claim slot
+	slot.claimed = True
+	slot.save()
 
 def _counters_slot(project, args):
 	"""
@@ -197,7 +205,7 @@ def slot_claim(request, api):
 @csrf_exempt
 @render_with_api(context="batch.discard")
 @require_project_auth()
-def slot_claim(request, api):
+def slot_discard(request, api):
 	"""
 	Discard a slot
 	"""
@@ -226,6 +234,24 @@ def slot_counters(request, api):
 
 	# Update slot counters or raise APIErrors
 	_counters_slot( request.project, request.proto.getAll() )
+
+@csrf_exempt
+@render_with_api(context="batch.slots")
+@require_project_auth()
+def enum_slots(request, api):
+	"""
+	Return the allocated slot IDs
+	"""
+
+	# Return slots
+	slot = CreditSlot.objects \
+		.filter( project=request.project, claimedBy=None )
+
+	# Get IDs
+	ids = []
+	for s in slot:
+		ids.append( s.uuid )
+	return { "data": ids }
 
 @csrf_exempt
 @render_with_api(context="batch.bulk")
