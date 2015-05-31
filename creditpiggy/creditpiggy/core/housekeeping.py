@@ -19,11 +19,15 @@
 
 import time
 import importlib
+import logging
 
 from django.conf import settings
 from functools import wraps
 
 from creditpiggy.core.redis import share_redis_connection
+
+# Get housekeeping logger
+logger = logging.getLogger(__name__)
 
 def periodical(seconds=None, minutes=None, hours=None, days=None, months=None, priority=0):
 	"""
@@ -90,7 +94,6 @@ class HousekeepingTask:
 		periodicals = []
 		for name, method in self.__class__.__dict__.iteritems():
 			if hasattr(method, "_periodical"):
-				print "--- Found %s" % name
 
 				# Store method in periodicals
 				periodicals.append({
@@ -124,8 +127,9 @@ class HouseKeeping:
 		# Get a REDIS connection
 		self.redis = share_redis_connection()
 
-		# Housekeeping tasks
+		# Initialize properties
 		self.tasks = []
+		self.lastRun = 0
 
 		# Automated tasks (registered by decorators)
 		self.auto = {
@@ -180,7 +184,11 @@ class HouseKeeping:
 		# Run all the tasks
 		# -------------------
 		for t in self.tasks:
-			t.run( delta )
+			try:
+				t.run( delta )
+			except Exception as f:
+				logger.warn("Exception while running task %s.%s" % (t.__module__, t.__class__.__name__))
+				logger.exception(f)
 
 		# Run automated tasks
 		# -------------------
@@ -188,39 +196,89 @@ class HouseKeeping:
 		# 1) @periodical functions
 		#
 		for a_periodical in self.auto['periodicals']:
+			try:
+				# Check when it was invoked last
+				last_time = 0
+				if a_periodical['id'] in last_times:
+					last_time = float(last_times[a_periodical['id']])
 
-			# Check when it was invoked last
-			last_time = 0
-			if a_periodical['id'] in last_times:
-				last_time = float(last_times[a_periodical['id']])
+				# Check if enough time has passed for invocation
+				delta = start_time - last_time
+				if delta >= a_periodical['interval']:
 
-			# Check if enough time has passed for invocation
-			delta = start_time - last_time
-			print "~ Delta=%f / %f" % (delta, a_periodical['interval'])
-			if delta >= a_periodical['interval']:
+					# Run automated task method
+					a_periodical['method']()
 
-				# Run automated task method
-				a_periodical['method']()
+					# Check if more than one intervals has passed
+					if (delta >= a_periodical['interval'] * 2) and (last_time > 0):
 
-				# Check if more than one intervals has passed
-				if (delta >= a_periodical['interval'] * 2) and (last_time > 0):
+						# Then don't update last_time to NOW, but just advance it one interval,
+						# in order to call the processing logic once again on next run, which
+						# is hopefully quick enough.
+						last_times[a_periodical['id']] = a_periodical['interval'] + float(last_times[a_periodical['id']])
 
-					# Then don't update last_time to NOW, but just advance it one interval,
-					# in order to call the processing logic once again on next run, which
-					# is hopefully quick enough.
-					last_times[a_periodical['id']] = a_periodical['interval'] + float(last_times[a_periodical['id']])
+						# Mark the run as 'dirty', letting the caller know that it should
+						# be called once again
+						clean = False
 
-					# Mark the run as 'dirty', letting the caller know that it should
-					# be called once again
-					clean = False
+					else:
 
-				else:
+						# Otherwise just update last_times of this function
+						last_times[a_periodical['id']] = start_time
 
-					# Otherwise just update last_times of this function
-					last_times[a_periodical['id']] = start_time
+			except Exception as f:
+				logger.warn("Exception while running periodical task %s" % a_periodical['id'])
+				logger.exception(f)
 
 		# Update last_times in redis
 		self.redis.hmset( "%shousekeeping/times" % settings.REDIS_KEYS_PREFIX, last_times )
 
+		# Keep the last time we run this function
+		self.lastRun = time.time()
+
 		# Return TRUE if run was clean
 		return clean
+
+	def waitEvent(self, timeout=0):
+		"""
+		Wait until an event occures
+		"""
+
+		# (We currently support only @periodical tasks, and therefore
+		#  we should wait for the minimum ammount of time required from 
+		#  now till the moment one of the periodical tasks must be invoked)
+
+		# Get all the housekeeping timer indices
+		last_times = self.redis.hgetall( "%shousekeeping/times" % settings.REDIS_KEYS_PREFIX )
+		if not last_times:
+			last_times = {}
+
+		# Get the maximum time to wait one way or another
+		min_time = timeout
+		if min_time <= 0:
+			min_time = 60 # One minute if timeout is zero
+
+		# Iterate over all housekeeping events, looking
+		# for the minimum time to wait
+		start_time = time.time()
+		for a_periodical in self.auto['periodicals']:
+
+			# Get last invokation time
+			last_time = 0
+			if a_periodical['id'] in last_times:
+				last_time = float(last_times[a_periodical['id']])
+
+			# Get delta
+			delta = a_periodical['interval'] - (start_time - last_time)
+			if delta < min_time:
+				min_time = delta
+
+			# If min_time is less than zero, we must exit now!
+			if min_time < 0:
+				logger.debug("A real-time event is pending")
+				return
+
+		# Wait min_time
+		logger.info("Sleeping for %i seconds" % min_time)
+		time.sleep(min_time)
+

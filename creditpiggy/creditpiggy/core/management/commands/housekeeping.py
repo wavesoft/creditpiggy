@@ -17,37 +17,44 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import time
+import logging
 from django.core.management.base import BaseCommand, CommandError
 from creditpiggy.core.housekeeping import HouseKeeping
 
 # Get a logger
-import logging
-logger = logger.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
 	help = 'Processes the housekeeping periodical tasks of the CreditPiggy server.'
 
 	def add_arguments(self, parser):
 		"""
-		Register the --daemon argument
+		Register the --realtime argument
 		"""
-		parser.add_argument('--daemon', action='store_true')
+		parser.add_argument('--realtime', action='store_true', 
+			help="Execute housekeeping tasks in realtime (stays in foreground)")
 
 	def handle(self, *args, **options):
 		"""
 		Execute the housekeeping command
 		"""
 
-		# Check daemon option
-		if options['daemon']:
-			logger.warn("Running as a demon")
-		else:
-			logger.warn("Running as a cron job")
-
 		# Create a housekeeping class
 		hk = HouseKeeping()
 
-		# Run until there are no more dirty tasks
-		while not hk.run():
-			pass
+		# Run infinitely if running as realtime
+		while True:
 
+			# Run until there are no more dirty tasks
+			self.stdout.write("Performing housekeeping tasks")
+			while not hk.run():
+				pass
+
+			# Break if we are not running in real-time
+			if options['realtime']:
+				break
+
+			# Otherwise wait for a real-time event and
+			# stay in the loop
+			hk.waitEvent(0)
