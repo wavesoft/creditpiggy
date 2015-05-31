@@ -17,13 +17,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from creditpiggy.core.metrics import MetricsModelMixin
-
 import uuid
 import random
+import time
+
+import creditpiggy.core.credits as credits
+
+from django.db import models, transaction
+from django.contrib.auth.models import AbstractUser
+from creditpiggy.core.metrics import MetricsModelMixin
+from creditpiggy.core.housekeeping import HousekeepingTask, periodical
 
 def new_uuid():
 	"""
@@ -145,6 +148,9 @@ class CreditSlot(MetricsModelMixin, models.Model):
 	uuid = models.CharField(max_length=256, unique=False, db_index=True, 
 		help_text="The globally unique slot ID as specified by the project owner")
 
+	# The UNIX timestamp after which the slot is considered 'expired'
+	expireTime = models.IntegerField(default=0)
+
 	# The project associated with this credits slot
 	project = models.ForeignKey( PiggyProject )
 
@@ -156,3 +162,26 @@ class CreditSlot(MetricsModelMixin, models.Model):
 
 	# The maximum boundary of credits associated to this slot
 	maxBound = models.IntegerField(null=True, default=None)
+
+class ModelHousekeeping(HousekeepingTask):
+	"""
+	Housekeeping tasks for the models
+	"""
+
+	@periodical(hours=1)
+	def expire_slots(self):
+		"""
+		Expire credit slots
+		"""
+
+		# Perform multiple atomic requests in an atomic transaction
+		with transaction.atomic():
+
+			# Expire all slots with timestamp bigger than the current
+			for slot in CreditSlot.objects.filter( credits__gt = int(time.time()) ):
+
+				# Discard slot
+				credits.discard_slot( slot, 'expired' )
+
+				# Delete slot
+				slot.delete()

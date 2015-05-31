@@ -204,18 +204,20 @@ class CPLocalRequestHandler(SocketServer.BaseRequestHandler):
 			if c_command == "ALLOC":
 				# --------------------------------------------------
 				#
-				# Syntax: ALLOC,slot=<uuid>,[min=n,max=n|credits=n]
+				# Syntax: ALLOC,slot=<uuid>,[min=n,max=n|credits=n],[expire=n]
 				#
 				#   Desc: Denote that the specified UUID is a valid
 				#         slot ID assigned to this project.
 				#
-				# Params:   slot= : The project's slot unique ID
+				# Params:  slot= : The project's slot unique ID
 				#			min= : The minimum accepted value of 
 				#                  credits to accept for this slot.
 				#           max= : The maximum accepted value of
 				#                  credits to accept for this slot.
 				#       credits= : The excact value of credits to
 				#                  give upon completing the slot.
+				#        expire= : The time (in minutes) to keep the
+				#                  slot available before expiring it.
 				#
 				# --------------------------------------------------
 
@@ -240,6 +242,29 @@ class CPLocalRequestHandler(SocketServer.BaseRequestHandler):
 				#         the results of the slot. If not specified,
 				#         it's expected to match the credits allocated
 				#         to the slot in the 'ALLOC' phase.
+				#
+				# --------------------------------------------------
+
+				# Validate request
+				if not 'slot' in k_args:
+					raise ValueError("Missing 'slot' argument")
+				if not 'machine' in k_args:
+					raise ValueError("Missing 'machine' argument")
+
+				# Forward the request to the remote server
+				self.server.queue_message("claim", k_args )
+
+				# Send 'OK'
+				self.request.sendall("OK")
+
+			elif c_command == "DISCARD":
+				# --------------------------------------------------
+				#
+				# Syntax: DISCARD,slot=<uuid>,[reason=...]
+				#
+				#   Desc: Discard the specified slot because of an
+				#         error or another reason. You can specify
+				#         the reason in the optional 'reason' argument.
 				#
 				# --------------------------------------------------
 

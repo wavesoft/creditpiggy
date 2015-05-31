@@ -71,6 +71,7 @@ CREDITPIGGY_API_PROTOCOLS = (
 # Housekeeping clases 
 CREDITPIGGY_HOUSEKEEPING_CLASSES = (
 	'creditpiggy.core.metrics.MetricsHousekeeping',
+	'creditpiggy.core.models.ModelHousekeeping',
 )
 
 # - Social Auth ---

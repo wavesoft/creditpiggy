@@ -17,6 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import time
+import creditpiggy.core.credits as credits
+
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db.models import Q
@@ -25,7 +28,6 @@ from django.views.decorators.csrf import csrf_exempt
 from creditpiggy.core.models import CreditSlot
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import require_project_auth
-import creditpiggy.api.credits as credits
 
 
 def _alloc_slot(project, args):
@@ -51,6 +53,14 @@ def _alloc_slot(project, args):
 			slot.minBound = int(args['min']) 
 		if 'max' in args:
 			slot.maxBound = int(args['max']) 
+
+	# Get expire time (Default to 24h)
+	expire_time = 1440
+	if 'expire' in args:
+		expire_time = int(args['expire'])
+
+	# Set the slot expire time
+	slot.expireTime = int(time.time()) + expire_time * 60
 
 	# Save slot
 	slot.save()

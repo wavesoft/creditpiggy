@@ -52,7 +52,7 @@ class Command(BaseCommand):
 				pass
 
 			# Break if we are not running in real-time
-			if options['realtime']:
+			if not options['realtime']:
 				break
 
 			# Otherwise wait for a real-time event and
