@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import creditpiggy.core.analytics
+import creditpiggy.core.metrics
 import creditpiggy.core.models
 import django.contrib.auth.models
 import django.utils.timezone
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 'verbose_name': 'user',
                 'verbose_name_plural': 'users',
             },
-            bases=(creditpiggy.core.analytics.AnalyticsModelMixin, models.Model),
+            bases=(creditpiggy.core.metrics.MetricsModelMixin, models.Model),
             managers=[
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
@@ -52,17 +52,21 @@ class Migration(migrations.Migration):
                 ('uuid', models.CharField(default=b'', help_text=b'A unique ID generated from within the computing unit and delivered to CP through the batch system', unique=True, max_length=32, db_index=True)),
                 ('owner', models.ForeignKey(default=None, to=settings.AUTH_USER_MODEL, null=True)),
             ],
-            bases=(creditpiggy.core.analytics.AnalyticsModelMixin, models.Model),
+            bases=(creditpiggy.core.metrics.MetricsModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name='CreditSlot',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('uuid', models.CharField(help_text=b'The globally unique slot ID as specified by the project owner', unique=True, max_length=256, db_index=True)),
+                ('uuid', models.CharField(help_text=b'The globally unique slot ID as specified by the project owner', max_length=256, db_index=True)),
+                ('expireTime', models.IntegerField(default=0)),
                 ('credits', models.IntegerField(default=None, null=True)),
                 ('minBound', models.IntegerField(default=None, null=True)),
                 ('maxBound', models.IntegerField(default=None, null=True)),
+                ('status', models.IntegerField(default=0, choices=[(0, b'Free'), (1, b'Claimed'), (2, b'Discarded')])),
+                ('reason', models.CharField(default=None, max_length=32, null=True)),
             ],
+            bases=(creditpiggy.core.metrics.MetricsModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name='PiggyProject',
@@ -73,6 +77,7 @@ class Migration(migrations.Migration):
                 ('desc', models.TextField(help_text=b'Project description')),
                 ('profileImage', models.CharField(help_text=b"Project's profile image", max_length=1024)),
             ],
+            bases=(creditpiggy.core.metrics.MetricsModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name='ProjectCredentials',
@@ -82,6 +87,16 @@ class Migration(migrations.Migration):
                 ('secret', models.CharField(default=creditpiggy.core.models.gen_token_key, help_text=b'Shared secret between project and administrator', max_length=48)),
                 ('project', models.ForeignKey(to='core.PiggyProject')),
             ],
+        ),
+        migrations.CreateModel(
+            name='ProjectUserCredit',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('credits', models.IntegerField(default=0)),
+                ('project', models.ForeignKey(to='core.PiggyProject')),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+            ],
+            bases=(creditpiggy.core.metrics.MetricsModelMixin, models.Model),
         ),
         migrations.CreateModel(
             name='ProjectUserRole',
