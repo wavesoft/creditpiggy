@@ -356,7 +356,7 @@ else
 fi
 
 # Copy example configuration if missing
-echo -n " - Checking for site configuration..."
+echo -n " - Checking project configuration..."
 if [ ! -d ${DEPLOY_DIR}/conf/creditpiggy ]; then
 	# Create python module in 'creditpiggy' sub-directory
 	mkdir -p ${DEPLOY_DIR}/conf/creditpiggy
@@ -385,7 +385,7 @@ echo " - Checking apache configuration"
 for CFG_FILE in ${DEPLOY_DIR}/config/httpd-*.conf; do
 	echo -n " -- Symlink of $CFG_FILE..."
 	LINK_TO=${APACHE_CONF_DIR}/$(basename $CFG_FILE)
-	if [ ! -l ${LINK_TO} ]; then
+	if [ ! -h ${LINK_TO} ]; then
 		ln -s ${CFG_FILE} ${LINK_TO}
 		echo "ok"
 	else
