@@ -353,6 +353,24 @@ if [ ! -d "${DEPLOY_DIR}/virtualenv" ]; then
 	(cd ${DEPLOY_DIR}; ${PYTHON_VIRTUALENV} -p ${PYTHON_BIN} virtualenv) >$LOG_FILE 2>$LOG_FILE
 	[ $? -ne 0 ] && dump_errorlog
 
+	# Create a proxy script for warpping manage.py within the virtualenv
+	cat <<EOF > ${DEPLOY_DIR}/manage.sh
+#!/bin/bash
+
+# Activate virtalenv
+source ${DEPLOY_DIR}/virtualenv/bin/activate
+
+# Use appropriate python version
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
+# Include conf folder in python path
+export PYTHONPATH="\${PYTHONPATH}:${DEPLOY_DIR}/conf"
+
+# Change dir to project root and run management
+cd ${PROJECT_DIR}
+python manage.py $*
+EOF
+	chmod +x ${DEPLOY_DIR}/manage.sh
+
 	# We are good
 	echo "ok"
 else
@@ -448,7 +466,7 @@ if [ ! -d ${DEPLOY_DIR}/conf/etc ]; then
 	touch ${DEPLOY_DIR}/conf/etc/__init__.py
 fi
 # Copy sample configuration file
-[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/etc/settings.py.sample ${DEPLOY_DIR}/conf/etc/settings.py
+[ ! -f ${DEPLOY_DIR}/conf/etc/config.py ] && cp ${PROJECT_DIR}/etc/settings.py.sample ${DEPLOY_DIR}/conf/etc/settings.py
 echo "ok"
 
 # ===================================
@@ -458,7 +476,7 @@ echo "ok"
 # Update file permissions
 echo -n " - Setting deploy directories ownership..."
 chown -R apache:apache ${DEPLOY_DIR}
-chmod 0755 ${DEPLOY_DIR} ${DEPLOY_DIR}/logs ${DEPLOY_DIR}/conf ${DEPLOY_DIR}/conf/creditpiggy
+chmod 0755 ${DEPLOY_DIR} ${DEPLOY_DIR}/logs ${DEPLOY_DIR}/conf ${DEPLOY_DIR}/conf/etc
 echo "ok"
 
 # Update SELinuxPolicy
