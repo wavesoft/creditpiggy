@@ -33,6 +33,7 @@ function isinstalled {
 # Dump error log and exit
 function dump_errorlog {
 	echo "error"
+	echo "Deploy aborted due to errors"
 	echo "--------------------"
 	cat $LOG_FILE
 	rm $LOG_FILE
@@ -338,7 +339,7 @@ Require all granted
 
 # WSGI Application
 WSGIScriptAlias / ${PROJECT_DIR}/creditpiggy/wsgi.py
-WSGIPythonPath ${PROJECT_DIR}:${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages
+WSGIPythonPath ${PROJECT_DIR}:${DEPLOY_DIR}/conf:${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages
 
 # Project directory permissions
 <Directory ${PROJECT_DIR}/creditpiggy>
@@ -353,6 +354,12 @@ else
 	echo "exists"
 fi
 
+# Copy example configuration if missing
+echo -n " - Checking for site configuration..."
+[ ! -f ${DEPLOY_DIR}/conf/__init__.py ] && touch ${DEPLOY_DIR}/conf/__init__.py
+[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/config.py.example ${DEPLOY_DIR}/conf/config.py
+echo "ok"
+
 # ===================================
 # 4) Configure SELinux
 # ===================================
@@ -360,5 +367,29 @@ fi
 # Update SELinuxPolicy
 echo -n " - Checking SELinux policy in ${DEPLOY_DIR}..."
 ensure_dir_policy ${DEPLOY_DIR} httpd_sys_content_t
+echo -n " - Checking SELinux policy in ${PROJECT_DIR}..."
+ensure_dir_policy ${PROJECT_DIR} httpd_sys_content_t
 
+# ===================================
+# 5) Symlink to apache configuration
+# ===================================
+
+# Link to config
+echo " - Checking apache configuration"
+for CFG_FILE in ${DEPLOY_DIR}/config/httpd-*.conf; do
+	echo -n " -- Symlink of $CFG_FILE..."
+	LINK_TO=${APACHE_CONF_DIR}/$(basename $CFG_FILE)
+	if [ ! -l ${LINK_TO} ]; then
+		ln -s ${CFG_FILE} ${LINK_TO}
+		echo "ok"
+	else
+		echo "exists"
+	fi
+done
+
+# ===================================
+
+# We are done!
+echo "Deploy completed"
+exit 0
 
