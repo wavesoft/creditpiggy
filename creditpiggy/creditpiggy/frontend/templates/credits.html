@@ -12,8 +12,8 @@
 			</tr>
 			{% if slots %}
 				{% for s in slots %}
-				<tr {% if s.claimed %}class="text-success"{% endif %}>
-					{% if s.claimed %}
+				<tr class="{% if s.status == 1 %}text-success{% endif %}{% if s.status == 2 %}text-danger{% endif %}">
+					{% if s.status != 0 %}
 						<td><s>{{ s.uuid }}</s></td>
 					{% else %}
 						<td>{{ s.uuid }}</td>

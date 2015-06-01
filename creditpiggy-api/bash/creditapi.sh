@@ -19,7 +19,7 @@
 
 function cpapi_alloc {
 	local JOB=$1
-	echo "alloc,job=${JOB}" | nc -U
+	echo "alloc,slot=${JOB}" | nc 127.0.0.0 9999
 }
 
 function cpapi_claim {

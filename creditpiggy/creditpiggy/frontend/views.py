@@ -104,7 +104,7 @@ def credits(request):
 	# Get credit slots
 	slots = CreditSlot.objects \
 		.filter( project=request.GET.get('project', None) ) \
-		.order_by( '-claimed' )
+		.order_by( '-status' )
 
 	# Return context
 	return context(

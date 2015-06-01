@@ -36,15 +36,18 @@ def claim_slot( slot, machine ):
 	# Get credits to give to the user
 	credits = slot.credits
 
-	# Get machine metrics
+	# Get slot metrics
+	m_slot = slot.metrics()
+
+	# Update machine metrics
 	m_machine = machine.metrics()
 	m_machine.cincr("credits", credits)				# Update credits on the machine
-	m_machine.cincr( slot.metrics().counters() )	# Squash all counters of slot to the machine
+	m_machine.cincr( m_slot.counters() )			# Squash all counters of slot to the machine
 
 	# Update project metrics
 	m_project = slot.project.metrics()
 	m_project.cincr("credits", credits)				# Update credits on the project
-	m_project.cincr( slot.metrics().counters() )	# Squash all counters of slot to the project
+	m_project.cincr( m_slot.counters() )			# Squash all counters of slot to the project
 	m_project.cincr("slots/completed", 1)			# Update completed slot counter
 
 	# Update reason stats
@@ -53,12 +56,13 @@ def claim_slot( slot, machine ):
 	# Check if there is a user associated with this machine
 	if not machine.owner is None:
 
+		# Getch machine metrics
 		m_owner = machine.owner.metrics()
-		m_owner.cincr("credits", credits) 			# Update credits on the user
-		m_owner.cincr( slot.metrics().counters() )	# Squash all counters of slot to the owner
+		m_owner.cincr( m_machine.counters() )	# Squash all macine counters to the owner
+		m_machine.creset()						# Reset machine counters
 
 		# Find the project/owner link
-		pu_credits = ProjectUserCredit.get_or_create(
+		(pu_credits, created) = ProjectUserCredit.objects.get_or_create(
 				user=machine.owner, project=slot.project
 			)
 

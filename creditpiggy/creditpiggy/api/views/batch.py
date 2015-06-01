@@ -25,7 +25,7 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 
-from creditpiggy.core.models import CreditSlot
+from creditpiggy.core.models import CreditSlot, ComputingUnit
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import require_project_auth
 
@@ -97,7 +97,8 @@ def _discard_slot(project, args):
 	credits.discard_slot( slot, reason )
 
 	# Claim slot
-	slot.claimed = True
+	slot.status = CreditSlot.DISCARDED
+	slot.reason = reason
 	slot.save()
 
 def _claim_slot(project, args):
@@ -120,7 +121,7 @@ def _claim_slot(project, args):
 	slot = slots[0]
 
 	# Lookup or create relevant machine
-	machine = ComputingUnit.objects.get_or_create(uuid = args['machine'])
+	(machine, created) = ComputingUnit.objects.get_or_create(uuid = args['machine'])
 
 	# If slot does not have credits, but we do have
 	# credits specified in the arguments, apply them now
@@ -141,9 +142,9 @@ def _claim_slot(project, args):
 	# Claim this slot by the specified machine
 	credits.claim_slot( slot, machine )
 
-	# Claim slot
-	slot.claimed = True
-	slot.save()
+	# Delete slot upon claiming
+	#slot.status = CreditSlot.CLAIMED
+	slot.delete()
 
 def _counters_slot(project, args):
 	"""
@@ -171,7 +172,7 @@ def _counters_slot(project, args):
 			continue
 
 		# Everything else is used as a counter
-		metrics.incr( k, int(v) )
+		metrics.cincr( k, int(v) )
 
 def _meta_slot(project, args):
 	pass
@@ -245,7 +246,7 @@ def enum_slots(request, api):
 
 	# Return slots
 	slot = CreditSlot.objects \
-		.filter( project=request.project, claimedBy=None )
+		.filter( project=request.project, status=CreditSlot.FREE )
 
 	# Get IDs
 	ids = []
@@ -280,7 +281,7 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['counters']:
-			_alloc_slot( request.project, args )
+			_counters_slot( request.project, args )
 
 		# Delete counters command
 		del commands['counters']
@@ -290,7 +291,7 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['meta']:
-			_alloc_slot( request.project, args )
+			_meta_slot( request.project, args )
 
 		# Delete meta command
 		del commands['meta']
@@ -300,7 +301,7 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['discard']:
-			_alloc_slot( request.project, args )
+			_discard_slot( request.project, args )
 
 		# Delete discard command
 		del commands['discard']
@@ -310,7 +311,7 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['claim']:
-			_alloc_slot( request.project, args )
+			_claim_slot( request.project, args )
 
 		# Delete claim command
 		del commands['claim']

@@ -1,6 +1,7 @@
+#!/bin/bash
 ################################################################
-# CreditPiggy - Volunteering Computing Credit Bank Project
-# Copyright (C) 2015 Ioannis Charalampidis
+# CreditPiggy - A Community Credit Management System
+# Copyright (C) 2013 Ioannis Charalampidis
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,23 +18,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-from django.contrib import admin
-from creditpiggy.core.models import *
+# Deploy script for installing creditpiggy application
+# into the apache2 configuration
 
-# Register your models here.
-admin.site.register(PiggyUser)
-admin.site.register(ComputingUnit)
-admin.site.register(PiggyProject)
-admin.site.register(ProjectUserCredit)
-admin.site.register(ProjectCredentials)
+# Locate apache directoriy
+APACHE_DIR="/etc/httpd/conf.d"
+[ ! -d ${APACHE_DIR} ] && echo "Could not locate Apache conf.d directory in ${APACHE_DIR}!" && exit 1
 
-class ProjectUserRoleAdmin(admin.ModelAdmin):
-	list_display = ('user', 'project', 'role')
+# Locate project directory
+PROJECT_DIR="$(pwd)"
+[ ! -d ${APACHE_DIR} ] && echo "Could not locate Apache conf.d directory in ${APACHE_DIR}!" && exit 1
 
-admin.site.register(ProjectUserRole, ProjectUserRoleAdmin)
+cat <<EOF > ${APACHE_CONF}
+WSGIScriptAlias / /home/creditpiggy/creditpiggy/creditpiggy/creditpiggy/wsgi.py
+WSGIPythonPath /home/creditpiggy/creditpiggy/creditpiggy
 
-class CreditSlotAdmin(admin.ModelAdmin):
-	list_display = ('uuid', 'status', 'project', 'credits', 'minBound', 'maxBound')
-	list_filter = ('status',)
-
-admin.site.register(CreditSlot, CreditSlotAdmin)
+<Directory /home/creditpiggy/creditpiggy/creditpiggy/creditpiggy>
+	<Files wsgi.py>
+	Require all granted
+	</Files>
+</Directory>
+EOF

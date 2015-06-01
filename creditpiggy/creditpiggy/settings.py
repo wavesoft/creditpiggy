@@ -27,6 +27,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 
+import sys
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -105,20 +107,20 @@ LOGIN_ERROR_URL = '/login/'
 
 # Customize authentication pipeline to enable account linking
 SOCIAL_AUTH_PIPELINE = (
-    'social.pipeline.social_auth.social_details',
-    'social.pipeline.social_auth.social_uid',
-    'social.pipeline.social_auth.auth_allowed',
+	'social.pipeline.social_auth.social_details',
+	'social.pipeline.social_auth.social_uid',
+	'social.pipeline.social_auth.auth_allowed',
 
-    # Overrides 'social.pipeline.social_auth.social_user'
-    # in order to provide linking with previously created profiles.
+	# Overrides 'social.pipeline.social_auth.social_user'
+	# in order to provide linking with previously created profiles.
 	#'creditpiggy.core.pipelines.social_user_withlink',
-    'social.pipeline.social_auth.social_user',
+	'social.pipeline.social_auth.social_user',
 
-    'social.pipeline.user.get_username',
-    'social.pipeline.user.create_user',
-    'social.pipeline.social_auth.associate_user',
-    'social.pipeline.social_auth.load_extra_data',
-    'social.pipeline.user.user_details'
+	'social.pipeline.user.get_username',
+	'social.pipeline.user.create_user',
+	'social.pipeline.social_auth.associate_user',
+	'social.pipeline.social_auth.load_extra_data',
+	'social.pipeline.user.user_details'
 )
 
 # Storing additional fields in session, used for
@@ -189,6 +191,20 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ROOT_URLCONF = 'creditpiggy.urls'
 
 WSGI_APPLICATION = 'creditpiggy.wsgi.application'
+
+LOGGING = {
+	'version': 1,
+	'handlers': {
+		'console': {
+			'class': 'logging.StreamHandler',
+			'stream': sys.stdout,
+		}
+	},
+	'root': {
+		'handlers': ['console'],
+		'level': 'INFO'
+	}
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/

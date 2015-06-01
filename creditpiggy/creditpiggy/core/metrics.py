@@ -76,7 +76,8 @@ class MetricsHousekeeping(HousekeepingTask):
 				)
 
 			# Update counters
-			self.redis.hmset( "%s/series/hourly" % ns, hourly )
+			if hourly:
+				self.redis.hmset( "%s/series/hourly" % ns, hourly )
 
 	@periodical(days=1, priority=2)
 	def rotate_daily(self):
@@ -125,13 +126,14 @@ class Metrics:
 		# Keep the occupied namespace in redis for housekeeping
 		self.redis.sadd( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping", self.namespace )
 
-	def delete_instance(self):
+	def delete(self):
 		"""
 		Delete instance metrics
 		"""
 
 		# Get all keys under this namespace
 		del_keys = self.redis.keys("%s*" % self.namespace)
+		print ">>> DELETING %r <<<" % del_keys
 
 		# Delete within a pipeline
 		pipe = self.redis.pipeline()
@@ -182,6 +184,13 @@ class Metrics:
 		"""
 		# Increment metric by <value>
 		self.redis.hset( "%s/counters" % self.namespace, metric, value )
+
+	def creset(self):
+		"""
+		Reset all counters
+		"""
+		# Delete counters
+		self.redis.delete( "%s/counters" % self.namespace )
 
 	def cincr(self, metric, value=1):
 		"""
@@ -292,13 +301,18 @@ class MetricsModelMixin(object):
 		# Generate a unique for this entry metrics tracking ID
 		return "metrics/%s/%s" % (fqn, str(getattr(self, pkf)))
 
-	def delete_metrics(self):
+	def delete(self):
 		"""
 		Delete metrics associated with this model
 		"""
 
 		# Delete metrics instance
-		self.metrics().delete_instance()
+		self.metrics().delete()
+
+		# Fire the delete() in all the other superclasses of our mixin
+		for base in self.__class__.__bases__:
+			if (not base is MetricsModelMixin) and hasattr(base, 'delete'):
+				base.delete(self)
 
 	def metrics(self):
 		"""

@@ -160,6 +160,18 @@ class CreditSlot(MetricsModelMixin, models.Model):
 	A slot allocated and claimed by the server
 	"""
 
+	# Roles
+	FREE = 0
+	CLAIMED = 1
+	DISCARDED = 2
+
+	# Choices
+	STATUS = (
+		(FREE, 'Free'),
+		(CLAIMED, 'Claimed'),
+		(DISCARDED, 'Discarded'),
+	)
+
 	# The slot unique ID
 	uuid = models.CharField(max_length=256, unique=False, db_index=True, 
 		help_text="The globally unique slot ID as specified by the project owner")
@@ -179,8 +191,12 @@ class CreditSlot(MetricsModelMixin, models.Model):
 	# The maximum boundary of credits associated to this slot
 	maxBound = models.IntegerField(null=True, default=None)
 
-	#: If the credits are claimed
-	claimedBy = models.ForeignKey( PiggyUser, null=True,default=None )
+	#: The status of the slot
+	status = models.IntegerField( choices=STATUS, default=FREE )
+
+	#: Discard reason
+	reason = models.CharField(max_length=32, null=True, default=None) 
+
 
 ###################################################################
 # Utility Classes

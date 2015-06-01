@@ -167,10 +167,10 @@ class TEXTProtocol(APIProtocol):
 		# one, list field, just dump the contents
 		if isinstance(data, list):
 			# Create payload
-			response = "\n".join(data)
+			response = "\n".join(data) + "\n"
 		elif (isinstance(data, dict) and (len(data) == 1) and isinstance(data.values()[0], list)):
 			# Create payload
-			response = "\n".join(data.values()[0])
+			response = "\n".join(data.values()[0]) + "\n"
 
 		# Process dictionaries
 		elif isinstance(data, dict):
@@ -194,11 +194,26 @@ class TEXTProtocol(APIProtocol):
 		"""
 
 		# Prepare message
-		message = ""
+		response = ""
 
-		# Include message
-		if isinstance(data, dict) and ('message' in data):
-			message = data['message']
+		# If data is list or data contains only
+		# one, list field, just dump the contents
+		if isinstance(data, list):
+			# Create payload
+			response = "\n".join(data) + "\n"
+		elif (isinstance(data, dict) and (len(data) == 1) and isinstance(data.values()[0], list)):
+			# Create payload
+			response = "\n".join(data.values()[0]) + "\n"
+
+		# Process dictionaries
+		elif isinstance(data, dict):
+			# Convert dict to TEXT
+			response = textify_dict(data)
+
+		# Otherwise stringify
+		else:
+			response = str(data)
+
 
 		# Check if we have an error code
 		if code is None:
@@ -206,7 +221,7 @@ class TEXTProtocol(APIProtocol):
 
 		# Return an HTTP Response
 		return HttpResponse(
-				"ERROR\n%s\n" % message,
+				"ERROR\n%s\n" % response,
 				content_type="text/plain", 
 				status=code
 			)
