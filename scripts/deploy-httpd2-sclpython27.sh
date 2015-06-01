@@ -285,7 +285,7 @@ echo -n " - Creating virtualenv sandbox..."
 if [ ! -d "${DEPLOY_DIR}/virtualenv" ]; then
 
 	# Create a virtualenv sandbox
-	${PYTHON_VIRTUALENV} -p ${PYTHON_BIN} "${DEPLOY_DIR}/virtualenv" >$LOG_FILE 2>$LOG_FILE
+	(cd ${DEPLOY_DIR}; ${PYTHON_VIRTUALENV} -p ${PYTHON_BIN} "${DEPLOY_DIR}/virtualenv") >$LOG_FILE 2>$LOG_FILE
 	[ $? -ne 0 ] && dump_errorlog
 
 	# We are good
