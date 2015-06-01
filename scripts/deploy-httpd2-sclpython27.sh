@@ -469,8 +469,32 @@ EOF
 	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 </Files>
 </Directory>
+
+# Password-protect admin location
+<Location /admin>
+AuthUserFile ${DEPLOY_DIR}/conf/htpasswd
+AuthName "Restricted area"
+AuthType Basic
+Require valid-user
+</Location>
 EOF
 	echo "ok"
+
+	# Ask user to create an adin password
+	echo -n " - Checking password-protected area credentials..."
+	if [ ! -f "${DEPLOY_DIR}/conf/htpasswd" ]; then
+		echo "missing"
+		echo ""
+		
+		# Read username and password from keyboard
+		read -p "Specify a username to use for the admin area: " ADMIN_USER
+		htpasswd -cm ${DEPLOY_DIR}/conf/htpasswd ${ADMIN_USER} >$LOG_FILE 2>$LOG_FILE
+		[ $? -ne 0 ] && dump_errorlog
+
+		echo ""
+	else
+		echo "ok"
+	fi
 
 else
 	echo "exists"
