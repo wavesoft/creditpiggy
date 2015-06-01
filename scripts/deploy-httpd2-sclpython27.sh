@@ -412,10 +412,25 @@ if [ ! -f "${DEPLOY_DIR}/conf/httpd-creditpiggy.conf" ]; then
 	cat <<EOF > ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 
 # Static files
-Alias /static/frontend ${PROJECT_DIR}/creditpiggy/frontend/static
+Alias /static/frontend/ ${PROJECT_DIR}/creditpiggy/frontend/static/
+Alias /static/admin/ ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/django/contrib/admin/static/admin/
 
 # Static file permissions
 <Directory ${PROJECT_DIR}/creditpiggy/frontend/static>
+EOF
+
+	# Version-specific configuration
+	if [ $APACHE_240 -eq 1 ]; then
+		echo "Require all granted" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	else
+		echo "Order deny,allow" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+		echo "Allow from all" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	fi
+
+	# Continue configuration
+	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+</Directory>
+<Directory ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/django/contrib/admin/static/admin>
 EOF
 
 	# Version-specific configuration
