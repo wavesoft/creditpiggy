@@ -93,7 +93,7 @@ def _cpapi_command(command, args={}):
 	# Close
 	sock.close()
 
-def cpapi_alloc(slot_id, min=None, max=None, credits=None):
+def cpapi_alloc(slot_id, min=None, max=None, credits=None, expire=None):
 	"""
 	Allocate the specified slot_id as a valid slot ID for the
 	current project, with the specified credit range or fixed
@@ -109,6 +109,8 @@ def cpapi_alloc(slot_id, min=None, max=None, credits=None):
 			args["min"] = min
 		if not max is None:
 			args["max"] = max
+	if not expire is None:
+		args['expire'] = expire
 
 	# Send command
 	_cpapi_command("alloc", args)
@@ -127,6 +129,21 @@ def cpapi_claim(slot_id, machine_id, credits=None):
 
 	# Send command
 	_cpapi_command("claim", args)
+
+def cpapi_discard(slot_id, reason=None):
+	"""
+	Discard the slot 'slot_id', optionally indicating the reason
+	for doing so. Such reason might be 'expired', 'invalid', 'lost'
+	etc.
+	"""
+
+	# Prepare arguments
+	args = { "slot": slot_id }
+	if not reason is None:
+		args["reason"] = reason
+
+	# Send command
+	_cpapi_command("discard", args)
 
 def cpapi_counters(slot_id, **kwargs):
 	"""

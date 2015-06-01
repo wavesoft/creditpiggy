@@ -24,15 +24,35 @@
 extern "C" {
 #endif
 
+/**
+ * Specift the CreditPiggy API Endpoing
+ */
 int cpapi_setup 	( const char* server_endpoint );
 
-int cpapi_alloc 	( const char* slot_id, int min = 0, int max = 0, int credits = 0 );
+/**
+ * Allocate a credit slot
+ */
+int cpapi_alloc 	( const char* slot_id, int min = 0, int max = 0, int credits = 0, int expire = 0 );
 
+/**
+ * Claim a credit slot
+ */
 int cpapi_claim 	( const char* slot_id, const char* machine_id, int credits = 0 );
 
-int cpapi_counters 	( const char* slot_id, **kwargs);
+/**
+ * Discard a credit slot
+ */
+int cpapi_claim 	( const char* slot_id, const char* reason = NULL );
 
-int cpapi_meta 		( const char* slot_id, **kwargs);
+/**
+ * Update a credit slot counter
+ */
+int cpapi_counters 	( const char* slot_id, const char* counter, int value = 1 );
+
+/**
+ * Update a credit slot metadata
+ */
+int cpapi_meta 		( const char* slot_id, const char* key, const char* value );
 
 
 #ifdef __cplusplus
