@@ -30,6 +30,15 @@ function isinstalled {
   fi
 }
 
+# Dump error log and exit
+function dump_errorlog {
+	echo "error"
+	echo "--------------------"
+	cat $LOG_FILE
+	rm $LOG_FILE
+	exit 1
+}
+
 # Create a temporary file to use for logging
 LOG_FILE=$(mktemp)
 
@@ -74,12 +83,7 @@ if [ $USE_SCL -eq 1 ]; then
 
 		# Install the Python 2.7 Dynamic Software Collection repos
 		wget -qO- http://people.redhat.com/bkabrda/scl_python27.repo >> /etc/yum.repos.d/scl_python27.repo 2>LOG_FILE
-		if [ $? -ne 0 ]; then
-			echo "error"
-			cat $LOG_FILE
-			rm $LOG_FILE
-			exit 1
-		fi
+		[ $? -ne 0 ] && dump_errorlog
 
 		# Check if that worked out
 		if [ $(yum search python27 -q 2>&1 | grep -c "No matches found") -eq 0 ]; then
@@ -94,12 +98,8 @@ if [ $USE_SCL -eq 1 ]; then
 		if [ $(scl -l 2>&1 | grep -c python27) -eq 0 ]; then
 			# Install now
 			yum -y install python27 >$LOG_FILE 2>$LOG_FILE
-			if [ $? -ne 0 ]; then
-				echo "error"
-				cat $LOG_FILE
-				rm $LOG_FILE
-				exit 1
-			fi
+			[ $? -ne 0 ] && dump_errorlog
+			# We are good
 			echo "installed"
 		else
 			echo "ok"
@@ -121,12 +121,9 @@ if [ $USE_SCL -eq 1 ]; then
 
 		# Use easy_install to install pip
 		/opt/rh/python27/root/usr/bin/easy_install-2.7 pip >$LOG_FILE 2>$LOG_FILE
-		if [ $? -ne 0 ]; then
-			echo "error"
-			cat $LOG_FILE
-			rm $LOG_FILE
-			exit 1
-		fi
+		[ $? -ne 0 ] && dump_errorlog
+
+		# We are good
 		echo "installed"
 
 	else
@@ -148,12 +145,9 @@ if [ $USE_SCL -eq 1 ]; then
 		else
 			# Install now
 			yum -y install gcc >$LOG_FILE 2>$LOG_FILE
-			if [ $? -ne 0 ]; then
-				echo "error"
-				cat $LOG_FILE
-				rm $LOG_FILE
-				exit 1
-			fi
+			[ $? -ne 0 ] && dump_errorlog
+
+			# We are good
 			echo "installed"
 		fi
 
@@ -164,35 +158,25 @@ if [ $USE_SCL -eq 1 ]; then
 		else
 			# Install now
 			yum -y install httpd-devel >$LOG_FILE 2>$LOG_FILE
-			if [ $? -ne 0 ]; then
-				echo "error"
-				cat $LOG_FILE
-				rm $LOG_FILE
-				exit 1
-			fi
+			[ $? -ne 0 ] && dump_errorlog
 			echo "installed"
 		fi
 
 		# Use pip to install mod_wsgi
+		echo -n " - Installing mod_wsgi..."
 		${PYTHON_PIP} install mod_wsgi >$LOG_FILE 2>$LOG_FILE
-		if [ $? -ne 0 ]; then
-			echo "error"
-			cat $LOG_FILE
-			rm $LOG_FILE
-			exit 1
-		fi
+		[ $? -ne 0 ] && dump_errorlog
 
 		# If the file is still missing something went wrong
 		if [ ! -f ${APACHE_MODWSGI_SCL} ]; then
 			echo "error"
-			echo "ERROR: Unable to locate ${APACHE_MODWSGI_SCL}"
+			echo "ERROR: Unable to locate ${APACHE_MODWSGI_SCL} after installation"
 		fi
 
-		# We have it now
-		echo "installed"
-	else
-		echo "ok"
 	fi
+
+	# We have it now
+	echo "ok"
 
 else
 
@@ -203,12 +187,7 @@ else
 	else
 		# Install now
 		yum -y install mod_wsgi >$LOG_FILE 2>$LOG_FILE
-		if [ $? -ne 0 ]; then
-			echo "error"
-			cat $LOG_FILE
-			rm $LOG_FILE
-			exit 1
-		fi
+		[ $? -ne 0 ] && dump_errorlog
 		echo "installed"
 	fi
 
@@ -219,12 +198,7 @@ else
 	else
 		# Install now
 		yum -y install python-pip >$LOG_FILE 2>$LOG_FILE
-		if [ $? -ne 0 ]; then
-			echo "error"
-			cat $LOG_FILE
-			rm $LOG_FILE
-			exit 1
-		fi
+		[ $? -ne 0 ] && dump_errorlog
 		echo "installed"
 	fi
 
@@ -244,14 +218,9 @@ if [ -z "$DJANGO_VER" ]; then
 
 	# Use pip to install django
 	${PYTHON_PIP} install django >$LOG_FILE 2>$LOG_FILE
-	if [ $? -ne 0 ]; then
-		echo "error"
-		cat $LOG_FILE
-		rm $LOG_FILE
-		exit 1
-	fi
+	[ $? -ne 0 ] && dump_errorlog
 	echo "installed"
-	
+
 else
 	echo "ok ($DJANGO_VER)"
 fi
@@ -270,14 +239,31 @@ echo "ok"
 
 # Create a virtualenv on the 
 
+# If we have SCL enabled, use the MOD_WSGI provided by them
+if [ $USE_SCL -eq 1 ]; then
+
+	# Create the 'httpd-modwsgi.conf'
+	echo -n " - Creating httpd-modwsgi.conf..."
+	if [ ! -f "${DEPLOY_DIR}/conf/httpd-modwsgi.conf" ]; then
+		# Create config file
+		cat <<EOF > ${DEPLOY_DIR}/conf/httpd-modwsgi.conf
+LoadModule wsgi_module ${APACHE_MODWSGI_SCL}
+EOF
+		echo "ok"
+	else
+		echo "exists"
+	fi
+
+fi
+
 # Prepare creditpiggy HTTPD configuration and store it on config
-echo -n "Adding creditpiggy.conf..."
+echo -n " - Creating httod-creditpiggy.conf..."
 if [ ! -f "${DEPLOY_DIR}/conf/httpd-creditpiggy.conf" ]; then
 
 	# Create config file
 	cat <<EOF > ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 WSGIScriptAlias / ${PROJECT_DIR}/creditpiggy/wsgi.py
-WSGIPythonPath ${PROJECT_DIR}
+WSGIPythonPath ${PROJECT_DIR}:${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages
 
 <Directory ${PROJECT_DIR}/creditpiggy>
 	<Files wsgi.py>
@@ -292,14 +278,30 @@ else
 fi
 
 # Update SELinuxPolicy
-echo "Updating SELinux policies..."
-if [ ! -z "$(which semanage)" ]; then
+echo " - Checking for SELinux policies..."
+if [ $(ls -dlZ /home/creditpiggy/wwwroot | grep httpd_sys_content_t -c) -eq 0 ]; then
+
+	# Use semanage to change permissions 
+	if [ ! -z "$(which semanage)" ]; then
+		echo "error"
+		echo "--------------------"
+		echo "ERROR: Missing the 'semanage' utility. Please install 'policycoreutils-python' package!"
+		exit 1
+	fi
 
 	# Add read-only httpd content in the project directory
-	semanage fcontext -a -t httpd_sys_content_t "${PROJECT_DIR}(/.*)?"
+	semanage fcontext -a -t httpd_sys_content_t "${PROJECT_DIR}(/.*)?" >$LOG_FILE 2>$LOG_FILE
+	[ $? -ne 0 ] && dump_errorlog
 
 	# Update policy
-	restorecon -Rv ${PROJECT_DIR}
+	restorecon -Rv ${PROJECT_DIR} >$LOG_FILE 2>$LOG_FILE
+	[ $? -ne 0 ] && dump_errorlog
 
+	# We fixed them!
+	echo "fixed"
+
+else
+	echo "ok"
 fi
+
 
