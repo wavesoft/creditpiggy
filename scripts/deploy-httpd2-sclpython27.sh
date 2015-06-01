@@ -382,7 +382,7 @@ ensure_dir_policy ${PROJECT_DIR} httpd_sys_content_t
 
 # Link to config
 echo " - Checking apache configuration"
-for CFG_FILE in ${DEPLOY_DIR}/config/httpd-*.conf; do
+for CFG_FILE in ${DEPLOY_DIR}/conf/httpd-*.conf; do
 	echo -n " -- Symlink of $CFG_FILE..."
 	LINK_TO=${APACHE_CONF_DIR}/$(basename $CFG_FILE)
 	if [ ! -h ${LINK_TO} ]; then
