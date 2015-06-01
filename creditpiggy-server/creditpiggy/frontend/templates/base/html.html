@@ -1,13 +1,15 @@
+{% load staticfiles %}
 <!doctype html>
 <html>
   <head>
     <title>{% block title %}CreditPiggy{% endblock %}</title>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//bootswatch.com/paper/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static "frontend/css/theme.css" %}" rel="stylesheet">
     {% block head %}{% endblock %}
   </head>
   <body>
-    {% block content %}{% endblock %}
+    {% block body %}{% endblock %}
   </body>
 </html>

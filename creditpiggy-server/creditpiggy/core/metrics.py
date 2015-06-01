@@ -266,7 +266,7 @@ class Metrics:
 
 class MetricsModelMixin(object):
 	"""
-	An metrics Mix-in that when merged with a model provides
+	A metrics Mix-in that when merged with a model provides
 	a layer of metrics on it.
 
 	The metrics layer provides the interface to timeseries analysis,

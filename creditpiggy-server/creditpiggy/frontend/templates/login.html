@@ -1,14 +1,45 @@
-{% extends "base/html.html" %}
+{% extends "base/basic.html" %}
 {% load staticfiles %}
 
 {% block content %}
-    <div class="container">
-		<h1><img align="absmiddle" src="{% static "frontend/logo-icon.png" %}" /> CreditPiggy</h1>
-		<p>
-			<a class="btn btn-default" href="/login/google-oauth2/">Google Oauth2 Login</a>
-			<a class="btn btn-default" href="/login/twitter/">Twitter OAuth Login</a>
-			<a class="btn btn-default" href="/login/facebook/">Facebook OAuth2 Login</a>
-			<a class="btn btn-default" href="/login/live/">MSN Live OAuth2 Login</a>
-		</p>
-    </div>
+	<div class="header-spacer"></div>
+	<div class="row">
+		<div class="col-sm-6 piggylogo-big">
+			<img class="flat" src="{% static "frontend/img/logo-flat.png" %}" alt="CreditPiggy Logo" />
+			<img class="big" src="{% static "frontend/img/logo-big.png" %}" alt="CreditPiggy Logo" />
+		</div>
+		<div class="col-sm-6">
+
+			<div class="panel panel-default">
+		  		<div class="panel-heading">Login with social profile</div>
+		  		<div class="panel-body">
+					<div class="row">
+						<div class="col-sm-6">
+							<a class="btn btn-default btn-social btn-lg btn-block" href="/login/google-oauth2/"><i class="fa fa-google-plus-square"></i> Google</a>
+							<a class="btn btn-default btn-social btn-lg btn-block" href="/login/twitter/"><i class="fa fa-twitter-square"></i> Twitter</a>
+						</div>
+						<div class="col-sm-6 spacer-5">
+							<a class="btn btn-default btn-social btn-lg btn-block" href="/login/facebook/"><i class="fa fa-facebook-square"></i> Facebook</a>
+							<a class="btn btn-default btn-social btn-lg btn-block" href="/login/live/"><i class="fa fa-windows"></i> Live</a>
+						</div>
+					</div>
+			  </div>
+			</div>
+
+			<div class="panel panel-default">
+		  		<div class="panel-heading">Login with your e-mail</div>
+		  		<div class="panel-body">
+		  			<form>
+		  				<p>
+			  				<input type="text" class="form-control" placeholder="Enter your e-mail" id="inputEmail">
+			  			</p>
+			  			<p>
+							<button type="submit" class="btn btn-default btn-block" href="/login/facebook/">Login</button>
+						</p>
+					</form>
+		  		</div>
+		  	</div>
+
+		</div>
+	</div>
 {% endblock %}

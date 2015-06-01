@@ -1,30 +1,28 @@
-{% extends "base/html.html" %}
+{% extends "base/basic.html" %}
 {% block content %}
-    <div class="container">
-		<h1>Projects Contributed</h1>
-		
-		<table class="table">
+	<h1>Projects Contributed</h1>
+	
+	<table class="table">
+		<tr>
+			<th>Project</th>
+			<th>Credits</th>
+			<th>Action</th>
+		</tr>
+		{% if projects %}
+			{% for p in projects %}
 			<tr>
-				<th>Project</th>
-				<th>Credits</th>
-				<th>Action</th>
+				<td>{{ p.project.display_name }}</td>
+				<td>{{ p.credits }}</td>
+				<td>
+					<a href="/credits/?project={{ p.project.id }}" class="btn btn-primary btn-xs">See Slots</a>
+				</td>
 			</tr>
-			{% if projects %}
-				{% for p in projects %}
-				<tr>
-					<td>{{ p.project.display_name }}</td>
-					<td>{{ p.credits }}</td>
-					<td>
-						<a href="/credits/?project={{ p.project.id }}" class="btn btn-primary btn-xs">See Slots</a>
-					</td>
-				</tr>
-				{% endfor %}
-			{% else %}
-				<tr>
-					<td colspan="3" class="text-muted text-center">(No projects)</td>
-				</tr>
-			{% endif %}
-		</table>
+			{% endfor %}
+		{% else %}
+			<tr>
+				<td colspan="3" class="text-muted text-center">(No projects)</td>
+			</tr>
+		{% endif %}
+	</table>
 
-    </div>
 {% endblock %}

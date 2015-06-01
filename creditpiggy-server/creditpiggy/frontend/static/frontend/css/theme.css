@@ -1,0 +1,40 @@
+html {
+  height: 100%;
+}
+body {
+  background-image: url(../img/background.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100%;
+}
+.piggylogo-big > img {
+  width: 100%;
+}
+.piggylogo-big > img.flat {
+  display: block;
+}
+.piggylogo-big > img.big {
+  display: none;
+}
+.spacer-5 {
+  margin-top: 5px;
+}
+@media (min-width: 768px) {
+  .piggylogo-big > img.flat {
+    display: none;
+  }
+  .piggylogo-big > img.big {
+    display: block;
+  }
+  .header-spacer {
+    height: 120px;
+  }
+  .spacer-5 {
+    margin-top: 0;
+  }
+}
+.btn-social i {
+  float: left;
+  font-size: 1.5em;
+  margin-top: -3px;
+}
