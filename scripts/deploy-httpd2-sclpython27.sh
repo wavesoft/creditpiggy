@@ -508,7 +508,7 @@ if [ ! -d ${DEPLOY_DIR}/conf/etc ]; then
 	touch ${DEPLOY_DIR}/conf/etc/__init__.py
 fi
 # Copy sample configuration file
-[ ! -f ${DEPLOY_DIR}/conf/etc/config.py ] && cp ${PROJECT_DIR}/etc/settings.py.sample ${DEPLOY_DIR}/conf/etc/settings.py
+[ ! -f ${DEPLOY_DIR}/conf/etc/settings.py ] && cp ${PROJECT_DIR}/etc/settings.py.sample ${DEPLOY_DIR}/conf/etc/settings.py
 echo "ok"
 
 # ===================================
