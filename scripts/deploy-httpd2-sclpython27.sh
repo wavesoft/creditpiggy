@@ -33,8 +33,9 @@ function isinstalled {
 # Dump error log and exit
 function dump_errorlog {
 	echo "error"
+	echo "-----------------------------"
 	echo "Deploy aborted due to errors"
-	echo "--------------------"
+	echo "-----------------------------"
 	cat $LOG_FILE
 	rm $LOG_FILE
 	exit 1
@@ -97,7 +98,7 @@ echo "Deploying project:"
 # ===================================
 
 # Check python version
-echo -n " - Checking python version..."
+echo -n " - Checking system Python version..."
 PYTHON_VER=$(python --version 2>&1 | awk '{print $2}')
 HAS_PYTHON_27=$(echo $PYTHON_VER | grep -c '2.7')
 USE_SCL=0
@@ -296,7 +297,7 @@ else
 fi
 
 # Install project's dependencies in the sandbox
-echo -n " - Satisfying dependencies..."
+echo -n " - Satisfying project dependencies..."
 ${DEPLOY_DIR}/virtualenv/bin/pip install -r ${PROJECT_DIR}/requirements.txt >$LOG_FILE 2>$LOG_FILE
 [ $? -ne 0 ] && dump_errorlog
 echo "ok"
@@ -356,8 +357,13 @@ fi
 
 # Copy example configuration if missing
 echo -n " - Checking for site configuration..."
-[ ! -f ${DEPLOY_DIR}/conf/__init__.py ] && touch ${DEPLOY_DIR}/conf/__init__.py
-[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/config.py.example ${DEPLOY_DIR}/conf/config.py
+if [ ! -d ${DEPLOY_DIR}/conf/creditpiggy ]; then
+	# Create python module in 'creditpiggy' sub-directory
+	mkdir -p ${DEPLOY_DIR}/conf/creditpiggy
+	touch ${DEPLOY_DIR}/conf/creditpiggy/__init__.py
+fi
+# Copy sample configuration file
+[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/config.py.sample ${DEPLOY_DIR}/conf/creditpiggy/config.py
 echo "ok"
 
 # ===================================
