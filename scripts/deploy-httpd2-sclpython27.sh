@@ -317,6 +317,7 @@ fi
 # Create directory structure
 echo -n " - Creating directory structure..."
 mkdir -p ${DEPLOY_DIR}/logs
+mkdir -p ${DEPLOY_DIR}/run
 mkdir -p ${DEPLOY_DIR}/conf
 echo "ok"
 
@@ -446,8 +447,10 @@ EOF
 </Directory>
 
 # WSGI Application
-WSGIScriptAlias / ${PROJECT_DIR}/creditpiggy/wsgi.py
-WSGIPythonPath ${PROJECT_DIR}:${DEPLOY_DIR}/conf:${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages
+WSGISocketPrefix /var/run/wsgi
+WSGIDaemonProcess creditpiggy.cern.ch processes=2 threads=15 python-path=${PROJECT_DIR}:${DEPLOY_DIR}/conf:${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages
+WSGIProcessGroup creditpiggy.cern.ch
+WSGIScriptAlias / ${PROJECT_DIR}/creditpiggy/wsgi.py process-group=creditpiggy.cern.ch
 
 # Project directory permissions
 <Directory ${PROJECT_DIR}/creditpiggy>
