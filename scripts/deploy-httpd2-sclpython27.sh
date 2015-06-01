@@ -33,6 +33,7 @@ function isinstalled {
 # Dump error log and exit
 function dump_errorlog {
 	echo "error"
+	echo ""
 	echo "-----------------------------"
 	echo "Deploy aborted due to errors"
 	echo "-----------------------------"
@@ -40,6 +41,19 @@ function dump_errorlog {
 	rm $LOG_FILE
 	exit 1
 }
+
+# Dump error log and exit
+function dump_error {
+	echo "error"
+	echo ""
+	echo "-----------------------------"
+	echo "Deploy aborted due to errors"
+	echo "-----------------------------"
+	echo "ERROR: $*"
+	rm $LOG_FILE
+	exit 1
+}
+
 
 # Check SELinux policies on the specified folder
 function ensure_dir_policy {
@@ -50,12 +64,7 @@ function ensure_dir_policy {
 	if [ $(ls -dlZ ${DIR} | grep ${POLICY} -c) -eq 0 ]; then
 
 		# Use semanage to change permissions 
-		if [ -z "$(which semanage 2>/dev/null)" ]; then
-			echo "error"
-			echo "--------------------"
-			echo "ERROR: Missing the 'semanage' utility. Please install 'policycoreutils-python' package!"
-			exit 1
-		fi
+		[ -z "$(which semanage 2>/dev/null)" ] && dump_error "Missing the 'semanage' utility. Please install 'policycoreutils-python' package!"
 
 		# Add read-only httpd content in the project directory
 		semanage fcontext -a -t ${POLICY} "${DIR}(/.*)?" >$LOG_FILE 2>$LOG_FILE
@@ -206,10 +215,7 @@ if [ $USE_SCL -eq 1 ]; then
 		[ $? -ne 0 ] && dump_errorlog
 
 		# If the file is still missing something went wrong
-		if [ ! -f ${APACHE_MODWSGI_SCL} ]; then
-			echo "error"
-			echo "ERROR: Unable to locate ${APACHE_MODWSGI_SCL} after installation"
-		fi
+		[ ! -f ${APACHE_MODWSGI_SCL} ] && dump_error "Unable to locate ${APACHE_MODWSGI_SCL} after installation"
 
 	fi
 
@@ -245,10 +251,7 @@ else
 
 	# Use system pip utility
 	PYTHON_PIP=$(which pip 2>/dev/null)
-	if [ -z "$PYTHON_PIP" ]; then
-		echo "ERROR: Could not locate installed pip binary!"
-		exit 1
-	fi
+	[ -z "$PYTHON_PIP" ] && dump_error "Could not locate installed pip binary!"
 
 fi
 
@@ -370,9 +373,15 @@ echo "ok"
 # 4) Configure SELinux
 # ===================================
 
+# Update file permissions
+echo -n " - Setting deploy directory ownership..."
+chown -R apache:apache ${DEPLOY_DIR}
+chmod 0755 ${DEPLOY_DIR} ${DEPLOY_DIR}/logs ${DEPLOY_DIR}/conf ${DEPLOY_DIR}/conf/creditpiggy
+echo "ok"
+
 # Update SELinuxPolicy
-echo -n " - Checking SELinux policy in ${DEPLOY_DIR}..."
-ensure_dir_policy ${DEPLOY_DIR} httpd_sys_content_t
+echo -n " - Checking SELinux policy in ${DEPLOY_DIR}/logs..."
+ensure_dir_policy ${DEPLOY_DIR}/logs httpd_log_t
 echo -n " - Checking SELinux policy in ${PROJECT_DIR}..."
 ensure_dir_policy ${PROJECT_DIR} httpd_sys_content_t
 
@@ -396,6 +405,9 @@ done
 # ===================================
 
 # We are done!
+echo ""
+echo "++++++++++++++++++++"
 echo "Deploy completed"
+echo "++++++++++++++++++++"
 exit 0
 
