@@ -48,7 +48,12 @@ SECRET_KEY = '9_$bpiycshlc8!otn771kf4+kumlvx0sc(ynqfyb@6(g2*^)*o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 TEMPLATE_DEBUG = True
-ALLOWED_HOSTS = [ "creditpiggy.cern.ch" ]
+ALLOWED_HOSTS = [ ]
+
+# If we have debug attributes defined, apply from config
+if hasattr(_CONFIG_, 'DEBUG'):
+	DEBUG = _CONFIG_.DEBUG
+	ALLOWED_HOSTS = _CONFIG_.ALLOWED_HOSTS
 
 # Logging
 LOGGING =  _CONFIG_.LOGGING

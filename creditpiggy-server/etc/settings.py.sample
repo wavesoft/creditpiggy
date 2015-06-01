@@ -3,6 +3,10 @@
 import os
 import sys
 
+# Disable debugging
+DEBUG = False
+ALLOWED_HOSTS = [ "creditpiggy.cern.ch" ]
+
 # Google OAuth2 Credentials
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ""
