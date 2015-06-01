@@ -7,6 +7,7 @@ body {
   background-size: cover;
   background-attachment: fixed;
   height: 100%;
+  font-size: 16px;
 }
 .piggylogo-big > img {
   width: 100%;
@@ -28,7 +29,7 @@ body {
     display: block;
   }
   .header-spacer {
-    height: 120px;
+    height: 84px;
   }
   .spacer-5 {
     margin-top: 0;
@@ -38,4 +39,12 @@ body {
   float: left;
   font-size: 1.5em;
   margin-top: -3px;
+}
+.form-inline p input,
+.form-inline h1 input,
+.form-inline h2 input,
+.form-inline h3 input,
+.form-inline h4 input {
+  font-size: inherit;
+  vertical-align: 0px;
 }

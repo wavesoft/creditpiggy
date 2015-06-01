@@ -1,5 +1,22 @@
 {% extends "base/basic.html" %}
 {% block content %}
+
+    <div class="header-spacer"></div>
+
+    <div class="well">
+
+        <form class="form-inline">
+            <p class="lead">Welcome to CreditPiggy, <input value="{{ user.username }}" class="form-control"></input></p>
+        </form>
+        <p>
+            This is your virtual piggy-bank where you can keep the credits you collect from the on-line projects you contribute to.
+        </p>
+
+        <p><a class="btn btn-primary" href="/logout/">Logout</a></p>
+
+    </div>
+
+<!--
     <h1>CreditPiggy</h1>
     {% if user.is_authenticated %}
       <div class="user-details">
@@ -17,4 +34,6 @@
     </p>
 
   </div>
+-->
+
 {% endblock %}
