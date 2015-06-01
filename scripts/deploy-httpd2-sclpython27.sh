@@ -115,12 +115,14 @@ if [ -z "$APACHE_BIN" ]; then
 		[ $? -ne 0 ] && dump_errorlog
 		echo "installed"
 	fi
+else
+	echo "ok"
 fi
 
 # Check version
 echo -n " - Checking httpd version..."
 APACHE_VER=$(${APACHE_BIN} -V | grep 'Server version:' | awk -F'/' '{print $2}')
-[ -z "$APACHE_VER" ] &7 dump_error "Unable to identify Apache version!"
+[ -z "$APACHE_VER" ] && dump_error "Unable to identify Apache version!"
 APACHE_VER_MAJOR=$(echo $APACHE_VER | awk -F'.' '{print $1}')
 APACHE_VER_MINOR=$(echo $APACHE_VER | awk -F'.' '{print $2}')
 
