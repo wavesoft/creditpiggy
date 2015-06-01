@@ -413,11 +413,11 @@ if [ ! -f "${DEPLOY_DIR}/conf/httpd-creditpiggy.conf" ]; then
 	cat <<EOF > ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 
 # Static files
-Alias /static/frontend/ ${PROJECT_DIR}/creditpiggy/frontend/static/
+Alias /static/frontend/ ${PROJECT_DIR}/creditpiggy/frontend/static/frontend/
 Alias /static/admin/ ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/django/contrib/admin/static/admin/
 
 # Static file permissions
-<Directory ${PROJECT_DIR}/creditpiggy/frontend/static>
+<Directory ${PROJECT_DIR}/creditpiggy/frontend/static/frontend>
 EOF
 
 	# Version-specific configuration

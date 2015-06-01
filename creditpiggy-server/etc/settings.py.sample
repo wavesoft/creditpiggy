@@ -1,7 +1,6 @@
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Google OAuth2 Credentials
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
@@ -28,5 +27,20 @@ REDIS_KEYS_PREFIX = ""
 # Default Database
 DEFAULT_DATABASE = {
 	'ENGINE': 'django.db.backends.sqlite3',
-	'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+	'NAME': os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'db.sqlite3'),
+}
+
+# Logging set-up
+LOGGING = {
+	'version': 1,
+	'handlers': {
+		'console': {
+			'class': 'logging.StreamHandler',
+			'stream': sys.stdout,
+		}
+	},
+	'root': {
+		'handlers': ['console'],
+		'level': 'INFO'
+	}
 }

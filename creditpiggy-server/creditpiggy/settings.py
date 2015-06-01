@@ -47,14 +47,14 @@ SECRET_KEY = '9_$bpiycshlc8!otn771kf4+kumlvx0sc(ynqfyb@6(g2*^)*o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = [ "creditpiggy.cern.ch" ]
+
+# Logging
+LOGGING =  _CONFIG_.LOGGING
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
 DATABASES = {
 	'default': _CONFIG_.DEFAULT_DATABASE
 }
@@ -189,22 +189,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 
 ROOT_URLCONF = 'creditpiggy.urls'
-
 WSGI_APPLICATION = 'creditpiggy.wsgi.application'
-
-LOGGING = {
-	'version': 1,
-	'handlers': {
-		'console': {
-			'class': 'logging.StreamHandler',
-			'stream': sys.stdout,
-		}
-	},
-	'root': {
-		'handlers': ['console'],
-		'level': 'INFO'
-	}
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
