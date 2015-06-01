@@ -276,10 +276,8 @@ fi
 
 # Create directory structure
 echo -n " - Creating directory structure..."
-mkdir -p ${DEPLOY_DIR}/htdocs
 mkdir -p ${DEPLOY_DIR}/logs
 mkdir -p ${DEPLOY_DIR}/conf
-mkdir -p ${DEPLOY_DIR}/virtualenv
 echo "ok"
 
 # Create a virtualenv on the deploy directory
@@ -329,9 +327,20 @@ if [ ! -f "${DEPLOY_DIR}/conf/httpd-creditpiggy.conf" ]; then
 
 	# Create config file
 	cat <<EOF > ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+
+# Static files
+Alias /static/frontend ${PROJECT_DIR}/creditpiggy/frontend/static
+
+# Static file permissions
+<Directory ${PROJECT_DIR}/creditpiggy/frontend/static>
+Require all granted
+</Directory>
+
+# WSGI Application
 WSGIScriptAlias / ${PROJECT_DIR}/creditpiggy/wsgi.py
 WSGIPythonPath ${PROJECT_DIR}:${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages
 
+# Project directory permissions
 <Directory ${PROJECT_DIR}/creditpiggy>
 	<Files wsgi.py>
 	Require all granted
