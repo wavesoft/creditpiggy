@@ -99,6 +99,46 @@ echo "Deploying project:"
 # 1) Check environment
 # ===================================
 
+# Check if apache is installed
+echo -n " - Checking httpd installation..."
+APACHE_BIN=$(which httpd)
+if [ -z "$APACHE_BIN" ]; then
+	echo "missing"
+
+	# Install apache
+	echo -n " - Installing 'httpd'..."
+	if isinstalled "httpd"; then
+		echo "ok"
+	else
+		# Install now
+		yum -y install httpd-devel >$LOG_FILE 2>$LOG_FILE
+		[ $? -ne 0 ] && dump_errorlog
+		echo "installed"
+	fi
+fi
+
+# Check version
+echo -n " - Checking httpd version..."
+APACHE_VER=$(${APACHE_BIN} -V | grep 'Server version:' | awk -F'/' '{print $2}')
+[ -z "$APACHE_VER" ] &7 dump_error "Unable to identify Apache version!"
+APACHE_VER_MAJOR=$(echo $APACHE_VER | awk -F'.' '{print $1}')
+APACHE_VER_MINOR=$(echo $APACHE_VER | awk -F'.' '{print $2}')
+
+# Check if it's bigger than 2.4.0
+APACHE_240=0
+if [ $APACHE_VER_MAJOR -ge 2 ]; then
+	if [ $APACHE_VER_MINOR -ge 4 ]; then
+		APACHE_240=1
+	fi
+fi
+
+# Echo version
+if [ $APACHE_240 -eq 1 ]; then
+	echo $APACHE_VER " (>=2.4.0)"
+else
+	echo $APACHE_VER " (<2.4.0)"
+fi
+
 # Check python version
 echo -n " - Checking system Python version..."
 PYTHON_VER=$(python --version 2>&1 | awk '{print $2}')
@@ -287,9 +327,17 @@ if [ ! -d "${DEPLOY_DIR}/sources" ]; then
 	[ $? -ne 0 ] && dump_errorlog
 
 	# We are good
-	echo "ok"
+	GIT_HEAD=$(cd ${DEPLOY_DIR}; git rev-parse HEAD)
+	echo "ok (${GIT_HEAD})"
 else
-	echo "exists"
+
+	# Pull latest version
+	(cd ${DEPLOY_DIR}; git pull) >$LOG_FILE 2>$LOG_FILE
+	[ $? -ne 0 ] && dump_errorlog
+
+	# We are good
+	GIT_HEAD=$(cd ${DEPLOY_DIR}; git rev-parse HEAD)
+	echo "ok (${GIT_HEAD})"
 fi
 
 # Define PROJECT_DIR
@@ -340,7 +388,7 @@ fi
 echo -n " - Creating httod-creditpiggy.conf..."
 if [ ! -f "${DEPLOY_DIR}/conf/httpd-creditpiggy.conf" ]; then
 
-	# Create config file
+	# Create config file according to apache version
 	cat <<EOF > ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 
 # Static files
@@ -348,7 +396,18 @@ Alias /static/frontend ${PROJECT_DIR}/creditpiggy/frontend/static
 
 # Static file permissions
 <Directory ${PROJECT_DIR}/creditpiggy/frontend/static>
-Require all granted
+EOF
+
+	# Version-specific configuration
+	if [ $APACHE_240 -eq 1 ]; then
+		echo "Require all granted" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	else
+		echo "Order deny,allow" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+		echo "Allow from all" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	fi
+
+	# Continue configuration
+	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 </Directory>
 
 # WSGI Application
@@ -357,9 +416,20 @@ WSGIPythonPath ${PROJECT_DIR}:${DEPLOY_DIR}/conf:${DEPLOY_DIR}/virtualenv/lib/py
 
 # Project directory permissions
 <Directory ${PROJECT_DIR}/creditpiggy>
-	<Files wsgi.py>
-	Require all granted
-	</Files>
+<Files wsgi.py>
+EOF
+
+	# Version-specific configuration
+	if [ $APACHE_240 -eq 1 ]; then
+		echo "Require all granted" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	else
+		echo "Order deny,allow" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+		echo "Allow from all" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	fi
+
+	# Continue configuration
+	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+</Files>
 </Directory>
 EOF
 	echo "ok"
