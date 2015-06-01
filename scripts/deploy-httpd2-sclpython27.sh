@@ -90,13 +90,6 @@ LOG_FILE=$(mktemp)
 APACHE_CONF_DIR="/etc/httpd/conf.d"
 [ ! -d "${APACHE_CONF_DIR}" ] && echo "ERROR: Could not find conf.d in ${APACHE_CONF_DIR}!" && exit 1
 
-# Locate project directory
-PROJECT_DIR=$(pwd)
-if [ -f "${PROJECT_DIR}/$(basename $0)" ]; then
-	PROJECT_DIR=$(dirname $PROJECT_DIR)/creditpiggy-server
-fi
-[ ! -f "${PROJECT_DIR}/manage.py" ] && echo "ERROR: Could not find project dir in ${PROJECT_DIR}!" && exit 1
-
 # Expect a directory where to deploy the server
 DEPLOY_DIR=$1
 [ -z "${DEPLOY_DIR}" ] && echo "ERROR: Please specify a directory where to deploy the server!" && exit 1
@@ -285,6 +278,23 @@ mkdir -p ${DEPLOY_DIR}/logs
 mkdir -p ${DEPLOY_DIR}/conf
 echo "ok"
 
+# Check-out project in the /git directory
+echo -n " - Deploying project sources..."
+if [ ! -d "${DEPLOY_DIR}/sources" ]; then
+
+	# Extract project sources
+	git clone https://github.com/wavesoft/creditpiggy ${DEPLOY_DIR}/sources >$LOG_FILE 2>$LOG_FILE
+	[ $? -ne 0 ] && dump_errorlog
+
+	# We are good
+	echo "ok"
+else
+	echo "exists"
+fi
+
+# Define PROJECT_DIR
+PROJECT_DIR="${DEPLOY_DIR}/sources/creditpiggy-server"
+
 # Create a virtualenv on the deploy directory
 echo -n " - Creating virtualenv sandbox..."
 if [ ! -d "${DEPLOY_DIR}/virtualenv" ]; then
@@ -374,7 +384,7 @@ echo "ok"
 # ===================================
 
 # Update file permissions
-echo -n " - Setting deploy directory ownership..."
+echo -n " - Setting deploy directories ownership..."
 chown -R apache:apache ${DEPLOY_DIR}
 chmod 0755 ${DEPLOY_DIR} ${DEPLOY_DIR}/logs ${DEPLOY_DIR}/conf ${DEPLOY_DIR}/conf/creditpiggy
 echo "ok"
