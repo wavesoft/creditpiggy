@@ -329,16 +329,16 @@ if [ ! -d "${DEPLOY_DIR}/sources" ]; then
 	[ $? -ne 0 ] && dump_errorlog
 
 	# We are good
-	GIT_HEAD=$(cd ${DEPLOY_DIR}; git rev-parse HEAD)
+	GIT_HEAD=$(cd ${DEPLOY_DIR}/sources; git rev-parse HEAD)
 	echo "ok (${GIT_HEAD})"
 else
 
 	# Pull latest version
-	(cd ${DEPLOY_DIR}; git pull) >$LOG_FILE 2>$LOG_FILE
+	(cd ${DEPLOY_DIR}/sources; git pull) >$LOG_FILE 2>$LOG_FILE
 	[ $? -ne 0 ] && dump_errorlog
 
 	# We are good
-	GIT_HEAD=$(cd ${DEPLOY_DIR}; git rev-parse HEAD)
+	GIT_HEAD=$(cd ${DEPLOY_DIR}/sources; git rev-parse HEAD)
 	echo "ok (${GIT_HEAD})"
 fi
 
@@ -442,13 +442,13 @@ fi
 
 # Copy example configuration if missing
 echo -n " - Checking project configuration..."
-if [ ! -d ${DEPLOY_DIR}/conf/creditpiggy ]; then
-	# Create python module in 'creditpiggy' sub-directory
-	mkdir -p ${DEPLOY_DIR}/conf/creditpiggy
-	touch ${DEPLOY_DIR}/conf/creditpiggy/__init__.py
+if [ ! -d ${DEPLOY_DIR}/conf/etc ]; then
+	# Create python module in 'etc' sub-directory
+	mkdir -p ${DEPLOY_DIR}/conf/etc
+	touch ${DEPLOY_DIR}/conf/etc/__init__.py
 fi
 # Copy sample configuration file
-[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/creditpiggy/config.py.sample ${DEPLOY_DIR}/conf/creditpiggy/config.py
+[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/etc/settings.py.sample ${DEPLOY_DIR}/conf/etc/settings.py
 echo "ok"
 
 # ===================================

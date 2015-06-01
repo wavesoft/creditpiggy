@@ -35,7 +35,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Try to import config
 try:
-	import creditpiggy.config as _CONFIG_
+	import etc.settings as _CONFIG_
 except ImportError as e:
 	raise Exception("Apply your settings to config.py using config.py.example as reference!")
 
