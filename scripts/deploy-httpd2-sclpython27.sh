@@ -363,7 +363,7 @@ if [ ! -d ${DEPLOY_DIR}/conf/creditpiggy ]; then
 	touch ${DEPLOY_DIR}/conf/creditpiggy/__init__.py
 fi
 # Copy sample configuration file
-[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/config.py.sample ${DEPLOY_DIR}/conf/creditpiggy/config.py
+[ ! -f ${DEPLOY_DIR}/conf/config.py ] && cp ${PROJECT_DIR}/creditpiggy/config.py.sample ${DEPLOY_DIR}/conf/creditpiggy/config.py
 echo "ok"
 
 # ===================================
