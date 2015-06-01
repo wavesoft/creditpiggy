@@ -296,7 +296,7 @@ fi
 
 # Install project's dependencies in the sandbox
 echo -n " - Satisfying dependencies..."
-bash --rcfile "${DEPLOY_DIR}/virtualenv/bin/activate" -c "pip install -r ${PROJECT_DIR}/requirements.txt >$LOG_FILE 2>$LOG_FILE"
+${DEPLOY_DIR}/virtualenv/bin/pip install -r ${PROJECT_DIR}/requirements.txt >$LOG_FILE 2>$LOG_FILE
 [ $? -ne 0 ] && dump_errorlog
 echo "ok"
 
