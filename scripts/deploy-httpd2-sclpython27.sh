@@ -39,6 +39,39 @@ function dump_errorlog {
 	exit 1
 }
 
+# Check SELinux policies on the specified folder
+function ensure_dir_policy {
+	local DIR=$1
+	local POLICY=$2
+
+	# Check if policy already exists
+	if [ $(ls -dlZ ${DIR} | grep ${POLICY} -c) -eq 0 ]; then
+
+		# Use semanage to change permissions 
+		if [ -z "$(which semanage 2>/dev/null)" ]; then
+			echo "error"
+			echo "--------------------"
+			echo "ERROR: Missing the 'semanage' utility. Please install 'policycoreutils-python' package!"
+			exit 1
+		fi
+
+		# Add read-only httpd content in the project directory
+		semanage fcontext -a -t ${POLICY} "${DIR}(/.*)?" >$LOG_FILE 2>$LOG_FILE
+		[ $? -ne 0 ] && dump_errorlog
+
+		# Update policy
+		restorecon -Rv ${DIR} >$LOG_FILE 2>$LOG_FILE
+		[ $? -ne 0 ] && dump_errorlog
+
+		# We fixed them!
+		echo "fixed"
+		
+	else
+		echo "ok"
+	fi
+
+}
+
 # Create a temporary file to use for logging
 LOG_FILE=$(mktemp)
 
@@ -111,6 +144,9 @@ if [ $USE_SCL -eq 1 ]; then
 
 	# Export library directories for further use in this script
 	export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/rh/python27/root/lib:/opt/rh/python27/root/lib64:/opt/rh/python27/root/usr/lib:/opt/rh/python27/root/usr/lib64"
+
+	# Use python binary from scl
+	PYTHON_BIN="/opt/rh/python27/root/usr/bin/python2.7"
 
 	# Define the PIP utility to use for further processing
 	PYTHON_PIP="/opt/rh/python27/root/usr/bin/pip"
@@ -202,8 +238,11 @@ else
 		echo "installed"
 	fi
 
+	# Use python binary from system
+	PYTHON_BIN=$(which python)
+
 	# Use system pip utility
-	PYTHON_PIP=$(which pip 2>&1)
+	PYTHON_PIP=$(which pip 2>/dev/null)
 	if [ -z "$PYTHON_PIP" ]; then
 		echo "ERROR: Could not locate installed pip binary!"
 		exit 1
@@ -211,22 +250,28 @@ else
 
 fi
 
-# Install DJANGO if missing
-DJANGO_VER=$(${PYTHON_PIP} list | grep Django | awk '{print $2}' | tr -d '()')
-echo -n " - Checking for Django..."
-if [ -z "$DJANGO_VER" ]; then
+# Install Virtualenv if missing
+VIRTUALENV_VER=$(${PYTHON_PIP} list | grep virtualenv | awk '{print $2}' | tr -d '()')
+echo -n " - Checking for virtualenv..."
+if [ -z "$VIRTUALENV_VER" ]; then
 
-	# Use pip to install django
-	${PYTHON_PIP} install django >$LOG_FILE 2>$LOG_FILE
+	# Use pip to install virtualenv
+	${PYTHON_PIP} install virtualenv >$LOG_FILE 2>$LOG_FILE
 	[ $? -ne 0 ] && dump_errorlog
 	echo "installed"
 
 else
-	echo "ok ($DJANGO_VER)"
+	echo "ok ($VIRTUALENV_VER)"
+fi
+
+# Pick virtualenv binary
+PYTHON_VIRTUALENV=$(which virtualenv 2>/dev/null)
+if [ $USE_SCL -eq 1 ]; then
+	PYTHON_VIRTUALENV="/opt/rh/python27/root/usr/bin/virtualenv"
 fi
 
 # ===================================
-# 1) Setup directories
+# 1) Setup directories and files
 # ===================================
 
 # Create directory structure
@@ -237,7 +282,29 @@ mkdir -p ${DEPLOY_DIR}/conf
 mkdir -p ${DEPLOY_DIR}/virtualenv
 echo "ok"
 
-# Create a virtualenv on the 
+# Create a virtualenv on the deploy directory
+echo -n " - Creating virtualenv sandbox..."
+if [ ! -d "${DEPLOY_DIR}/virtualenv" ]; then
+
+	# Create a virtualenv sandbox
+	${PYTHON_VIRTUALENV} -p ${PYTHON_BIN} "${DEPLOY_DIR}/virtualenv" >$LOG_FILE 2>$LOG_FILE
+	[ $? -ne 0 ] && dump_errorlog
+
+	# We are good
+	echo "ok"
+else
+	echo "exists"
+fi
+
+# Install project's dependencies in the sandbox
+echo -n " - Satisfying dependencies..."
+bash --rcfile "${DEPLOY_DIR}/virtualenv/bin/activate" -c "pip install -r ${PROJECT_DIR}/requirements.txt >$LOG_FILE 2>$LOG_FILE"
+[ $? -ne 0 ] && dump_errorlog
+echo "ok"
+
+# ===================================
+# 3) Configure Apache
+# ===================================
 
 # If we have SCL enabled, use the MOD_WSGI provided by them
 if [ $USE_SCL -eq 1 ]; then
@@ -277,31 +344,12 @@ else
 	echo "exists"
 fi
 
+# ===================================
+# 4) Configure SELinux
+# ===================================
+
 # Update SELinuxPolicy
-echo " - Checking for SELinux policies..."
-if [ $(ls -dlZ /home/creditpiggy/wwwroot | grep httpd_sys_content_t -c) -eq 0 ]; then
-
-	# Use semanage to change permissions 
-	if [ ! -z "$(which semanage)" ]; then
-		echo "error"
-		echo "--------------------"
-		echo "ERROR: Missing the 'semanage' utility. Please install 'policycoreutils-python' package!"
-		exit 1
-	fi
-
-	# Add read-only httpd content in the project directory
-	semanage fcontext -a -t httpd_sys_content_t "${PROJECT_DIR}(/.*)?" >$LOG_FILE 2>$LOG_FILE
-	[ $? -ne 0 ] && dump_errorlog
-
-	# Update policy
-	restorecon -Rv ${PROJECT_DIR} >$LOG_FILE 2>$LOG_FILE
-	[ $? -ne 0 ] && dump_errorlog
-
-	# We fixed them!
-	echo "fixed"
-
-else
-	echo "ok"
-fi
+echo -n " - Checking SELinux policy in ${DEPLOY_DIR}..."
+ensure_dir_policy ${DEPLOY_DIR} httpd_sys_content_t
 
 
