@@ -294,7 +294,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 		self.redis = share_redis_connection()
 
 		# Enumerate all the housekeeping namespaces
-		self.namespaces = self.redis.smembers( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping" )
+		self.namespaces = list(self.redis.smembers( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping" ))
 
 		# Fetch all the namespace features in a pipeline, in addition
 		# with the counter values, since we are going to probe them later
