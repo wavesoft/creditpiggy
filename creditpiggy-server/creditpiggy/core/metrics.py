@@ -112,7 +112,7 @@ class Metrics:
 	Metrics management class
 	"""
 
-	def __init__(self, namespace):
+	def __init__(self, namespace, features):
 		"""
 		Create an instance of the metrics class
 		"""
@@ -133,7 +133,6 @@ class Metrics:
 
 		# Get all keys under this namespace
 		del_keys = self.redis.keys("%s*" % self.namespace)
-		print ">>> DELETING %r <<<" % del_keys
 
 		# Delete within a pipeline
 		pipe = self.redis.pipeline()
@@ -282,6 +281,9 @@ class MetricsModelMixin(object):
 	can be synced back to the database using the model snapshot.
 	"""
 
+	#: The features to apply on arbitrary metrics
+	METRICS_FEATURES = { }
+
 	#: The snapshot of the metrics data
 	#: (Uncomment this when the reflection is actually implemented)
 	#metricsSnapshotData = models.TextField(null=True, default=None)
@@ -321,7 +323,7 @@ class MetricsModelMixin(object):
 
 		# Create a metrics instance only once
 		if not hasattr(self,'_metricsInstance'):
-			self._metricsInstance = Metrics( self.metrics_ns() )
+			self._metricsInstance = Metrics( self.metrics_ns(), self.__class__.METRICS_FEATURES )
 
 		# Return an metrics class within the model's namespace
 		return self._metricsInstance
