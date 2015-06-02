@@ -17,19 +17,35 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-from django.conf.urls import patterns, include, url
+from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import login_required
 
-from creditpiggy.frontend.views import account
-from creditpiggy.frontend.views import ajax
+from creditpiggy.api.protocol import render_with_api, APIError
 
-urlpatterns = patterns('',
-	url(r'^$', 							account.home, 			name="frontend.home"),
-	url(r'^profile/$', 					account.profile, 		name="frontend.profile"),
-	url(r'^logout/$', 					account.logout, 		name="frontend.logout"),
-	url(r'^login/$', 					account.login, 			name="frontend.login"),
-	url(r'^status/$', 					account.status, 		name="frontend.status"),
-	url(r'^credits/$', 					account.credits, 		name="frontend.credits"),
-	url(r'^link/(?P<provider>[^/]+)/$',	account.link,			name="frontend.link"),
+@login_required()
+@render_with_api(context="profile.user.ajax", protocol="json")
+def handle(request, cmd):
+	"""
+	Handle AJAX user request
+	"""
 
-	url(r'^ajax/(?P<cmd>[^/]+)/$',		ajax.handle,			name="frontend.ajax.user")
-)
+	if cmd == "profile.set":
+
+		# Require post method
+		if request.method != 'POST':
+			raise APIError("Profile information are only updated via POST")
+
+		# Get parameters
+		u_args = request.proto.getAll()
+
+		# Update fields
+		if 'name' in u_args:
+			request.user.display_name = u_args['name']
+
+		# Save record
+		request.user.save()
+
+	else:
+		
+		raise APIError("Unknown command")

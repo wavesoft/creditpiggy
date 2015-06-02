@@ -119,21 +119,34 @@ def _get_supported_protocols():
 	# Return the dictionary
 	return _supported_protocols
 
-def render_with_api(context):
+def render_with_api(context=None, protocol=None):
 	"""
 	Decorator for automatically creating the appropriate protocol object
 	upon receiving the request and 
 	"""
 	def decorator(func):
 		@wraps(func)
-		def wrapper(request, api="json", *args, **kwargs):
+		def wrapper(request, *args, **kwargs):
 
 			# Skip if already processed
 			if hasattr(request, 'proto'):
 				return func(request, api, *args, **kwargs)
 
-			# Ensure the protocol exists and is valid
+			# Override 'api' if we have protocol defined
+			if not protocol is None:
+				api = protocol
+			else:
+				if 'api' in kwargs:
+					api = kwargs['api']
+				else:
+					api = None
+
+			# Get protocol
 			prot = _get_supported_protocols()
+			if api is None:
+				api = prot.keys()[0]
+
+			# Ensure the protocol exists and is valid
 			if not api in prot:
 				return HttpResponse(
 						"Unknown API protocol '%s' requested" % api,
@@ -148,7 +161,7 @@ def render_with_api(context):
 			try:
 
 				# Handle request
-				out = func(request, api, *args, **kwargs)
+				out = func(request, *args, **kwargs)
 
 				# Render with protocol renderer if result is a dict or None
 				if out is None:

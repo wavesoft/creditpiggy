@@ -22,6 +22,16 @@ from django.conf import settings
 from social.pipeline.social_auth import social_user
 from social.apps.django_app.default.models import UserSocialAuth
 
+def social_update_displayname(backend, user=None, *args, **kwargs):
+	"""
+	Update user's display name
+	"""
+
+	# If we don't have display name, create one
+	if not user.display_name:
+		user.display_name = "%s %s" % (user.first_name, user.last_name)
+		user.save()
+
 def social_user_withlink(backend, uid, request, user=None, *args, **kwargs):
 	"""
 	Simmilar function to 'social.pipeline.social_auth.social_user'

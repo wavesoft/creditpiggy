@@ -17,19 +17,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-from django.conf.urls import patterns, include, url
+def context(**extra):
+	"""
+	Common context generator for all templates below
+	"""
+	return dict({
 
-from creditpiggy.frontend.views import account
-from creditpiggy.frontend.views import ajax
-
-urlpatterns = patterns('',
-	url(r'^$', 							account.home, 			name="frontend.home"),
-	url(r'^profile/$', 					account.profile, 		name="frontend.profile"),
-	url(r'^logout/$', 					account.logout, 		name="frontend.logout"),
-	url(r'^login/$', 					account.login, 			name="frontend.login"),
-	url(r'^status/$', 					account.status, 		name="frontend.status"),
-	url(r'^credits/$', 					account.credits, 		name="frontend.credits"),
-	url(r'^link/(?P<provider>[^/]+)/$',	account.link,			name="frontend.link"),
-
-	url(r'^ajax/(?P<cmd>[^/]+)/$',		ajax.handle,			name="frontend.ajax.user")
-)
+	}, **extra)

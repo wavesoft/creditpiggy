@@ -21,17 +21,13 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+from creditpiggy.frontend.views import context
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
-
-def context(**extra):
-	"""
-	Common context generator for all templates below
-	"""
-	return dict({
-
-	}, **extra)
 
 def logout(request):
     """
@@ -66,6 +62,7 @@ def login(request):
 	# Return context
 	return context()
 
+@ensure_csrf_cookie
 @render_to("profile.html")
 def profile(request):
 	"""
@@ -111,3 +108,10 @@ def credits(request):
 		slots=slots
 		)
 
+@login_required()
+def ajax_user(request, cmd):
+	"""
+	AJAX For uer API
+	"""
+
+	
