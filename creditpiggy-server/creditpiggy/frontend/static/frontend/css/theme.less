@@ -1,7 +1,7 @@
 
 
 html {
-	height: 100%;
+	min-height: 100%;
 }
 
 body {
@@ -9,8 +9,12 @@ body {
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-attachment: fixed;
-	height: 100%;
+	min-height: 100%;
 	font-size: 16px;
+}
+
+.text-smaller {
+	font-size: 14px;
 }
 
 .piggy-logo-header {
@@ -83,4 +87,19 @@ body {
 			vertical-align: 0px;
 		}
 	}
+}
+
+.loading-indicator {
+	height: 30px;
+	background-image: url(../img/loading.gif);
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+
+div.icon-64 {
+	width: 64px;
+	height: 64px;
+	background-position: center center;
+	background-size: contain;
+	background-repeat: no-repeat;
 }

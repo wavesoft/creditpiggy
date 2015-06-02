@@ -1,0 +1,51 @@
+{% extends "base/p_content.html" %}
+{% load piggy_extras %}
+
+{% block head %}{% verbatim %}
+<script type="x-tmpl-mustache" id="tpl-project">
+<div class="media">
+	<div class="media-left">
+		<a href="/project/{{ id }}">
+      		<img class="media-object" style="width: 64px" src="{{ profileImage }}" alt="Project Image">
+		</a>
+	</div>
+	<div class="media-body">
+    	<h4 class="media-heading">{{ display_name }}</h4>
+    	<div>
+    		{{ desc }}
+    	</div>
+    	<br />
+    	<table class="table table-condensed">
+    		<tr>
+    			<th>Progress:</th>
+    			<td>30%</td>
+    		</tr>
+    		<tr>
+    			<th>Users:</th>
+    			<td>412</td>
+    		</tr>
+    	</table>
+	</div>
+</div>
+</script>
+{% endverbatim %}{% endblock %}
+
+{% block content %}
+
+   	<p class="lead">Projects participating in CreditPiggy</p>
+   	<p class="text-smaller">
+   		In the following list you can browse all the projects that are using CreditPiggy for keeping track of their user's contributions.
+   		If you are interested in any of them click on them to read more.
+   	</p>
+
+    <p>
+    	<a class="btn btn-default" href="/"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
+    </p>
+   	<hr />
+
+	<div class="x-paginated project-list" data-url="fetch.projects" data-template="#tpl-project">
+
+	</div>
+
+
+{% endblock %}

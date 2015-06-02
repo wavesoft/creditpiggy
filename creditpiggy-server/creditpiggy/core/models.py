@@ -48,6 +48,22 @@ def gen_token_key():
 	# Return a unique key
 	return key
 
+def to_dict(instance):
+	"""
+	Convert a model isinstance to dictionary
+	"""
+	opts = instance._meta
+	data = {}
+	for f in opts.concrete_fields + opts.many_to_many:
+		if isinstance(f, models.ManyToManyField):
+			if instance.pk is None:
+				data[f.name] = []
+			else:
+				data[f.name] = list(f.value_from_object(instance).values_list('pk', flat=True))
+		else:
+			data[f.name] = f.value_from_object(instance)
+	return data
+
 ###################################################################
 # Database Models
 ###################################################################

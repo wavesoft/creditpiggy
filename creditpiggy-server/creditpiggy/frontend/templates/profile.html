@@ -1,66 +1,59 @@
-{% extends "base/basic.html" %}
+ {% extends "base/p_content.html" %}
 {% load staticfiles %}
 {% block content %}
 
-    <div class="piggy-logo-header">
-      <div class="logo">
-        <img src="{% static "frontend/img/logo-120.png" %}" />
-      </div>
-    </div>
-
-    <div class="well">
-
-        <form class="form-inline">
-            <p class="lead">Welcome to CreditPiggy, <input data-url="profile.set" name="name" value="{{ user.display_name }}" class="form-control x-blur-update"></input></p>
-        </form>
-        <p>
-            This is your virtual piggy-bank where you can keep the credits you collect from the on-line projects you contribute to.
-        </p>
+    <form class="form-inline">
+        <p class="lead">Welcome to CreditPiggy, <input data-url="profile.set" name="name" value="{{ user.display_name }}" class="form-control x-blur-update"></input></p>
+    </form>
+    <p>
+        This is your virtual piggy-bank where you can keep the credits you collect from the on-line projects you contribute to.
+    </p>
 
 
-        <div class="row">
-          <div class="col-sm-4">
+    <div class="row">
+      <div class="col-sm-4">
 
-            <div class="panel panel-default" href="#">
-              <div class="panel-body text-center">
-                <h4>Projects</h4>
-                <p>
-                  Many amazing projects are awaiting for you to explore.
-                </p>
-                <p><a class="btn btn-default" href="/logout/">Explore</a></p>        
-              </div>
-            </div>
-
-          </div>
-          <div class="col-sm-4">
-
-            <div class="panel panel-default" href="#">
-              <div class="panel-body text-center">
-                <p>
-                  Join a project
-                </p>
-                <p><a class="btn btn-default" href="/logout/">Logout</a></p>        
-              </div>
-            </div>
-
-          </div>
-          <div class="col-sm-4">
-
-            <div class="panel panel-default" href="#">
-              <div class="panel-body text-center">
-                <p>
-                  Join a project
-                </p>
-                <p><a class="btn btn-default" href="/logout/">Logout</a></p>        
-              </div>
-            </div>
-
+        <div class="panel panel-default" href="#">
+          <div class="panel-body text-center">
+            <h4>Projects</h4>
+            <p>
+              Many amazing projects are awaiting for you to explore.
+            </p>
+            <p><a class="btn btn-default" href="{% url 'frontend.projects' %}">Explore</a></p>        
           </div>
         </div>
 
-        <p><a class="btn btn-primary" href="/logout/">Logout</a></p>
+      </div>
+      <div class="col-sm-4">
 
+        <div class="panel panel-default" href="#">
+          <div class="panel-body text-center">
+            <h4>About me</h4>
+            <p>
+              Overview of what you have contributed to all the projects.
+            </p>
+            <p><a class="btn btn-default" href="/logout/">Dashboard</a></p>        
+          </div>
+        </div>
+
+      </div>
+      <div class="col-sm-4">
+
+        <div class="panel panel-default" href="#">
+          <div class="panel-body text-center">
+            <h4>Leaderboards</h4>
+            <p>
+              See who is leading
+            </p>
+            <p><a class="btn btn-default" href="/logout/">Leaderboard</a></p>        
+          </div>
+        </div>
+
+      </div>
     </div>
+
+    <p><a class="btn btn-primary" href="/logout/">Logout</a></p>
+
 
 <!--
     <h1>CreditPiggy</h1>

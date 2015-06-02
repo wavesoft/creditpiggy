@@ -20,16 +20,21 @@
 from django.conf.urls import patterns, include, url
 
 from creditpiggy.frontend.views import account
+from creditpiggy.frontend.views import projects
 from creditpiggy.frontend.views import ajax
 
 urlpatterns = patterns('',
-	url(r'^$', 							account.home, 			name="frontend.home"),
-	url(r'^profile/$', 					account.profile, 		name="frontend.profile"),
-	url(r'^logout/$', 					account.logout, 		name="frontend.logout"),
-	url(r'^login/$', 					account.login, 			name="frontend.login"),
-	url(r'^status/$', 					account.status, 		name="frontend.status"),
-	url(r'^credits/$', 					account.credits, 		name="frontend.credits"),
-	url(r'^link/(?P<provider>[^/]+)/$',	account.link,			name="frontend.link"),
+	url(r'^$', 								account.home, 			name="frontend.home"),
+	url(r'^profile/$', 						account.profile, 		name="frontend.profile"),
+	url(r'^logout/$', 						account.logout, 		name="frontend.logout"),
+	url(r'^login/$', 						account.login, 			name="frontend.login"),
+	url(r'^status/$', 						account.status, 		name="frontend.status"),
+	url(r'^credits/$', 						account.credits, 		name="frontend.credits"),
+	url(r'^projects/$', 					projects.list,	 		name="frontend.projects"),
+	url(r'^project/(?P<id>[0-9]+)/$', 		projects.details,	 	name="frontend.details"),
+	url(r'^link/(?P<provider>[^/]+)/$',		account.link,			name="frontend.link"),
 
-	url(r'^ajax/(?P<cmd>[^/]+)/$',		ajax.handle,			name="frontend.ajax.user")
+	url(r'^ajax/profile\.(?P<cmd>[^/]+)/$',	ajax.profile,			name="frontend.ajax.profile"),
+	url(r'^ajax/fetch\.(?P<cmd>[^/]+)/$',	ajax.fetch,				name="frontend.ajax.fetch"),
+
 )
