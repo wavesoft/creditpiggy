@@ -2,3 +2,4 @@ requests>=2.5.0
 redis>=2.9.0
 python-social-auth>=0.2.9
 Django>=1.8.0
+django-tinymce>=1.5.3

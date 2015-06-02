@@ -27,7 +27,8 @@ urlpatterns = patterns('',
 
     # - Frameworks ----
 	url(r'^admin/', 	include(admin.site.urls)),
-    url('', include('social.apps.django_app.urls', namespace='social'))
+    url(r'^tinymce/', 	include('tinymce.urls')),
+    url('', 			include('social.apps.django_app.urls', namespace='social'))
     # -----------------
 
 )

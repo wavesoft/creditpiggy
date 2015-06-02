@@ -148,7 +148,19 @@ class CPRemoteAPIServer(threading.Thread):
 
 				# Send a bulk command
 				self.logger.info("Flushing %i commands on stack" % cmd_counter)
-				self.send("batch/bulk", stacks)
+				try:
+					self.send("batch/bulk", stacks)
+				except requests.ConnectionError as e:
+					self.logger.warn("Could not connect to CreditPiggy server!")
+					# Re-schedule flush of stacks
+					flush_time = time.time() + 10
+					continue
+				except Exception as e:
+					self.logger.exception(e)
+					self.logger.error("Exception %s while connecting to CreditPiggy server" % e.__class__.__name__)
+					# Re-schedule flush of stacks
+					flush_time = time.time() + 10
+					continue
 
 				# Reset variables
 				stacks = {}
@@ -158,7 +170,11 @@ class CPRemoteAPIServer(threading.Thread):
 		# Send stacks if pending
 		if stacks:
 			self.logger.warn("Flushing %i commands on stack" % cmd_counter)
-			self.send("batch/bulk", stacks)
+			try:
+				self.send("batch/bulk", stacks)
+			except Exception as e:
+				self.logger.exception(e)
+				self.logger.error("Exception %s while connecting to CreditPiggy server" % e.__class__.__name__)
 
 	def shutdown(self):
 		"""

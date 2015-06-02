@@ -82,6 +82,24 @@ CREDITPIGGY_HOUSEKEEPING_CLASSES = (
 	'creditpiggy.core.models.ModelHousekeeping',
 )
 
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+
+# Static root
+STATIC_ROOT = os.path.join(BASE_DIR, "creditpiggy/static")
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
+
+# TinyMCE Configuration
+TINYMCE_JS_URL = STATIC_URL + "pub/js/tinymce/tinymce.min.js"
+TINYMCE_DEFAULT_CONFIG = {
+    'plugins': "table,spellchecker,paste,searchreplace",
+    'theme': "modern",
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 10,
+}
+
 # - Social Auth ---
 
 # Authentication user model
@@ -148,6 +166,7 @@ INSTALLED_APPS = (
 	'creditpiggy.core',
 	'creditpiggy.api',
 	'creditpiggy.frontend',
+    'tinymce',
 
 	# - Social Auth ---
 	'social.apps.django_app.default',
@@ -211,8 +230,3 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.7/howto/static-files/
-
-STATIC_URL = '/static/'
