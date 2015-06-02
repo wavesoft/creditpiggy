@@ -17,95 +17,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import json
+import time
 
 from django.db import models
 from django.conf import settings
 
 from creditpiggy.core.redis import share_redis_connection
 from creditpiggy.core.housekeeping import HousekeepingTask, periodical
-
-class MetricsHousekeeping(HousekeepingTask):
-	"""
-	Metrics housekeeping class
-	"""
-
-	def __init__(self):
-		"""
-		Initialize the housekeeping class
-		"""
-
-		# Get a connection to the REDIS server
-		self.redis = share_redis_connection()
-
-		# Enumerate all the housekeeping namespaces
-		self.namespaces = self.redis.smembers( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping" )
-
-	def merge(self, src, dst):
-		"""
-		Merge all counters from src to dst
-		"""
-
-		for k,v in src.iteritems():
-
-			# Create missing keys
-			if not k in dst:
-				dst[k] = 0
-
-			# Add values
-			dst[k] = int(dst[k]) + int(v)
-
-		# Return dst
-		return dst
-
-	@periodical(hours=1, priority=1)
-	def rotate_hourly(self):
-		"""
-		Rotate hourly data
-		"""
-
-		# Iterate over the namespaces
-		for ns in self.namespaces:
-
-			# Get counters
-			counters = self.redis.hgetall( "%s/counters" % ns )
-
-			# Push counters to 'hourly'
-			hourly = self.merge(
-					counters,
-					self.redis.hgetall( "%s/series/hourly" % ns )
-				)
-
-			# Update counters
-			if hourly:
-				self.redis.hmset( "%s/series/hourly" % ns, hourly )
-
-	@periodical(days=1, priority=2)
-	def rotate_daily(self):
-		"""
-		Rotate daily data
-		"""
-		print "-- Periodical: Daily"
-
-	@periodical(days=7, priority=3)
-	def rotate_weekly(self):
-		"""
-		Rotate weekly data
-		"""
-		print "-- Periodical: Weekly"
-
-	@periodical(days=28, priority=4)
-	def rotate_monthly(self):
-		"""
-		Rotate monthly (4-week) data
-		"""
-		print "-- Periodical: Monthly"
-
-	@periodical(days=364, priority=5)
-	def rotate_yearly(self):
-		"""
-		Rotate yearly (13 x 4-week months) data
-		"""
-		print "-- Periodical: Yearly"
 
 class Metrics:
 	"""
@@ -123,8 +42,40 @@ class Metrics:
 		# Keep a reference of the namespace to operate upon
 		self.namespace = settings.REDIS_KEYS_PREFIX + namespace
 
-		# Keep the occupied namespace in redis for housekeeping
-		self.redis.sadd( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping", self.namespace )
+		# Apply for housekeeping if we have features
+		if features:
+
+			# Register for housekeeping
+			self.redis.sadd( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping", self.namespace )
+
+			# Create a features dict
+			feature_dict = { }
+			for k,v in features.iteritems():
+
+				# Iterate over lists
+				if isinstance(v, tuple) or isinstance(v, list):
+					for feat in v:
+						# Initialize feature
+						if not feat in feature_dict:
+							feature_dict[feat] = []
+
+						# Include the variable
+						feature_dict[feat].append(k)
+
+				# Otherwise use single value
+				else:
+					# Initialize feature
+					if not v in feature_dict:
+						feature_dict[v] = []
+
+					# Include the variable
+					feature_dict[v].append(k)
+
+			# Store what metrics belong in which features:
+			# { 'feature': [ 'metric' ] }
+			#
+			self.redis.hmset( "%s/features" % self.namespace, feature_dict )
+
 
 	def delete(self):
 		"""
@@ -282,7 +233,7 @@ class MetricsModelMixin(object):
 	"""
 
 	#: The features to apply on arbitrary metrics
-	METRICS_FEATURES = { }
+	METRICS_FEATURES = None
 
 	#: The snapshot of the metrics data
 	#: (Uncomment this when the reflection is actually implemented)
@@ -327,4 +278,245 @@ class MetricsModelMixin(object):
 
 		# Return an metrics class within the model's namespace
 		return self._metricsInstance
+
+
+class MetricFeaturesHousekeeping(HousekeepingTask):
+	"""
+	Housekeeping for the metric features
+	"""
+
+	def __init__(self):
+		"""
+		Initialize the housekeeping class
+		"""
+
+		# Get a connection to the REDIS server
+		self.redis = share_redis_connection()
+
+		# Enumerate all the housekeeping namespaces
+		self.namespaces = self.redis.smembers( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping" )
+
+		# Fetch all the namespace features in a pipeline, in addition
+		# with the counter values, since we are going to probe them later
+		# one way or another (since they are participating in housekeeping)
+		p = self.redis.pipeline()
+		for ns in self.namespaces:
+			p.hgetall( "%s/features" % ns )
+			p.hgetall( "%s/counters" % ns )
+		ans = p.execute()
+
+		# Process features
+		i = -1
+		self.features = { }
+		for ft in ans[0::2]:
+			i += 1
+			ns = self.namespaces[i]
+
+			# Process metrics in the appropriate features
+			for feat, metric in ft.iteritems():
+
+				# Create feature if missing
+				if not feat in self.features:
+					self.features[feat] = {}
+				if not ns in self.features[feat]:
+					self.features[feat][ns] = []
+
+				# Store metrics in namespace
+				self.features[feat][ns].append( metric )
+
+		# Process counters
+		i = -1
+		self.counters = { }
+		for cnt in ans[1::2]:
+			i += 1
+			self.counters[self.namespaces[i]] = cnt
+
+	def merge(self, src, dst):
+		"""
+		Merge all counters from src to dst
+		"""
+		for k,v in src.iteritems():
+
+			# Create missing keys
+			if not k in dst:
+				dst[k] = 0
+
+			# Add values
+			dst[k] = int(dst[k]) + int(v)
+
+		# Return dst
+		return dst
+
+	def ring_rotate(self, pipeline, values, key, trim):
+		"""
+		Insert an item in the ring and trim excess items
+		"""
+
+		# Insert values and timestamp in the list
+		pipeline.lpush( "%s/val" % key, json.dumps(values) )
+		pipeline.lpush( "%s/ts" % key, time.time() )
+
+		# Chomp list
+		pipeline.ltrim( "%s/val" % key, 0, trim )
+		pipeline.ltrim( "%s/ts" % key, 0, trim )
+
+	@periodical(hours=1, priority=1)
+	def rotate_hourly(self):
+		"""
+		Rotate hourly data
+		"""
+
+		# Handle all metrics with feature 'ts_hourly'
+		if not 'ts_hourly' in self.features:
+			return
+
+		# Create a redis pipeline since all the operations
+		# are write-only
+		pipeline = self.redis.pipeline()
+
+		# Perform operations
+		for ns, metrics in self.features['ts_hourly'].iteritems():
+
+			# Get only the specified metrics from the counters
+			c = self.counters[ns]
+			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+
+			# Manage ring rotation
+			self.ring_rotate(
+				pipeline,				# Use the allocated pipeline
+				metrics,				# Put values of counter
+				"%s/ts/hourly" % ns,	# In that ring
+				24						# Having that many items at maximum
+				)
+
+		# Execute pipeline
+		pipeline.execute()
+
+	@periodical(days=1, priority=2)
+	def rotate_daily(self):
+		"""
+		Rotate daily data
+		"""
+
+		# Handle all metrics with feature 'ts_daily'
+		if not 'ts_daily' in self.features:
+			return
+
+		# Create a redis pipeline since all the operations
+		# are write-only
+		pipeline = self.redis.pipeline()
+
+		# Perform operations
+		for ns, metrics in self.features['ts_daily'].iteritems():
+
+			# Get only the specified metrics from the counters
+			c = self.counters[ns]
+			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+
+			# Manage ring rotation
+			self.ring_rotate(
+				pipeline,				# Use the allocated pipeline
+				metrics,				# Put values of counter
+				"%s/ts/daily" % ns,		# In that ring
+				7						# Having that many items at maximum
+				)
+
+		# Execute pipeline
+		pipeline.execute()
+
+	@periodical(days=7, priority=3)
+	def rotate_weekly(self):
+		"""
+		Rotate weekly data
+		"""
+
+		# Handle all metrics with feature 'ts_weekly'
+		if not 'ts_weekly' in self.features:
+			return
+
+		# Create a redis pipeline since all the operations
+		# are write-only
+		pipeline = self.redis.pipeline()
+
+		# Perform operations
+		for ns, metrics in self.features['ts_weekly'].iteritems():
+
+			# Get only the specified metrics from the counters
+			c = self.counters[ns]
+			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+
+			# Manage ring rotation
+			self.ring_rotate(
+				pipeline,				# Use the allocated pipeline
+				metrics,				# Put values of counter
+				"%s/ts/weekly" % ns,	# In that ring
+				4						# Having that many items at maximum
+				)
+
+		# Execute pipeline
+		pipeline.execute()
+
+	@periodical(days=28, priority=4)
+	def rotate_monthly(self):
+		"""
+		Rotate monthly (4-week) data
+		"""
+
+		# Handle all metrics with feature 'ts_monthly'
+		if not 'ts_monthly' in self.features:
+			return
+
+		# Create a redis pipeline since all the operations
+		# are write-only
+		pipeline = self.redis.pipeline()
+
+		# Perform operations
+		for ns, metrics in self.features['ts_monthly'].iteritems():
+
+			# Get only the specified metrics from the counters
+			c = self.counters[ns]
+			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+
+			# Manage ring rotation
+			self.ring_rotate(
+				pipeline,				# Use the allocated pipeline
+				metrics,				# Put values of counter
+				"%s/ts/monthly" % ns,	# In that ring
+				13						# Having that many items at maximum
+				)
+
+		# Execute pipeline
+		pipeline.execute()
+
+	@periodical(days=364, priority=5)
+	def rotate_yearly(self):
+		"""
+		Rotate yearly (13 x 4-week months) data
+		"""
+
+		# Handle all metrics with feature 'ts_yearly'
+		if not 'ts_yearly' in self.features:
+			return
+
+		# Create a redis pipeline since all the operations
+		# are write-only
+		pipeline = self.redis.pipeline()
+
+		# Perform operations
+		for ns, metrics in self.features['ts_yearly'].iteritems():
+
+			# Get only the specified metrics from the counters
+			c = self.counters[ns]
+			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+
+			# Manage ring rotation
+			self.ring_rotate(
+				pipeline,				# Use the allocated pipeline
+				metrics,				# Put values of counter
+				"%s/ts/yearly" % ns,	# In that ring
+				5						# Having that many items at maximum
+				)
+
+		# Execute pipeline
+		pipeline.execute()
 
