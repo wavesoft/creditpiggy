@@ -63,7 +63,5 @@ creditpiggy-daemon/creditpiggy.conf
 
 *.pid
 *.~vsd
-
 *.rdb
-
 *.tmp
