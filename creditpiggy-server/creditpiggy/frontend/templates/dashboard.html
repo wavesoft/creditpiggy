@@ -32,16 +32,17 @@
    		In the following list you can browse all the projects that are using CreditPiggy for keeping track of their user's contributions.
    		If you are interested in any of them click on them to read more.
    	</p>
+
     <p>
+      <div class="btn-group pull-right" role="group" aria-label="sort-order">
+        <a href="{% url 'frontend.dashboard' page='overview' %}" class="btn {% if page == 'overview' %}btn-info{% else %}btn-default{% endif %}">Overview</a>
+        <a href="{% url 'frontend.dashboard' page='projects' %}" class="btn {% if page == 'projects' %}btn-info{% else %}btn-default{% endif %}">Projects</a>
+        <a href="{% url 'frontend.dashboard' page='details' %}" class="btn {% if page == 'details' %}btn-info{% else %}btn-default{% endif %}">Details</a>
+      </div>
       <a class="btn btn-default" href="/"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
     </p>
     
-    <ul class="nav nav-tabs">
-      <li role="presentation" {% if page == 'overview' %}class="active"{% endif %}><a href="{% url 'frontend.dashboard' page='overview' %}">Overview</a></li>
-      <li role="presentation" {% if page == 'projects' %}class="active"{% endif %}><a href="{% url 'frontend.dashboard' page='projects' %}">Projects</a></li>
-      <li role="presentation" {% if page == 'details' %}class="active"{% endif %}><a href="{% url 'frontend.dashboard' page='details' %}">Details</a></li>
-    </ul>
-    <br />
+    <hr />
 
     {% if page == 'overview' %}
     {% elif page == 'projects' %}
