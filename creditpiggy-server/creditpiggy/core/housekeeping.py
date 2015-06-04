@@ -97,7 +97,7 @@ class HousekeepingTask:
 
 				# Store method in periodicals
 				periodicals.append({
-						"id": "p-" + self.__class__.__module__ + "." + self.__class__.__name__ + "." + name,
+						"id": self.__class__.__module__ + "." + self.__class__.__name__ + "." + name,
 						"method": method.__get__(self, self.__class__),
 						"interval": method._interval,
 						"priority": method._priority,

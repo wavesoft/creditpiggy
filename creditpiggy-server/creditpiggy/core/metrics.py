@@ -99,6 +99,53 @@ class Metrics:
 		pipe.execute()
 
 	######################################
+	# Timeseries
+	######################################
+
+	def timeseries(self, seriesName, metric=None):
+		"""
+		Using this function you can fetch the timeseries stored
+		under the particular key by the housekeeping functions.
+		"""
+
+		# Return timestamps and values
+		p = self.redis.pipeline()
+		p.lrange( "%s/ts/%s/ts" % (self.namespace, seriesName), 0, -1 )
+		p.lrange( "%s/ts/%s/val" % (self.namespace, seriesName), 0, -1 )
+		ans = p.execute()
+
+		print ">> Got lrange of: %s/ts/%s/ts" % (self.namespace, seriesName)
+
+		# If metric is 'none', return all metrics as dict
+		if metric is None:
+
+			# Return a tuple with ( [ timestamp, .. ], [ {key: value}, .. ] )
+			return (ans[0], ans[1])
+
+		# If metric is a string, convert it to list
+		if isinstance(metric, str):
+			metric = [metric]
+
+		# If metric is not a list, raise an error
+		if not isinstance(metric, list) and not isinstance(metric, tuple):
+			raise ValueError("Accepting only string, list, tuple or None as values of metric")
+
+		# Otherwise, process values
+		vals = []
+		for m in metric:
+			series = []
+			for d in ans[1]:
+				values = json.loads(d)
+				if not m in values:
+					series.append(0)
+				else:
+					series.append(values[m])
+			vals.append(series)
+
+		# Return a tuple with ( [ timestamp, .. ], [ [values, ..], [ values, ..] .. ] )
+		return (ans[0], vals)
+
+	######################################
 	# Counters
 	######################################
 
@@ -302,13 +349,12 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 		p = self.redis.pipeline()
 		for ns in self.namespaces:
 			p.hgetall( "%s/features" % ns )
-			p.hgetall( "%s/counters" % ns )
 		ans = p.execute()
 
 		# Process features
 		i = -1
 		self.features = { }
-		for ft in ans[0::2]:
+		for ft in ans:
 			i += 1
 			ns = self.namespaces[i]
 
@@ -322,12 +368,23 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 					self.features[feat][ns] = []
 
 				# Store metrics in namespace
-				self.features[feat][ns].append( metric )
+				self.features[feat][ns] += eval(metric)
+
+	def run(self, delta):
+		"""
+		When the task is about to run, update counters
+		"""
+
+		# Get all namespace counters
+		p = self.redis.pipeline()
+		for ns in self.namespaces:
+			p.hgetall( "%s/counters" % ns )
+		ans = p.execute()
 
 		# Process counters
 		i = -1
 		self.counters = { }
-		for cnt in ans[1::2]:
+		for cnt in ans:
 			i += 1
 			self.counters[self.namespaces[i]] = cnt
 
@@ -360,7 +417,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 		pipeline.ltrim( "%s/val" % key, 0, trim )
 		pipeline.ltrim( "%s/ts" % key, 0, trim )
 
-	@periodical(hours=1, priority=1)
+	@periodical(seconds=10, priority=1)
 	def rotate_hourly(self):
 		"""
 		Rotate hourly data
@@ -379,7 +436,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 
 			# Get only the specified metrics from the counters
 			c = self.counters[ns]
-			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
 			# Manage ring rotation
 			self.ring_rotate(
@@ -392,7 +449,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 		# Execute pipeline
 		pipeline.execute()
 
-	@periodical(days=1, priority=2)
+	@periodical(seconds=30, priority=2)
 	def rotate_daily(self):
 		"""
 		Rotate daily data
@@ -411,7 +468,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 
 			# Get only the specified metrics from the counters
 			c = self.counters[ns]
-			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
 			# Manage ring rotation
 			self.ring_rotate(
@@ -443,7 +500,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 
 			# Get only the specified metrics from the counters
 			c = self.counters[ns]
-			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
 			# Manage ring rotation
 			self.ring_rotate(
@@ -475,7 +532,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 
 			# Get only the specified metrics from the counters
 			c = self.counters[ns]
-			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
 			# Manage ring rotation
 			self.ring_rotate(
@@ -507,7 +564,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 
 			# Get only the specified metrics from the counters
 			c = self.counters[ns]
-			metrics = dict([ c[x] for x in list(set(ns.keys()) & set(metrics)) ])
+			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
 			# Manage ring rotation
 			self.ring_rotate(

@@ -123,6 +123,8 @@ class TEXTProtocol(APIProtocol):
 					self.data = {}
 					parts = self.request.body.split(",")
 					for p in parts:
+						if not '=' in p:
+							raise APIError("Malformed protocol data in POST")
 						kv = p.split("=")
 						self.data[kv[0]] = kv[1]
 

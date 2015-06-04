@@ -139,7 +139,7 @@ def render_with_api(context=None, protocol=None):
 				if 'api' in kwargs:
 					api = kwargs['api']
 				else:
-					api = None
+					api = 'json'
 
 			# Get protocol
 			prot = _get_supported_protocols()

@@ -1,0 +1,56 @@
+{% extends "base/p_content.html" %}
+{% load staticfiles %}
+{% load piggy_extras %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'lib/js/jquery.flot.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'lib/js/jquery.flot.time.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'lib/js/jquery.flot.resize.min.js' %}"></script>
+{% endblock %}
+
+{% block head %}{% verbatim %}
+<script type="x-tmpl-mustache" id="tpl-project">
+  <div class="col-sm-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ display_name }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="text-center">
+          <img src="{{ profile_image }}" class="img-circle" style="width: 80px; height: 80px;" />
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+{% endverbatim %}{% endblock %}
+
+{% block content %}
+
+   	<p class="lead">Here you can see all your contributions</p>
+   	<p class="text-smaller">
+   		In the following list you can browse all the projects that are using CreditPiggy for keeping track of their user's contributions.
+   		If you are interested in any of them click on them to read more.
+   	</p>
+    <p>
+      <a class="btn btn-default" href="/"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
+    </p>
+    
+    <ul class="nav nav-tabs">
+      <li role="presentation" {% if page == 'overview' %}class="active"{% endif %}><a href="{% url 'frontend.dashboard' page='overview' %}">Overview</a></li>
+      <li role="presentation" {% if page == 'projects' %}class="active"{% endif %}><a href="{% url 'frontend.dashboard' page='projects' %}">Projects</a></li>
+      <li role="presentation" {% if page == 'details' %}class="active"{% endif %}><a href="{% url 'frontend.dashboard' page='details' %}">Details</a></li>
+    </ul>
+    <br />
+
+    {% if page == 'overview' %}
+    {% elif page == 'projects' %}
+    <div class="x-paginated row" data-url="fetch.projects" data-template="#tpl-project">
+    </div>
+    {% elif page == 'details' %}
+    <div class="x-graphs row" data-url="graph.user" data-plot-class="col-sm-4">
+    </div>
+    {% endif %}
+
+
+{% endblock %}

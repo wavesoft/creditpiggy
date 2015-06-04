@@ -6,14 +6,24 @@
 <div class="media">
 	<div class="media-left">
 		<a href="/project/{{ id }}">
-      		<img class="media-object" style="width: 64px" src="{{ profile_image }}" alt="Project Image">
+      		<img class="media-object" style="width: 80px" src="{{ profile_image }}" alt="Project Image">
 		</a>
 	</div>
 	<div class="media-body">
     	<h4 class="media-heading">{{ display_name }}</h4>
-    	<div>
-    		{{ desc }}
+    	<div class="collapsible">
+        <input id="col_{{ id }}" type="checkbox" checked="checked" />
+        <div>
+      		{{{ desc }}}
+        </div>
+        <label for="col_{{ id }}"><span></span></label>
     	</div>
+      <p>
+        <a href="/project/{{ id }}" class="btn btn-sm btn-primary">More details</a>
+        {{#project_url}}
+        <a href="{{ project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
+        {{/project_url}}
+      </p>
     	<br />
     	<table class="table table-condensed">
     		<tr>
@@ -39,7 +49,12 @@
    	</p>
 
     <p>
-    	<a class="btn btn-default" href="/"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
+      <div class="btn-group pull-right" role="group" aria-label="sort-order">
+        <button type="button" class="btn btn-info">Promoted</button>
+        <button type="button" class="btn btn-default">Most active</button>
+        <button type="button" class="btn btn-default">Newest</button>
+      </div>
+      <a class="btn btn-default" href="/"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
     </p>
    	<hr />
 

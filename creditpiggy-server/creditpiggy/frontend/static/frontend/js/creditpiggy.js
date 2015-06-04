@@ -51,7 +51,12 @@ cpjs.initialize = function( context ) {
 
 	// Register x-paginated elements
 	$(".x-paginated").each((function(i,e) {
-		this.dyn_paginator($(e));
+		new this.dyn_paginator($(e));
+	}).bind(this))
+
+	// Register x-graphs elements
+	$(".x-graphs").each((function(i,e) {
+		new this.dyn_graphs($(e));
 	}).bind(this))
 
 }
@@ -149,10 +154,10 @@ cpjs.dyn_paginator = function( hostDOM ) {
 	this.page = 1;
 	this.numpages = 0;
 	this.loading = false;
-	var fetch_next_page = (function() {
+	var fetch_next_page = (function(cb_more) {
 
 		// Do not fetch more pages than accepted
-		if ((this.numpages != 0) && (this.page >= this.numpages))
+		if ((this.numpages != 0) && (this.page > this.numpages))
 			return;
 
 		// If already loading, do nothing
@@ -180,7 +185,11 @@ cpjs.dyn_paginator = function( hostDOM ) {
 			}
 
 			// Increment page
-			this.page += 1;
+			this.page += 1;			
+
+			// We are ready for more if needed
+			if (cb_more)
+				setTimeout(cb_more, 100);
 
 		}).bind(this))
 		.fail((function(data) {
@@ -204,12 +213,21 @@ cpjs.dyn_paginator = function( hostDOM ) {
 
 		// Get DOM position and size
 		var bottom_edge = this.container.offset().top + this.container.height(),
-			scroll_edge = $("body").height() + $("body").scrollTop();
+			scroll_edge = $(window).height() + $("body").scrollTop();
 
 		// Return TRUE if bottom_edge is above scroll_edge
 		return (bottom_edge <= scroll_edge);
 
 	}).bind(this);
+
+	// Helper for infinitely looping until edge
+	// is not visible any more.
+	var load_next = function() {
+		// If edge is reached, fetch next page
+		if (edge_reached()) {
+			fetch_next_page(load_next);
+		}
+	};
 
 	// Bind on window scroll
 	$(window).scroll(function() {
@@ -217,14 +235,117 @@ cpjs.dyn_paginator = function( hostDOM ) {
 		// Don't do anything if already loading
 		if (this.loading) return;
 
-		// If edge is reached, fetch next page
-		if (edge_reached())
-			fetch_next_page();
+		// Fetch next page
+		load_next();
 
 	});
 
 	// Fetch initial page
-	fetch_next_page();
+	load_next();
+
+}
+
+/**
+ * Dynamic graph handler for creating one or more plots inside the specified host dom,
+ * dynamically updating them with a periodical function.
+ */
+cpjs.dyn_graphs = function( hostDOM ) {
+
+	// Fetch details
+	this.url = hostDOM.data('url');
+	this.metrics = hostDOM.data('metrics');
+	this.ts = hostDOM.data('ts');
+	this.plotClass = hostDOM.data('plot-class');
+
+	// Loading indicator
+	this.loading = false;
+	this.chartists = [];
+
+	// Store hostDOM
+	this.hostDOM = hostDOM;
+
+	// The function to call in order to generate plots
+	var gen_plots = (function() {
+
+		// If already loading, quit
+		if (this.loading) return;
+		this.loading = true;
+
+		// Send request
+		$.ajax({
+			method 		: "GET",
+			url 		: "/ajax/"+this.url+'/',
+			data 		: { 'metrics': this.metrics, 'ts': this.ts },
+			dataType	: "json"
+		}).done((function(data) {
+
+			// Get plots
+			var data_plots = data.plots;
+
+			// Process results
+			var i =0;
+			for (var plot_name in data_plots) {
+				var plot = data_plots[plot_name];
+
+				// Prepare plot layout
+				var plotDOM = $('<div class="plot '+this.plotClass+'"></div>').appendTo(this.hostDOM),
+					innerPlot = $('<div class="plot-graph"></div>').appendTo(plotDOM);
+
+				// Prepare plot data
+				var plots = [];
+				for (var i=0; i<plot.series.length; i++) {
+
+					// Record values
+					var values = [];
+					for (var j=0; j<plot.series[i].length; j++) {
+						values.push([ plot.labels[j], plot.series[i][j] ]);
+					}
+
+					// create plot
+					plots.push({
+						'data': values,
+						'lines': { show: true }
+					});
+
+				}
+
+				console.log(plots);
+
+				// Create plot
+				$.plot( innerPlot, plots, {
+					'grid': {
+						'minBorderMargin': 40
+					},
+					'xaxis': {
+						'mode': "time",
+						'timeformat': "%H:%S",
+					},
+					'yaxis': {
+						'tickFormatter': function (val, axis) {
+							return parseInt(val);
+						}
+					}
+				});
+
+				// Increment index
+				i += 1;
+			}
+
+		}).bind(this))
+		.fail((function(data) {
+			// Log error
+			console.error("AJAX: Graph error", data);
+		}).bind(this))
+		.always((function() {
+			// When we are done performing I/O, remove loading indicator
+			this.loading = false;
+			//this.loadingIndicator.detach();
+		}).bind(this));
+
+	}).bind(this);
+
+	// Generate plots
+	gen_plots();
 
 }
 

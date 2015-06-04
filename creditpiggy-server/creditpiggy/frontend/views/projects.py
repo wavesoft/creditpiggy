@@ -48,3 +48,13 @@ def details(request, id=0):
 
 	# Return context
 	return context()
+
+@login_required()
+@render_to("dashboard.html")
+def dashboard(request, page):
+	"""
+	Display project dashboard
+	"""
+
+	# Return context
+	return context( page=page )

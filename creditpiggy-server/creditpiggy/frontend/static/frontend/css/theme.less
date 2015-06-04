@@ -1,9 +1,28 @@
 
+.transition(@params) {
+ -webkit-transition: @params;
+    -moz-transition: @params;
+    -o-transition: @params;
+       transition: @params; }
 
+.transform(@params) {
+ -webkit-transform: @params;
+    -moz-transform: @params;
+    -o-transform: @params;
+       transform: @params; }
+
+// =================================
+//  GENERAL STRUCTURES
+// =================================
+
+// Fixes for background image
+// ---------------------------------
 html {
 	min-height: 100%;
 }
 
+// Body configurations
+// ---------------------------------
 body {
 	background-image: url(../img/background.jpg);
 	background-repeat: no-repeat;
@@ -13,10 +32,8 @@ body {
 	font-size: 16px;
 }
 
-.text-smaller {
-	font-size: 14px;
-}
-
+// Horizontal piggy logo helper
+// ---------------------------------
 .piggy-logo-header {
     height: 80px;
     position: relative;
@@ -33,6 +50,9 @@ body {
     }
 }
 
+// Composition for structuring login
+// page elements
+// ---------------------------------
 .piggylogo-big {
 	> img {
 		width: 100%;
@@ -44,11 +64,9 @@ body {
 		}
 	}
 }
-
 .spacer-5 {
 	margin-top: 5px;
 }
-
 @media (min-width: 768px) {
 
 	.piggylogo-big {
@@ -72,6 +90,20 @@ body {
 
 }
 
+// Plots
+// ---------------------------------
+div.plot {
+	div.plot-graph {
+		height: 200px;
+	}
+}
+
+// =================================
+//  ELEMENT HELPERS
+// =================================
+
+// Pull-left icons of social buttons
+// ---------------------------------
 .btn-social {
 	i {
 		float: left;
@@ -80,6 +112,8 @@ body {
   	}
 }
 
+// In-line form in header text
+// ---------------------------------
 .form-inline {
 	p, h1, h2, h3, h4 {
 		input {
@@ -89,6 +123,14 @@ body {
 	}
 }
 
+// Smaller text
+// ---------------------------------
+.text-smaller {
+	font-size: 14px;
+}
+
+// Loading indicator 
+// ---------------------------------
 .loading-indicator {
 	height: 30px;
 	background-image: url(../img/loading.gif);
@@ -96,10 +138,38 @@ body {
 	background-position: center center;
 }
 
-div.icon-64 {
-	width: 64px;
-	height: 64px;
-	background-position: center center;
-	background-size: contain;
-	background-repeat: no-repeat;
+// =================================
+//  COMPLEX COMPONENTS
+// =================================
+
+// Utility for auto-collapsing body
+// ---------------------------------
+div.collapsible {
+	> div {
+		.transition( max-height 0.25s ease-in );
+		overflow: hidden;
+		max-height: 500px;
+	}
+	> input {
+		height: 1px; width: 1px;
+		position: absolute;
+		visibility: hidden;
+		&:checked + div {
+			.transition( max-height 0.25s ease-out );
+			max-height: 65px;
+		}
+		&:checked + div + label > span:after {
+			content: "Read more";
+		}
+	}
+	> label {
+		float: right;
+		> span::after {
+			content: "Read less";
+			font-size: 14px;
+			color: #29ABE2;
+			cursor: pointer;
+		}
+	}
 }
+

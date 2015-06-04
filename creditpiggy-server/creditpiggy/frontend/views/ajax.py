@@ -86,6 +86,27 @@ def build_filter( request, accept=None ):
 	# Return a Q object that contains the specified KWargs
 	return Q(**kwargs)
 
+def build_ts_labels(timestamps, interval=1, format="%d/%m/%Y %H:%M:%S"):
+	"""
+	Create string labels for the specified timestamps, keepong
+	only the ones every [interval].
+	"""
+
+	i = 0
+	labels = []
+	for ts in timestamps:
+
+		# Add blanks if missing interval
+		if (i % interval) != 0:
+			labels.append("")
+			continue
+
+		# Parse timestamp
+		t = time.localtime(float(ts))
+		labels.append(time.strftime(format, t))
+
+	# Return labels
+	return labels
 
 #######################################################
 # View functions
@@ -153,15 +174,64 @@ def fetch(request, cmd):
 		# Render pages
 		elmList = []
 		for p in pprojects:
-			elmList.append( to_dict(p) )
 
-		time.sleep(0.25)
+			# Get all project achievements
+			elmList.append( to_dict(p) )
 
 		# Return projects
 		return {
 			'list': elmList,
 			'page': page,
 			'pages': paginator.num_pages
+		}
+
+	elif cmd == "dashboard":
+
+		# Query projects that I participated
+		PiggyProject.objects.all().select_related("school")
+
+	else:
+		raise APIError("Unknown command")
+
+@login_required()
+@render_with_api(context="frontend.ajax.graph", protocol="json")
+def graph(request, cmd):
+	"""
+	Graph data for various metrics
+	"""
+
+	# User graphs
+	# -------------------------------
+	if cmd == "user":
+
+		# Get user metrics
+		u_metrics = request.user.metrics()
+
+		# What to observe
+		obs_metrics = [ 'credits' ]
+		obs_legends = [ 'Credits' ]
+		obs_tss = [ 'hourly', 'daily', 'weekly', 'monthly' ]
+
+		# Compile response
+		ans = {}
+		for ts_name in obs_tss:
+
+			# Get timeseries
+			(ts, val) = u_metrics.timeseries(ts_name, metric=obs_metrics)
+
+			# Convert timeseries to milliseconds
+			ts = map(lambda x: int(float(x)*1000), ts)
+
+			# Store in response
+			ans[ts_name] = {
+				"labels" : ts,
+				"series" : val,
+				"legends": obs_legends
+			}
+
+		# Return values
+		return {
+			'plots': ans
 		}
 
 	else:

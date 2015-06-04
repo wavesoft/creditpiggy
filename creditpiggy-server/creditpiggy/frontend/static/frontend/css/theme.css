@@ -9,9 +9,6 @@ body {
   min-height: 100%;
   font-size: 16px;
 }
-.text-smaller {
-  font-size: 14px;
-}
 .piggy-logo-header {
   height: 80px;
   position: relative;
@@ -52,6 +49,9 @@ body {
     margin-top: 0;
   }
 }
+div.plot div.plot-graph {
+  height: 200px;
+}
 .btn-social i {
   float: left;
   font-size: 1.5em;
@@ -65,16 +65,45 @@ body {
   font-size: inherit;
   vertical-align: 0px;
 }
+.text-smaller {
+  font-size: 14px;
+}
 .loading-indicator {
   height: 30px;
   background-image: url(../img/loading.gif);
   background-repeat: no-repeat;
   background-position: center center;
 }
-div.icon-64 {
-  width: 64px;
-  height: 64px;
-  background-position: center center;
-  background-size: contain;
-  background-repeat: no-repeat;
+div.collapsible > div {
+  -webkit-transition: max-height 0.25s ease-in;
+  -moz-transition: max-height 0.25s ease-in;
+  -o-transition: max-height 0.25s ease-in;
+  transition: max-height 0.25s ease-in;
+  overflow: hidden;
+  max-height: 500px;
+}
+div.collapsible > input {
+  height: 1px;
+  width: 1px;
+  position: absolute;
+  visibility: hidden;
+}
+div.collapsible > input:checked + div {
+  -webkit-transition: max-height 0.25s ease-out;
+  -moz-transition: max-height 0.25s ease-out;
+  -o-transition: max-height 0.25s ease-out;
+  transition: max-height 0.25s ease-out;
+  max-height: 65px;
+}
+div.collapsible > input:checked + div + label > span:after {
+  content: "Read more";
+}
+div.collapsible > label {
+  float: right;
+}
+div.collapsible > label > span::after {
+  content: "Read less";
+  font-size: 14px;
+  color: #29ABE2;
+  cursor: pointer;
 }

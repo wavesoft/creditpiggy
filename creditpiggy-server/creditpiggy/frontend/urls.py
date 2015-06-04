@@ -30,11 +30,14 @@ urlpatterns = patterns('',
 	url(r'^login/$', 						account.login, 			name="frontend.login"),
 	url(r'^status/$', 						account.status, 		name="frontend.status"),
 	url(r'^credits/$', 						account.credits, 		name="frontend.credits"),
+	url(r'^link/(?P<provider>[^/]+)/$',		account.link,			name="frontend.link"),
+
+	url(r'^dashboard/(?P<page>[^/]+)/$', 	projects.dashboard,		name="frontend.dashboard"),
 	url(r'^projects/$', 					projects.list,	 		name="frontend.projects"),
 	url(r'^project/(?P<id>[0-9]+)/$', 		projects.details,	 	name="frontend.details"),
-	url(r'^link/(?P<provider>[^/]+)/$',		account.link,			name="frontend.link"),
 
 	url(r'^ajax/profile\.(?P<cmd>[^/]+)/$',	ajax.profile,			name="frontend.ajax.profile"),
 	url(r'^ajax/fetch\.(?P<cmd>[^/]+)/$',	ajax.fetch,				name="frontend.ajax.fetch"),
+	url(r'^ajax/graph\.(?P<cmd>[^/]+)/$',	ajax.graph,				name="frontend.ajax.graph"),
 
 )

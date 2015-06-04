@@ -92,11 +92,10 @@ STATICFILES_DIRS = (
 )
 
 # TinyMCE Configuration
-TINYMCE_JS_URL = STATIC_URL + "pub/js/tinymce/tinymce.min.js"
+TINYMCE_JS_URL = STATIC_URL + "lib/js/tinymce/tinymce.min.js"
 TINYMCE_DEFAULT_CONFIG = {
     'plugins': "table,spellchecker,paste,searchreplace",
     'theme': "modern",
-    'cleanup_on_startup': True,
     'custom_undo_redo_levels': 10,
 }
 

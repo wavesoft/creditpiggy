@@ -18,8 +18,9 @@
 ################################################################
 
 import uuid
-import random
 import time
+import json
+import random
 
 from django.db import models, transaction
 from django.contrib.auth.models import AbstractUser
@@ -76,6 +77,14 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	can be linked to this profile.
 	"""
 
+	#: Metrics information
+	METRICS_FEATURES = {
+		"credits" 			: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/allocated"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/completed"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/discarded"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+	}
+
 	#: How the user will be visible to the public
 	display_name = models.CharField(max_length=200, default="")
 
@@ -96,6 +105,14 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	THe project ID
 	"""
 
+	#: Metrics information
+	METRICS_FEATURES = {
+		"credits" 			: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/allocated"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/completed"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/discarded"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+	}
+
 	#: Project UUID
 	uuid = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
 		help_text="A unique ID identifying the specified project")
@@ -111,6 +128,9 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	#: The icon of this project
 	profile_image = models.CharField(max_length=1024, 
 		help_text="Project's profile image")
+
+	#: Project URL
+	project_url = models.URLField(default="", blank=True)
 
 	def __unicode__(self):
 		return u"%s" % self.display_name
@@ -201,24 +221,32 @@ class CreditSlot(MetricsModelMixin, models.Model):
 	project = models.ForeignKey( PiggyProject )
 
 	# The credits associated to this slot
-	credits = models.IntegerField(null=True, default=None)
+	credits = models.IntegerField(null=True, default=None, blank=True)
 
 	# The minimum boundary of credits associated to this slot
-	minBound = models.IntegerField(null=True, default=None)
+	minBound = models.IntegerField(null=True, default=None, blank=True)
 
 	# The maximum boundary of credits associated to this slot
-	maxBound = models.IntegerField(null=True, default=None)
+	maxBound = models.IntegerField(null=True, default=None, blank=True)
 
 	#: The status of the slot
 	status = models.IntegerField( choices=STATUS, default=FREE )
 
 	#: Discard reason
-	reason = models.CharField(max_length=32, null=True, default=None) 
+	reason = models.CharField(max_length=32, null=True, default=None, blank=True) 
 
 class Campaign(MetricsModelMixin, models.Model):
 	"""
 	Campaigns are 
 	"""
+	
+	#: Metrics information
+	METRICS_FEATURES = {
+		"credits" 			: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/allocated"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/completed"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+		"slots/discarded"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
+	}
 
 	#: Name of the campaign
 	name = models.CharField(max_length=200, default="",
@@ -240,6 +268,49 @@ class Campaign(MetricsModelMixin, models.Model):
 	#: True if the campaign is activated
 	active = models.BooleanField(default=False)
 
+	@classmethod
+	def ofProject(cls, project):
+		"""
+		Return all the Campaigns containing this project
+		"""
+
+		# Get time
+		now = time.time()
+
+		# Get all valid campaigns for this project
+		return CampaignProject.objects.filter( 
+			campaign__start_time__gte=now, 
+			campaign__end_time__lte=now,
+			campaign__active=True,
+			campaign__published=True,
+			project=project
+			)
+
+class CampaignUserCredit(MetricsModelMixin, models.Model):
+	"""
+	Credits given to a user for the participation in the campaign
+	"""
+
+	#: The user
+	user = models.ForeignKey( PiggyUser )
+
+	#: The project
+	campaign = models.ForeignKey( Campaign )
+
+	#: The credits of the user in this model
+	credits = models.IntegerField(default=0)
+
+class CampaignProject(models.Model):
+	"""
+	ManyToManyField relation to projects
+	"""
+
+	#: The campaign
+	campaign = models.ForeignKey(Campaign)
+
+	#: The project
+	project = models.ForeignKey(PiggyProject)
+
 class Achievement(models.Model):
 	"""
 	A target goal that can be achieved 
@@ -254,13 +325,28 @@ class Achievement(models.Model):
 		help_text="Achievement short text")
 
 	#: Visual details: Icon of the achievement badge
-	v_icon = models.CharField(max_length=200, default="")
+	icon = models.CharField(max_length=200, default="")
 
 	#: Visual details: Color of the achievement badge
-	v_color = models.CharField(max_length=24, default="#662D91")
+	color = models.CharField(max_length=24, default="#662D91")
 
 	#: Visual details: Shape of the frame
-	v_frame = models.CharField(max_length=8, default="circle")
+	frame_type = models.CharField(max_length=8, default="circle")
+
+	#: How many times this achievement can be given
+	instances = models.IntegerField(default=0)
+
+	#: The time after which it expires
+	expires = models.IntegerField(default=0)
+
+	#: Metrics required for this achievement as a JSON field
+	metrics = models.TextField(default="{}")
+
+	def getMetrics(self):
+		"""
+		Return metrics json
+		"""
+		return json.loads(self.metrics)
 
 class ProjectAchievement(models.Model):
 	"""
@@ -284,16 +370,34 @@ class CampaignAchievement(models.Model):
 	#: The relevant achievement
 	achievement = models.ForeignKey(Achievement)
 
-class UserAchievement(models.Model):
+class AwardedUserProjectAchievement(models.Model):
 	"""
-	Achievements that a user has obtained
+	Project achievements awarded to a user
 	"""
 
 	#: The relevant project
 	user = models.ForeignKey(PiggyUser)
 
 	#: The relevant achievement
-	achievement = models.ForeignKey(Achievement)
+	achievement = models.ForeignKey(ProjectAchievement)
+
+	#: The time it was achieved
+	achieved_at = models.IntegerField(null=True, default=None)
+
+class AwardedUserCampaignAchievement(models.Model):
+	"""
+	Campaign achievements awarded to a user
+	"""
+
+	#: The relevant project
+	user = models.ForeignKey(PiggyUser)
+
+	#: The relevant achievement
+	achievement = models.ForeignKey(CampaignAchievement)
+
+	#: The time it was achieved
+	achieved_at = models.IntegerField(null=True, default=None)
+
 
 ###################################################################
 # Utility Classes
