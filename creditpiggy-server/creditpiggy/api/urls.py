@@ -19,6 +19,7 @@
 
 from django.conf.urls import patterns, include, url
 from creditpiggy.api.views import batch
+from creditpiggy.api.views import js
 
 urlpatterns = patterns('',
 	
@@ -31,6 +32,8 @@ urlpatterns = patterns('',
 	url(r'^batch/slots$',						batch.enum_slots,			name="api.batch.slots" ),
 	url(r'^batch/bulk$',						batch.bulk_commands,		name="api.batch.bulk" ),
 
+	url(r'^js/session$',						js.session,					name="api.js.session" ),
+
 	# Explicit protocol
 	url(r'^batch/alloc\.(?P<api>[^/]+)$',		batch.slot_alloc,			name="api.batch.alloc" ),
 	url(r'^batch/claim\.(?P<api>[^/]+)$',		batch.slot_claim,			name="api.batch.claim" ),
@@ -39,5 +42,7 @@ urlpatterns = patterns('',
 	url(r'^batch/counters\.(?P<api>[^/]+)$',	batch.slot_counters,		name="api.batch.counters" ),
 	url(r'^batch/slots\.(?P<api>[^/]+)$',		batch.enum_slots,			name="api.batch.slots" ),
 	url(r'^batch/bulk\.(?P<api>[^/]+)$',		batch.bulk_commands,		name="api.batch.bulk" ),
+
+	url(r'^js/session\.(?P<api>[^/]+)$',		js.session,					name="api.js.session" ),
 
 )

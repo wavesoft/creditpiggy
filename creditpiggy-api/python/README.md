@@ -25,9 +25,9 @@ Initialises the CreditPiggy api library. This function should be called in order
         <td>
             The daemon endpoint. Depending on the format of the string, three different types of endpoints can be defined:
             <ul>
-                <li><code>URL</code> (ex. "https://cp.org/api"): Indicate that no intermediate daemon should be used, but the library should directly contact the CreditPiggy server under the specified API URL. When you use this option, <code>credentials</code> should contain a tuple with your <code>(project_id, project_auth)</code>. <strong>NOTE: This option is not implemented yet!</strong> </li>
                 <li><code>UNIX Socket</code> (ex. "/var/run/creditapi.socket"): Indicate that the daemon runs locally under the specified UNIX socket.</li>
                 <li><code>Network Endpoint</code> (ex. "1.2.3.4:5667"): Indicate that the daemon runs remotely under the specified network endpoint.</li>
+                <li><code>URL</code> (ex. "https://cp.org/api"): Indicate that no intermediate daemon should be used, but the library should directly contact the CreditPiggy server under the specified API URL. When you use this option, <code>credentials</code> should contain a tuple with your <code>(project_id, project_auth)</code>. <strong>NOTE: This option is not implemented yet!</strong> </li>
             </ul>
         </td>
     </tr>

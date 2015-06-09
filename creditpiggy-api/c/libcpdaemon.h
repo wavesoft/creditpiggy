@@ -42,7 +42,7 @@ int cpapi_claim 	( const char* slot_id, const char* machine_id, int credits = 0 
 /**
  * Discard a credit slot
  */
-int cpapi_claim 	( const char* slot_id, const char* reason = NULL );
+int cpapi_discard 	( const char* slot_id, const char* reason = NULL );
 
 /**
  * Update a credit slot counter
