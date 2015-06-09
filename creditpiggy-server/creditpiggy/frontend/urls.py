@@ -35,7 +35,7 @@ urlpatterns = patterns('',
 
 	url(r'^dashboard/(?P<page>[^/]+)/$', 	projects.dashboard,		name="frontend.dashboard"),
 	url(r'^projects/$', 					projects.list,	 		name="frontend.projects"),
-	url(r'^project/(?P<id>[0-9]+)/$', 		projects.details,	 	name="frontend.details"),
+	url(r'^project/(?P<id>[^/]+)/$', 		projects.details,	 	name="frontend.details"),
 
 	url(r'^ajax/profile\.(?P<cmd>[^/]+)/$',	ajax.profile,			name="frontend.ajax.profile"),
 	url(r'^ajax/fetch\.(?P<cmd>[^/]+)/$',	ajax.fetch,				name="frontend.ajax.fetch"),

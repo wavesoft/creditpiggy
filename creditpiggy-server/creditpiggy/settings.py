@@ -58,6 +58,11 @@ if hasattr(_CONFIG_, 'DEBUG'):
 # Logging
 LOGGING =  _CONFIG_.LOGGING
 
+# Caches
+CACHES = {
+	'default': _CONFIG_.DEFAULT_CACHE
+}
+
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
@@ -88,15 +93,15 @@ STATIC_URL = '/static/'
 # Static root
 STATIC_ROOT = os.path.join(BASE_DIR, "creditpiggy/static")
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
+	os.path.join(BASE_DIR, "static"),
 )
 
 # TinyMCE Configuration
 TINYMCE_JS_URL = STATIC_URL + "lib/js/tinymce/tinymce.min.js"
 TINYMCE_DEFAULT_CONFIG = {
-    'plugins': "table,spellchecker,paste,searchreplace",
-    'theme': "modern",
-    'custom_undo_redo_levels': 10,
+	'plugins': "table,spellchecker,paste,searchreplace",
+	'theme': "modern",
+	'custom_undo_redo_levels': 10,
 }
 
 # - Social Auth ---
@@ -149,7 +154,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 # Storing additional fields in session, used for
 # identifying linking requests
-FIELDS_STORED_IN_SESSION = [ 'mode' ]
+FIELDS_STORED_IN_SESSION = [ 'mode', 'a' ]
 
 # -----------------
 
@@ -165,7 +170,7 @@ INSTALLED_APPS = (
 	'creditpiggy.core',
 	'creditpiggy.api',
 	'creditpiggy.frontend',
-    'tinymce',
+	'tinymce',
 
 	# - Social Auth ---
 	'social.apps.django_app.default',

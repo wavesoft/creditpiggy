@@ -17,42 +17,18 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.clickjacking import xframe_options_deny
-
-from creditpiggy.core.models import CreditSlot, ComputingUnit
-from creditpiggy.api.protocol import render_with_api, APIError
-from creditpiggy.api.auth import allow_cors
-
-##########################################
-# Javascript Library API Commands
-##########################################
-
-@xframe_options_deny
-@render_with_api(context="js.session")
-@allow_cors(headers=["Content-Type"])
-def session(request, api="json"):
+def compile_session(user):
 	"""
-	Return the current session information
+	Compile session information
 	"""
 
-	# Allocate slot or raise APIErrors
-	if not request.user.is_authenticated():
-		return {
-			"profile": {
-
-			}
-		}
-
-	else:
-
-		# Get user
-		user = request.user
-
-		# Send response
+	# If user is authenticated, return profile
+	if user.is_authenticated():
 		return {
 			"profile": user.profile()
 		}
+
+	# If not, return blank array
+	else:
+		return { }
+

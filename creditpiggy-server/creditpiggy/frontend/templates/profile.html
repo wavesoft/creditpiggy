@@ -1,7 +1,6 @@
  {% extends "base/p_content.html" %}
 {% load staticfiles %}
 {% block content %}
-
     <form class="form-inline">
         <p class="lead">Welcome to CreditPiggy, <input data-url="profile.set" name="name" value="{{ user.display_name }}" class="form-control x-blur-update"></input></p>
     </form>
@@ -54,25 +53,9 @@
 
     <p><a class="btn btn-primary" href="/logout/">Logout</a></p>
 
-
-<!--
-    <h1>CreditPiggy</h1>
-    {% if user.is_authenticated %}
-      <div class="user-details">
-        You are logged in as <code>{{ user.username }}</code>!
-      </div>
-    {% endif %}
-    <p><a class="btn btn-danger" href="/logout/">Logout</a></p>
-
-    <h2>Link Account</h2>
-    <p>
-      <a class="btn btn-default" href="/link/google-oauth2/">Google Oauth2 Login</a>
-      <a class="btn btn-default" href="/link/twitter/">Twitter OAuth Login</a>
-      <a class="btn btn-default" href="/link/facebook/">Facebook OAuth2 Login</a>
-      <a class="btn btn-default" href="/link/live/">MSN Live OAuth2 Login</a>
-    </p>
-
-  </div>
--->
+    <script type="text/javascript">
+    var o = window.opener || window.parent;
+    o.postMessage(JSON.stringify({"action": "session", "session": {{ session|safe }}}), "*");
+    </script>
 
 {% endblock %}

@@ -63,6 +63,12 @@ def _validate_project_auth( payload, auth ):
 	else:
 		return None
 
+def throttle(rate=None, span=None):
+	"""
+	Throttle the incoming requests to the specified [rate] per [span] seconds
+	"""
+	pass
+
 def allow_cors( origin="*", headers="*" ):
 	"""
 	Add the cross-origin request header in the response.

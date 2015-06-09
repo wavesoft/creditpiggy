@@ -35,6 +35,12 @@ DEFAULT_DATABASE = {
 	'NAME': os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'db.sqlite3'),
 }
 
+# Default cace
+DEFAULT_CACHE = {
+	'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+	'LOCATION': '127.0.0.1:11211',
+}
+
 # Logging set-up
 LOGGING = {
 	'version': 1,

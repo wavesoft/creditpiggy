@@ -17,6 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import json
+
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
@@ -29,6 +31,7 @@ from creditpiggy.frontend.views import context
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
+from creditpiggy.api import information
 
 def logout(request):
     """
@@ -48,17 +51,21 @@ def home(request):
 	Landing page
 	"""
 	if request.user.is_authenticated():
-		return redirect(reverse("frontend.profile"))
+		return redirect(reverse("frontend.profile") )
 	else:
-		return redirect(reverse("frontend.login"))
+		return redirect(reverse("frontend.login") )
 
 @render_to("login.html")
 def login(request):
 	"""
 	Login page
 	"""
+	# If already authenticated, redirect
 	if request.user.is_authenticated():
-		return redirect(reverse("frontend.profile"))
+		if 'next' in request.GET:
+			return redirect(request.GET['next'])
+		else:
+			return redirect(reverse("frontend.profile") )
 
 	# Return context
 	return context()
@@ -69,11 +76,14 @@ def profile(request):
 	"""
 	User profile page
 	"""
+	# Redirect if not logged in
 	if not request.user.is_authenticated():
-		return redirect(reverse("frontend.login"))
+		return redirect(reverse("frontend.login") + url_suffix)
 
 	# Return context
-	return context()
+	return context(
+			session=json.dumps(information.compile_session(request.user))
+		)
 
 @render_to("status.html")
 def status(request):

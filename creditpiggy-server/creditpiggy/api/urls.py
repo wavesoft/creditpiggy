@@ -19,7 +19,7 @@
 
 from django.conf.urls import patterns, include, url
 from creditpiggy.api.views import batch
-from creditpiggy.api.views import js
+from creditpiggy.api.views import lib
 
 urlpatterns = patterns('',
 	
@@ -32,7 +32,8 @@ urlpatterns = patterns('',
 	url(r'^batch/slots$',						batch.enum_slots,			name="api.batch.slots" ),
 	url(r'^batch/bulk$',						batch.bulk_commands,		name="api.batch.bulk" ),
 
-	url(r'^js/session$',						js.session,					name="api.js.session" ),
+	url(r'^lib/handshake$',						lib.handshake,				name="api.lib.handshake" ),
+	url(r'^lib/session$',						lib.session,				name="api.lib.session" ),
 
 	# Explicit protocol
 	url(r'^batch/alloc\.(?P<api>[^/]+)$',		batch.slot_alloc,			name="api.batch.alloc" ),
@@ -43,6 +44,7 @@ urlpatterns = patterns('',
 	url(r'^batch/slots\.(?P<api>[^/]+)$',		batch.enum_slots,			name="api.batch.slots" ),
 	url(r'^batch/bulk\.(?P<api>[^/]+)$',		batch.bulk_commands,		name="api.batch.bulk" ),
 
-	url(r'^js/session\.(?P<api>[^/]+)$',		js.session,					name="api.js.session" ),
+	url(r'^lib/handshake\.(?P<api>[^/]+)$',		lib.handshake,				name="api.lib.handshake" ),
+	url(r'^lib/session\.(?P<api>[^/]+)$',		lib.session,				name="api.lib.session" ),
 
 )
