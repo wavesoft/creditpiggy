@@ -85,8 +85,23 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		"slots/discarded"	: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
 	}
 
+	#: The UUID of this user, used for analytics purposes
+	uuid = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
+		help_text="Unique user identification string")
+
 	#: How the user will be visible to the public
 	display_name = models.CharField(max_length=200, default="")
+
+	def profile(self):
+		"""
+		Compile and return the relevant information for the user's profile
+		"""
+
+		return {
+			"id": self.uuid,
+			"display_name": self.display_name.strip(),
+			"counters": self.metrics().counters()
+		}
 
 
 class Achievement(models.Model):
