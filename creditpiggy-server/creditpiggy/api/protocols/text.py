@@ -183,12 +183,19 @@ class TEXTProtocol(APIProtocol):
 		else:
 			response = str(data)
 
-		# Return an HTTP Response
-		return HttpResponse(
+		# Build an HTTP Response
+		res = HttpResponse(
 				response, 
 				content_type="text/plain", 
 				status=200
 			)
+		
+		# Insert headers
+		for k,v in self.headers.iteritems():
+			res[k] = v
+
+		# Return response
+		return res
 
 	def render_error(self, data, code=None):
 		"""
@@ -221,9 +228,16 @@ class TEXTProtocol(APIProtocol):
 		if code is None:
 			code = 500
 
-		# Return an HTTP Response
-		return HttpResponse(
+		# Build an HTTP Response
+		res = HttpResponse(
 				"ERROR\n%s\n" % response,
 				content_type="text/plain", 
 				status=code
 			)
+
+		# Insert headers
+		for k,v in self.headers.iteritems():
+			res[k] = v
+
+		# Return response
+		return res

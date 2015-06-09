@@ -40,6 +40,7 @@ class APIProtocol:
 		"""
 		self.request = request
 		self.context = context
+		self.headers = {}
 
 	def get(self, parameter, default=None, required=False):
 		"""
@@ -58,6 +59,12 @@ class APIProtocol:
 		Render the specified dictionary with a error response
 		"""
 		raise NotImplementedError()
+
+	def add_header(self, header, value):
+		"""
+		Add a header to be part of the HTTP response
+		"""
+		self.headers[header] = value
 
 class APIError(Exception):
 	"""

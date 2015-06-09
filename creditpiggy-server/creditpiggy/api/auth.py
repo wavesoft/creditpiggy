@@ -63,6 +63,37 @@ def _validate_project_auth( payload, auth ):
 	else:
 		return None
 
+def allow_cors( origin="*", headers="*" ):
+	"""
+	Add the cross-origin request header in the response.
+	"""
+	def decorator(func):
+		@wraps(func)
+		def wrapper(request, *args, **kwargs):
+
+			# Compile headers to string
+			if isinstance(headers, list) or isinstance(headers, tuple):
+				hdr = ", ".join(headers)
+			else:
+				hdr = str(headers)
+
+			# If we have protocol in the request, use that channel for specifying headers
+			if hasattr(request, 'proto'):
+				request.proto.add_header('Access-Control-Allow-Origin', origin)
+				request.proto.add_header('Access-Control-Allow-Headers', hdr)
+				return func(request, *args, **kwargs)
+
+			# Otherwise wait for response and then append the header there
+			else:
+				res = func(request, *args, **kwargs)
+				if isinstance(res, HttpResponse):
+					res['Access-Control-Allow-Origin'] = origin
+					res['Access-Control-Allow-Headers'] = hdr
+				return res
+
+		return wrapper
+	return decorator
+
 def require_valid_user():
 	"""
 	Demand a valid user before continuing with the wrapped function.

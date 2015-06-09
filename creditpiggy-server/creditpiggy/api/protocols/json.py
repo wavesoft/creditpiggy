@@ -112,12 +112,19 @@ class JSONProtocol(APIProtocol):
 		if isinstance(data, dict):
 			response.update(data)
 
-		# Return an HTTP Response
-		return HttpResponse(
+		# Build an HTTP Response
+		res = HttpResponse(
 				json.dumps(response), 
 				content_type="application/json", 
 				status=200
 			)
+
+		# Insert headers
+		for k,v in self.headers.iteritems():
+			res[k] = v
+
+		# Return response
+		return res
 
 	def render_error(self, data, code=None):
 		"""
@@ -137,9 +144,16 @@ class JSONProtocol(APIProtocol):
 		if code is None:
 			code = 500
 
-		# Return an HTTP Response
-		return HttpResponse(
+		# Build an HTTP Response
+		res = HttpResponse(
 				json.dumps(response), 
 				content_type="application/json", 
 				status=code
 			)
+
+		# Insert headers
+		for k,v in self.headers.iteritems():
+			res[k] = v
+
+		# Return response
+		return res
