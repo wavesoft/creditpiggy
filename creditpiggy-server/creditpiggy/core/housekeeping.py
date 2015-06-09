@@ -22,17 +22,22 @@ import importlib
 import logging
 
 from django.conf import settings
-from functools import wraps
+from threading import Thread
 
 from creditpiggy.core.redis import share_redis_connection
 
 # Get housekeeping logger
 logger = logging.getLogger(__name__)
 
-def periodical(seconds=None, minutes=None, hours=None, days=None, months=None, priority=0):
+def periodical(seconds=None, minutes=None, hours=None, days=None, months=None, 
+				priority=0, parallel=True, speedrun=True):
 	"""
 	Decorator that registers a housekeeping function to be executed periodically,
 	with the interval specified.
+
+	@param int 	priority - Higher priority tasks are executed earlier.
+	@param bool parallel - A flag to denote that this task is time-critical and must run in parallel with others.
+	@param bool speedrun - If True, and if for any reason the housekeeping process runs late, the function will be called as many times as required in order to catch-up.  
 	"""
 	def decorator(func):
 
@@ -51,6 +56,8 @@ def periodical(seconds=None, minutes=None, hours=None, days=None, months=None, p
 		func._periodical = True
 		func._interval = interval
 		func._priority = priority
+		func._parallel = parallel
+		func._speedrun = speedrun
 
 		# Do not actually decorate the function
 		return func
@@ -101,6 +108,8 @@ class HousekeepingTask:
 						"method": method.__get__(self, self.__class__),
 						"interval": method._interval,
 						"priority": method._priority,
+						"parallel": method._parallel,
+						"speedrun": method._speedrun
 					})
 
 		# Sort periodicals by priority
@@ -181,14 +190,19 @@ class HouseKeeping:
 		delta = start_time - float(last_times['last'])
 		last_times['last'] = start_time
 
-		# Run all the tasks
-		# -------------------
+		# Run all the tasks in series
+		# ----------------------------
 		for t in self.tasks:
 			try:
 				t.run( delta )
 			except Exception as f:
 				logger.warn("Exception while running task %s.%s" % (t.__module__, t.__class__.__name__))
 				logger.exception(f)
+
+		# Collect all the tasks that needs to be performed
+		# in parallel. Serial tasks are executed in-place
+		parallel_tasks = []
+		serial_tasks = []
 
 		# Run automated tasks
 		# -------------------
@@ -206,11 +220,19 @@ class HouseKeeping:
 				delta = start_time - last_time
 				if delta >= a_periodical['interval']:
 
-					# Run automated task method
-					a_periodical['method']()
+					# If the method should run in parallel, create a thread
+					# and store it on parallel_tasks. Otherwise, store it
+					# in serial_tasks.
+					if a_periodical['parallel']:
+						parallel_tasks.append(Thread(target=a_periodical['method']))
+					else:
+						serial_tasks.append(a_periodical['method'])
 
 					# Check if more than one intervals has passed
-					if (delta >= a_periodical['interval'] * 2) and (last_time > 0):
+					if (delta >= a_periodical['interval'] * 2) and (last_time > 0) and (a_periodical['speedrun']):
+
+						# Warn that we are going to do speed-run
+						logger.warn("Task %s is late by %i iterations" % (a_periodical['id'], int(delta / a_periodical['interval'])))
 
 						# Then don't update last_time to NOW, but just advance it one interval,
 						# in order to call the processing logic once again on next run, which
@@ -232,6 +254,23 @@ class HouseKeeping:
 
 		# Update last_times in redis
 		self.redis.hmset( "%shousekeeping/times" % settings.REDIS_KEYS_PREFIX, last_times )
+
+		# Start all parallel threads
+		for t in parallel_tasks:
+			t.start()
+
+		# Run all serial tasks
+		for t in serial_tasks:
+			try:
+				t()
+			except Exception as f:
+				logger.warn("Exception while running task %s.%s.%s" % (
+					t.__self__.__module__, t.__self__.__class__.__name__, t.__name__))
+				logger.exception(f)
+
+		# Wait for all parallel tasks to complete
+		for t in parallel_tasks:
+			t.join()
 
 		# Keep the last time we run this function
 		self.lastRun = time.time()

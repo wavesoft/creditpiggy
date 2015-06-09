@@ -17,28 +17,31 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-from django.contrib import admin
-from creditpiggy.core.models import *
+import json
+import time
 
-# Register your models here.
-admin.site.register(PiggyUser)
-admin.site.register(ComputingUnit)
-admin.site.register(PiggyProject)
-admin.site.register(ProjectUserCredit)
-admin.site.register(ProjectCredentials)
-admin.site.register(Achievement)
-admin.site.register(AchievementInstance)
-admin.site.register(Campaign)
-admin.site.register(CampaignUserCredit)
-admin.site.register(CampaignProject)
+from creditpiggy.core.redis import share_redis_connection
+from creditpiggy.core.housekeeping import HousekeepingTask, periodical
 
-class ProjectUserRoleAdmin(admin.ModelAdmin):
-	list_display = ('user', 'project', 'role')
+class OfflineSync(HousekeepingTask):
+	"""
+	Apply slot updates to the respective accounts. This is used
+	to throttle the infcoming requests and to optimize the api performance.
+	"""
 
-admin.site.register(ProjectUserRole, ProjectUserRoleAdmin)
+	def __init__(self):
+		"""
+		Initialize the offline synchronization class
+		"""
 
-class CreditSlotAdmin(admin.ModelAdmin):
-	list_display = ('uuid', 'status', 'project', 'credits', 'minBound', 'maxBound')
-	list_filter = ('status',)
+		# Get a connection to the REDIS server
+		self.redis = share_redis_connection()
 
-admin.site.register(CreditSlot, CreditSlotAdmin)
+	@periodical(minutes=1)
+	def sync_task(self):
+		"""
+		Run the synchronization task every minute
+		"""
+
+		# Get all pending tasks
+		

@@ -23,6 +23,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.mail import EmailMessage
 
 from creditpiggy.frontend.views import context
 
@@ -109,9 +110,12 @@ def credits(request):
 		)
 
 @login_required()
-def ajax_user(request, cmd):
+def test(request):
 	"""
-	AJAX For uer API
+	Testing endpoint
 	"""
 
-	
+	mail = EmailMessage( body="Testing", subject="Tosting", to=("johnys2@gmail.com",) )
+	mail.send()
+
+	return redirect(reverse("frontend.profile"))

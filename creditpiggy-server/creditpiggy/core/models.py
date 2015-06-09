@@ -88,6 +88,44 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	#: How the user will be visible to the public
 	display_name = models.CharField(max_length=200, default="")
 
+
+class Achievement(models.Model):
+	"""
+	A target goal that can be achieved 
+	"""
+
+	#: Name of the achievement
+	name = models.CharField(max_length=200, default="",
+		help_text="Name of the achievement")
+
+	#: A short description for the achievement
+	desc = HTMLField(
+		help_text="Achievement short text")
+
+	#: Visual details: Icon of the achievement badge
+	icon = models.CharField(max_length=200, default="")
+
+	#: Visual details: Color of the achievement badge
+	color = models.CharField(max_length=24, default="#662D91")
+
+	#: Visual details: Shape of the frame
+	frame_type = models.CharField(max_length=8, default="circle")
+
+	#: How many times this achievement can be given
+	instances = models.IntegerField(default=0)
+
+	#: The time after which it expires
+	expires = models.IntegerField(default=0)
+
+	#: Metrics required for this achievement as a JSON field
+	metrics = models.TextField(default="{}")
+
+	def getMetrics(self):
+		"""
+		Return metrics json
+		"""
+		return json.loads(self.metrics)
+
 class ComputingUnit(MetricsModelMixin, models.Model):
 	"""
 	A computing unit that can bring credits to a user.
@@ -131,6 +169,9 @@ class PiggyProject(MetricsModelMixin, models.Model):
 
 	#: Project URL
 	project_url = models.URLField(default="", blank=True)
+
+	#: Achievements related to this project
+	achievements = models.ManyToManyField( Achievement )
 
 	def __unicode__(self):
 		return u"%s" % self.display_name
@@ -300,6 +341,9 @@ class CampaignUserCredit(MetricsModelMixin, models.Model):
 	#: The credits of the user in this model
 	credits = models.IntegerField(default=0)
 
+	#: Achievements related to this campaign
+	achievements = models.ManyToManyField( Achievement )
+
 class CampaignProject(models.Model):
 	"""
 	ManyToManyField relation to projects
@@ -311,93 +355,25 @@ class CampaignProject(models.Model):
 	#: The project
 	project = models.ForeignKey(PiggyProject)
 
-class Achievement(models.Model):
+class AchievementInstance(models.Model):
 	"""
-	A target goal that can be achieved 
-	"""
-
-	#: Name of the achievement
-	name = models.CharField(max_length=200, default="",
-		help_text="Name of the achievement")
-
-	#: A short description for the achievement
-	desc = HTMLField(
-		help_text="Achievement short text")
-
-	#: Visual details: Icon of the achievement badge
-	icon = models.CharField(max_length=200, default="")
-
-	#: Visual details: Color of the achievement badge
-	color = models.CharField(max_length=24, default="#662D91")
-
-	#: Visual details: Shape of the frame
-	frame_type = models.CharField(max_length=8, default="circle")
-
-	#: How many times this achievement can be given
-	instances = models.IntegerField(default=0)
-
-	#: The time after which it expires
-	expires = models.IntegerField(default=0)
-
-	#: Metrics required for this achievement as a JSON field
-	metrics = models.TextField(default="{}")
-
-	def getMetrics(self):
-		"""
-		Return metrics json
-		"""
-		return json.loads(self.metrics)
-
-class ProjectAchievement(models.Model):
-	"""
-	Achievements that belong to a project
+	An achievement instance for a user/project combination
 	"""
 
-	#: The relevant project
+	#: The user that achieved it
+	user = models.ForeignKey(PiggyUser)
+
+	#: The project for which he/she achieved it
 	project = models.ForeignKey(PiggyProject)
 
-	#: The relevant achievement
+	#: Optionally, a related campaign to this acvievement
+	campaign = models.ForeignKey(Campaign, blank=True, null=True, default=None)
+
+	#: The achievement achieved
 	achievement = models.ForeignKey(Achievement)
 
-class CampaignAchievement(models.Model):
-	"""
-	Achievements that belong to a campaign
-	"""
-
-	#: The relevant project
-	campaign = models.ForeignKey(Campaign)
-
-	#: The relevant achievement
-	achievement = models.ForeignKey(Achievement)
-
-class AwardedUserProjectAchievement(models.Model):
-	"""
-	Project achievements awarded to a user
-	"""
-
-	#: The relevant project
-	user = models.ForeignKey(PiggyUser)
-
-	#: The relevant achievement
-	achievement = models.ForeignKey(ProjectAchievement)
-
-	#: The time it was achieved
-	achieved_at = models.IntegerField(null=True, default=None)
-
-class AwardedUserCampaignAchievement(models.Model):
-	"""
-	Campaign achievements awarded to a user
-	"""
-
-	#: The relevant project
-	user = models.ForeignKey(PiggyUser)
-
-	#: The relevant achievement
-	achievement = models.ForeignKey(CampaignAchievement)
-
-	#: The time it was achieved
-	achieved_at = models.IntegerField(null=True, default=None)
-
+	#: The date he/she achieved it
+	date = models.IntegerField(default=0)
 
 ###################################################################
 # Utility Classes

@@ -63,9 +63,31 @@ def _validate_project_auth( payload, auth ):
 	else:
 		return None
 
+def require_valid_user():
+	"""
+	Demand a valid user before continuing with the wrapped function.
+	"""
+	def decorator(func):
+		@wraps(func)
+		def wrapper(request, *args, **kwargs):
+
+			# Require a user header to be preent
+			if not request.user.is_authenticated():
+				raise APIError("You must be logged in to use this resource", code=401)
+
+			# Run function
+			return func(request, *args, **kwargs)
+
+		return wrapper
+	return decorator
+
 def require_project_auth():
 	"""
-	Use this decorator
+	Demand a valid project authentication credentials to be present
+	in the header before continuing with the wrapped function.
+
+	This function does not require a protocol wrapper since it 
+	operates purely on HTTP level.
 	"""
 	def decorator(func):
 		@wraps(func)

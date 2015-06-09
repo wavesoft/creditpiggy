@@ -20,20 +20,21 @@
 import time
 
 from django.db.models import Q
-from creditpiggy.core.models import ProjectAchievement, AwardedUserProjectAchievement
+from creditpiggy.core.models import Achievement, AchievementInstance
 
-def metrics_achieved( user_metrics, achievement_metrics ):
+def metrics_achieved( counters, achievement_metrics ):
 	"""
-	Check if achievement metrics are compatible for user achievements
+	Check if user counters are compatible for awarding the
+	achievement, defined by the achievement_metrics.
 	"""
 
-	# 
+	# Iterate over achievement metrics
 	for k,v in achievement_metrics.iteritems():
 		# No key in counters? Next ..
-		if not k in user_metrics:
+		if not k in counters:
 			return False
 		# If counters are not achieved, continue
-		if user_metrics[k] < v:
+		if counters[k] < v:
 			return False
 
 	# Matched
@@ -49,23 +50,23 @@ def check_achievements( project_user_link ):
 	metrics = project_user_link.metrics()
 	m_counters = metrics.counters()
 
-	# Get user's achievements for this project
-	user_achievements = []
-	for a in AwardedUserProjectAchievement.objects.filter( user=project_user_link.user ):
-		user_achievements.append(a)
+	# # Get user's achievements for this project
+	# user_achievements = []
+	# for a in AwardedUserProjectAchievement.objects.filter( user=project_user_link.user ):
+	# 	user_achievements.append(a)
 
-	# Get relevant project achievements
-	for a in ProjectAchievement.objects.filter( ~Q(achievement__in=user_achievements), project=project_user_link.project ):
+	# # Get relevant project achievements
+	# for a in ProjectAchievement.objects.filter( ~Q(achievement__in=user_achievements), project=project_user_link.project ):
 
-		# For each achievement, check if metrics are achieved
-		if metrics_achieved( m_counters, a.getMetrics() ):
+	# 	# For each achievement, check if metrics are achieved
+	# 	if metrics_achieved( m_counters, a.getMetrics() ):
 
-			# Award the achievement to the user
-			ac = AwardedUserProjectAchievement(
-					user=project_user_link.user,
-					award=a,
-					achieved_at=time.time(),
-				)
-			ac.save()
+	# 		# Award the achievement to the user
+	# 		ac = AwardedUserProjectAchievement(
+	# 				user=project_user_link.user,
+	# 				award=a,
+	# 				achieved_at=time.time(),
+	# 			)
+	# 		ac.save()
 
 

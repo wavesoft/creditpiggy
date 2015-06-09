@@ -340,6 +340,12 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 		# Get a connection to the REDIS server
 		self.redis = share_redis_connection()
 
+	def run(self, delta):
+		"""
+		When the task is about to run, update all namespaces
+		and their counters.
+		"""
+
 		# Enumerate all the housekeeping namespaces
 		self.namespaces = list(self.redis.smembers( settings.REDIS_KEYS_PREFIX + "metrics/housekeeping" ))
 
@@ -369,11 +375,6 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 
 				# Store metrics in namespace
 				self.features[feat][ns] += eval(metric)
-
-	def run(self, delta):
-		"""
-		When the task is about to run, update counters
-		"""
 
 		# Get all namespace counters
 		p = self.redis.pipeline()
@@ -417,163 +418,172 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 		pipeline.ltrim( "%s/val" % key, 0, trim )
 		pipeline.ltrim( "%s/ts" % key, 0, trim )
 
-	@periodical(seconds=10, priority=1)
+	@periodical(hours=1)
 	def rotate_hourly(self):
 		"""
 		Rotate hourly data
 		"""
 
 		# Handle all metrics with feature 'ts_hourly'
-		if not 'ts_hourly' in self.features:
-			return
+		if 'ts_hourly' in self.features:
 
-		# Create a redis pipeline since all the operations
-		# are write-only
-		pipeline = self.redis.pipeline()
+			# Create a redis pipeline since all the operations
+			# that we are going to perform are write-only.
+			pipeline = self.redis.pipeline()
 
-		# Perform operations
-		for ns, metrics in self.features['ts_hourly'].iteritems():
+			# Perform operations
+			for ns, metrics in self.features['ts_hourly'].iteritems():
 
-			# Get only the specified metrics from the counters
-			c = self.counters[ns]
-			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
+				# Get only the specified metrics from the counters
+				c = self.counters[ns]
+				metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
-			# Manage ring rotation
-			self.ring_rotate(
-				pipeline,				# Use the allocated pipeline
-				metrics,				# Put values of counter
-				"%s/ts/hourly" % ns,	# In that ring
-				24						# Having that many items at maximum
-				)
+				# Manage ring rotation
+				self.ring_rotate(
+					pipeline,				# Use the allocated pipeline
+					metrics,				# Put values of counter
+					"%s/ts/hourly" % ns,	# In that ring
+					24						# Having that many items at maximum
+					)
 
-		# Execute pipeline
-		pipeline.execute()
+			# Execute pipeline
+			pipeline.execute()
 
-	@periodical(seconds=30, priority=2)
+		# Handle all metrics with features 'delta_hourly'
+		if 'delta_hourly' in self.features:
+
+			# Create a redis pipeline since all the operations
+			# that we are going to perform are write-only.
+			pipeline = self.redis.pipeline()
+			
+			# Perform operations
+			for ns, metrics in self.features['ts_hourly'].iteritems():
+
+				# Get only the specified metrics from the counters
+				c = self.counters[ns]
+				metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
+
+	@periodical(seconds=30)
 	def rotate_daily(self):
 		"""
 		Rotate daily data
 		"""
 
 		# Handle all metrics with feature 'ts_daily'
-		if not 'ts_daily' in self.features:
-			return
+		if 'ts_daily' in self.features:
 
-		# Create a redis pipeline since all the operations
-		# are write-only
-		pipeline = self.redis.pipeline()
+			# Create a redis pipeline since all the operations
+			# are write-only
+			pipeline = self.redis.pipeline()
 
-		# Perform operations
-		for ns, metrics in self.features['ts_daily'].iteritems():
+			# Perform operations
+			for ns, metrics in self.features['ts_daily'].iteritems():
 
-			# Get only the specified metrics from the counters
-			c = self.counters[ns]
-			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
+				# Get only the specified metrics from the counters
+				c = self.counters[ns]
+				metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
-			# Manage ring rotation
-			self.ring_rotate(
-				pipeline,				# Use the allocated pipeline
-				metrics,				# Put values of counter
-				"%s/ts/daily" % ns,		# In that ring
-				7						# Having that many items at maximum
-				)
+				# Manage ring rotation
+				self.ring_rotate(
+					pipeline,				# Use the allocated pipeline
+					metrics,				# Put values of counter
+					"%s/ts/daily" % ns,		# In that ring
+					7						# Having that many items at maximum
+					)
 
-		# Execute pipeline
-		pipeline.execute()
+			# Execute pipeline
+			pipeline.execute()
 
-	@periodical(days=7, priority=3)
+	@periodical(days=7)
 	def rotate_weekly(self):
 		"""
 		Rotate weekly data
 		"""
 
 		# Handle all metrics with feature 'ts_weekly'
-		if not 'ts_weekly' in self.features:
-			return
+		if 'ts_weekly' in self.features:
 
-		# Create a redis pipeline since all the operations
-		# are write-only
-		pipeline = self.redis.pipeline()
+			# Create a redis pipeline since all the operations
+			# are write-only
+			pipeline = self.redis.pipeline()
 
-		# Perform operations
-		for ns, metrics in self.features['ts_weekly'].iteritems():
+			# Perform operations
+			for ns, metrics in self.features['ts_weekly'].iteritems():
 
-			# Get only the specified metrics from the counters
-			c = self.counters[ns]
-			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
+				# Get only the specified metrics from the counters
+				c = self.counters[ns]
+				metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
-			# Manage ring rotation
-			self.ring_rotate(
-				pipeline,				# Use the allocated pipeline
-				metrics,				# Put values of counter
-				"%s/ts/weekly" % ns,	# In that ring
-				4						# Having that many items at maximum
-				)
+				# Manage ring rotation
+				self.ring_rotate(
+					pipeline,				# Use the allocated pipeline
+					metrics,				# Put values of counter
+					"%s/ts/weekly" % ns,	# In that ring
+					4						# Having that many items at maximum
+					)
 
-		# Execute pipeline
-		pipeline.execute()
+			# Execute pipeline
+			pipeline.execute()
 
-	@periodical(days=28, priority=4)
+	@periodical(days=28)
 	def rotate_monthly(self):
 		"""
 		Rotate monthly (4-week) data
 		"""
 
 		# Handle all metrics with feature 'ts_monthly'
-		if not 'ts_monthly' in self.features:
-			return
+		if 'ts_monthly' in self.features:
 
-		# Create a redis pipeline since all the operations
-		# are write-only
-		pipeline = self.redis.pipeline()
+			# Create a redis pipeline since all the operations
+			# are write-only
+			pipeline = self.redis.pipeline()
 
-		# Perform operations
-		for ns, metrics in self.features['ts_monthly'].iteritems():
+			# Perform operations
+			for ns, metrics in self.features['ts_monthly'].iteritems():
 
-			# Get only the specified metrics from the counters
-			c = self.counters[ns]
-			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
+				# Get only the specified metrics from the counters
+				c = self.counters[ns]
+				metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
-			# Manage ring rotation
-			self.ring_rotate(
-				pipeline,				# Use the allocated pipeline
-				metrics,				# Put values of counter
-				"%s/ts/monthly" % ns,	# In that ring
-				13						# Having that many items at maximum
-				)
+				# Manage ring rotation
+				self.ring_rotate(
+					pipeline,				# Use the allocated pipeline
+					metrics,				# Put values of counter
+					"%s/ts/monthly" % ns,	# In that ring
+					13						# Having that many items at maximum
+					)
 
-		# Execute pipeline
-		pipeline.execute()
+			# Execute pipeline
+			pipeline.execute()
 
-	@periodical(days=364, priority=5)
+	@periodical(days=364)
 	def rotate_yearly(self):
 		"""
 		Rotate yearly (13 x 4-week months) data
 		"""
 
 		# Handle all metrics with feature 'ts_yearly'
-		if not 'ts_yearly' in self.features:
-			return
+		if 'ts_yearly' in self.features:
 
-		# Create a redis pipeline since all the operations
-		# are write-only
-		pipeline = self.redis.pipeline()
+			# Create a redis pipeline since all the operations
+			# are write-only
+			pipeline = self.redis.pipeline()
 
-		# Perform operations
-		for ns, metrics in self.features['ts_yearly'].iteritems():
+			# Perform operations
+			for ns, metrics in self.features['ts_yearly'].iteritems():
 
-			# Get only the specified metrics from the counters
-			c = self.counters[ns]
-			metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
+				# Get only the specified metrics from the counters
+				c = self.counters[ns]
+				metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
-			# Manage ring rotation
-			self.ring_rotate(
-				pipeline,				# Use the allocated pipeline
-				metrics,				# Put values of counter
-				"%s/ts/yearly" % ns,	# In that ring
-				5						# Having that many items at maximum
-				)
+				# Manage ring rotation
+				self.ring_rotate(
+					pipeline,				# Use the allocated pipeline
+					metrics,				# Put values of counter
+					"%s/ts/yearly" % ns,	# In that ring
+					5						# Having that many items at maximum
+					)
 
-		# Execute pipeline
-		pipeline.execute()
+			# Execute pipeline
+			pipeline.execute()
 

@@ -27,7 +27,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core import serializers
 
 from creditpiggy.api.protocol import render_with_api, APIError
-from creditpiggy.core.models import to_dict, PiggyProject
+from creditpiggy.api.auth import require_valid_user
+from creditpiggy.core.models import to_dict, PiggyProject, Achievement
 
 #######################################################
 # Utility functions
@@ -112,8 +113,8 @@ def build_ts_labels(timestamps, interval=1, format="%d/%m/%Y %H:%M:%S"):
 # View functions
 #######################################################
 
-@login_required()
 @render_with_api(context="frontend.ajax.profile", protocol="json")
+@require_valid_user()
 def profile(request, cmd):
 	"""
 	Handle AJAX profile requests
@@ -140,8 +141,8 @@ def profile(request, cmd):
 	else:
 		raise APIError("Unknown command")
 
-@login_required()
 @render_with_api(context="frontend.ajax.fetch", protocol="json")
+@require_valid_user()
 def fetch(request, cmd):
 	"""
 	Pagination/graduate loading for various objects
@@ -175,8 +176,18 @@ def fetch(request, cmd):
 		elmList = []
 		for p in pprojects:
 
+			# Convert project record to dictionary
+			project = to_dict(p)
+
 			# Get all project achievements
-			elmList.append( to_dict(p) )
+			project['achievements'] = []
+			for a in p.achievements.all():
+				project['achievements'].append(
+					to_dict(a)
+					)
+
+			# Store project details
+			elmList.append( project )
 
 		# Return projects
 		return {
@@ -193,8 +204,8 @@ def fetch(request, cmd):
 	else:
 		raise APIError("Unknown command")
 
-@login_required()
 @render_with_api(context="frontend.ajax.graph", protocol="json")
+@require_valid_user()
 def graph(request, cmd):
 	"""
 	Graph data for various metrics
@@ -210,7 +221,7 @@ def graph(request, cmd):
 		# What to observe
 		obs_metrics = [ 'credits' ]
 		obs_legends = [ 'Credits' ]
-		obs_tss = [ 'hourly', 'daily', 'weekly', 'monthly' ]
+		obs_tss 	= [ 'hourly', 'daily', 'weekly', 'monthly' ]
 
 		# Compile response
 		ans = {}

@@ -1,7 +1,7 @@
 
 # Python API
 
-The `creditapi` library provides all the high-level routines for interfacing with the creditpiggy daemon that runs in your perimesis.
+The `cpdaemon` library provides all the high-level routines for interfacing with the creditpiggy daemon that runs in the job-manager site.
 
 If your job management mechanism is written in python, you can use this library off the shelf.
 
@@ -25,7 +25,7 @@ Initialises the CreditPiggy api library. This function should be called in order
         <td>
             The daemon endpoint. Depending on the format of the string, three different types of endpoints can be defined:
             <ul>
-                <li><code>URL</code> (ex. "https://cp.org/api"): Indicate that no intermediate daemon should be used, but the library should directly contact the CreditPiggy server under the specified API URL. When you use this option, <code>credentials</code> should contain a tuple with your <code>(project_id, project_auth)</code>.</li>
+                <li><code>URL</code> (ex. "https://cp.org/api"): Indicate that no intermediate daemon should be used, but the library should directly contact the CreditPiggy server under the specified API URL. When you use this option, <code>credentials</code> should contain a tuple with your <code>(project_id, project_auth)</code>. <strong>NOTE: This option is not implemented yet!</strong> </li>
                 <li><code>UNIX Socket</code> (ex. "/var/run/creditapi.socket"): Indicate that the daemon runs locally under the specified UNIX socket.</li>
                 <li><code>Network Endpoint</code> (ex. "1.2.3.4:5667"): Indicate that the daemon runs remotely under the specified network endpoint.</li>
             </ul>
@@ -63,6 +63,31 @@ Allocate a slot with the specified ID and give the specified credits or credit r
         <th><code>integer</code></th>
         <td>
             The exact number of credits this slot will give to the machine that claims it.
+        </td>
+    </tr>
+</table>
+
+### cpapi_discard(slot_id, reason=None)
+
+Discard the slot 'slot_id', optionally indicating the reason for doing so. Such reason might be 'expired', 'invalid', 'lost' etc.
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Desc</th>
+    </tr>
+    <tr>
+        <th><code>slot_id</code></th>
+        <th><code>string</code></th>
+        <td>
+            A unique ID that identifies the slot to allocate. This ID should be unique throughout your project but it doesn't need to be globally unique.
+        </td>
+    </tr>
+    <tr>
+        <th><code>rason</code></th>
+        <th><code>string</code></th>
+        <td>
+            A short identifier that explains the reason why the slot was discarded. Such reasons could be 'expired', 'invalid', 'lost' etc.
         </td>
     </tr>
 </table>

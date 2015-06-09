@@ -216,16 +216,19 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ROOT_URLCONF = 'creditpiggy.urls'
 WSGI_APPLICATION = 'creditpiggy.wsgi.application'
 
+# Email configuration
+
+DEFAULT_FROM_EMAIL = "CreditPiggy Robot <robot@creditpiggy.eu>"
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = "/Users/icharala/Develop/creditpiggy/data.local"
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 

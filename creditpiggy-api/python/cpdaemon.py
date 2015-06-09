@@ -57,7 +57,9 @@ def _cpapi_command(command, args={}):
 	# Open socket according to type
 	if _cpapi_endpoint[0] == 1:
 		# 1) URL
-		return
+
+		# Raise error
+		raise NotImplementedError("The HTTP endpoint is not implemented in the cpdaemon library")
 
 	elif _cpapi_endpoint[0] == 2:
 		# 2) UNIX Socket

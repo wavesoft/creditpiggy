@@ -29,6 +29,7 @@ urlpatterns = patterns('',
 	url(r'^logout/$', 						account.logout, 		name="frontend.logout"),
 	url(r'^login/$', 						account.login, 			name="frontend.login"),
 	url(r'^status/$', 						account.status, 		name="frontend.status"),
+	url(r'^test/$', 						account.test, 			name="frontend.test"),
 	url(r'^credits/$', 						account.credits, 		name="frontend.credits"),
 	url(r'^link/(?P<provider>[^/]+)/$',		account.link,			name="frontend.link"),
 
