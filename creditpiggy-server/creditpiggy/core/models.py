@@ -235,22 +235,6 @@ class ProjectCredentials(models.Model):
 	#: The project
 	project = models.ForeignKey( PiggyProject )
 
-class ProjectWebCredentials(models.Model):
-	"""
-	Credentials for the javascript API of each project
-	"""
-
-	#: Authentication token
-	token = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
-		help_text="Anonymous authentication token for the credentials")
-
-	#: The authorized list of domains
-	domains = models.TextField(
-		help_text="The list of authorized domain names for use with this API")
-
-	#: The project
-	project = models.ForeignKey( PiggyProject )
-
 class ProjectUserCredit(MetricsModelMixin, models.Model):
 	"""
 	Credits given to a user for the participation in the project
