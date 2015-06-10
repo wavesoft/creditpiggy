@@ -21,7 +21,7 @@ import json
 
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
-from django.shortcuts import render, redirect
+from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -33,12 +33,15 @@ from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
 from creditpiggy.api import information
 
+@render_to("logout.html")
 def logout(request):
     """
     Log the user out of any social profile
     """
+    # Logout the user
     auth_logout(request)
-    return redirect('/')
+    # Render the logout page
+    return context()
 
 def link(request, provider):
     """
@@ -55,11 +58,19 @@ def home(request):
 	else:
 		return redirect(reverse("frontend.login") )
 
-@render_to("login.html")
 def login(request):
 	"""
 	Login page
 	"""
+
+	# Check if this is a project login page
+	project = None
+	if 'project' in request.GET:
+		try:
+			project = PiggyProject.objects.get( uuid=request.GET['project'] )
+		except PiggyProject.DoesNotExist:
+			project = None
+
 	# If already authenticated, redirect
 	if request.user.is_authenticated():
 		if 'next' in request.GET:
@@ -68,7 +79,9 @@ def login(request):
 			return redirect(reverse("frontend.profile") )
 
 	# Return context
-	return context()
+	return render_to_response("login.html", context(
+			project=project
+		))
 
 @ensure_csrf_cookie
 @render_to("profile.html")

@@ -61,6 +61,29 @@
 	//////////////////////////////////////////////////////////////////////////////
 
 	/**
+	 * (Re-)open a pop-up window
+	 *
+	 * @param {string} url - The url of the window.
+	 */
+	CreditPiggy.__popup = function( url ) {
+		// Calculate parent-call URL details
+		var w = 770, h = 470,
+			l = (screen.width - w) / 2,
+			t = (screen.height - h)/ 2;
+
+		// Close previous window
+		if (this.loginWindow) this.loginWindow.close();
+
+		// Open new one
+		this.loginWindow = window.open(
+				url,
+				"creditpiggy-popup-window",
+				"width="+w+",height="+h+",left="+l+",top="+t+",location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no"
+			);
+
+	}
+
+	/**
 	 * Internal function to execute all the API requests
 	 *
 	 * @param {string} action - The action to execute.
@@ -70,8 +93,8 @@
 	CreditPiggy.__api = function(action, data, callback) {
 		// Perform AJAX API Request
 		$.ajax({
-			"url": this.baseURL + "/api/" + action + ".json",
-			"contentType": "json",
+			"url": this.baseURL + "/api/" + action + ".jsonp",
+			"dataType": "jsonp",
 			"data": data || {
 				"version": this.version
 			},
@@ -114,7 +137,8 @@
 	/**
 	 * Request as session update
 	 */
-	CreditPiggy.__updateSession = function() {
+	CreditPiggy.__updateSession = function() {		
+
 		// Update Session Information
 		this.__api("lib/session", {
 			"project": this.project
@@ -278,18 +302,8 @@
 			return false;
 		}
 
-		// Calculate parent-call URL details
-		var w = 770, h = 450,
-			l = (screen.width - w) / 2,
-			t = (screen.height - h)/ 2;
-
-		// Dispose previous window and create new one
-		if (this.loginWindow) this.loginWindow.close();
-		this.loginWindow = window.open(
-				this.baseURL + "/login/?next=/project/" + this.project + '/',
-				"creditpiggy-login-window",
-				"width="+w+",height="+h+",left="+l+",top="+t+",location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no"
-			);
+		// Open pop-up
+		this.__popup( this.baseURL + "/login/?project=" + escape(this.project) );
 
 		// Register the callback for the "login" event, once
 		if (callback) this.onOnce( "login", callback );
@@ -300,10 +314,34 @@
 	/**
 	 * Show user's profile
 	 * 
-	 * This functino returns 'false' if the user is already logged in
+	 * This functino returns 'false' if the user is not logged in
 	 * or 'true' if the window was openned.
 	 */
 	CreditPiggy.showProfile = function( ) {
+
+		// If the user is not logged in, just return false
+		if (!this.session || !this.session["profile"]) {
+			return false;
+		}
+
+		// Open pop-up
+		this.__popup( this.baseURL + "/profile/?project=" + escape(this.project) );
+
+		// Register the callback for the "login" event, once
+		return true;
+
+	}
+
+	/**
+	 * Show project's status page
+	 */
+	CreditPiggy.showProject = function( ) {
+
+		// The project website is accessible without log-in
+		this.__popup( this.baseURL + "/project/" + this.project + "/" );
+
+		// Register the callback for the "login" event, once
+		return true;
 
 	}
 
@@ -341,6 +379,9 @@
 			if (data["action"] == "session") {
 				// [session] - Handle a session update
 				this.__applySessionChanges( data["session"] );
+			} else if (data["action"] == "logout") {
+				// [logout] - The user was disconnected
+				this.__applySessionChanges( null );
 			}
 
 		} catch (e) {

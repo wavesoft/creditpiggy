@@ -1,8 +1,8 @@
- {% extends "base/p_content.html" %}
+{% extends "base/p_content.html" %}
 {% load staticfiles %}
 {% block content %}
     <form class="form-inline">
-        <p class="lead">Welcome to CreditPiggy, <input data-url="profile.set" name="name" value="{{ user.display_name }}" class="form-control x-blur-update"></input></p>
+        <h2>Welcome to CreditPiggy, <input data-url="profile.set" name="name" value="{{ user.display_name }}" class="form-control x-blur-update"></input></h2>
     </form>
     <p>
         This is your virtual piggy-bank where you can keep the credits you collect from the on-line projects you contribute to.
@@ -53,6 +53,7 @@
 
     <p><a class="btn btn-primary" href="/logout/">Logout</a></p>
 
+    <!-- Script callbacks -->
     <script type="text/javascript">
     var o = window.opener || window.parent;
     o.postMessage(JSON.stringify({"action": "session", "session": {{ session|safe }}}), "*");

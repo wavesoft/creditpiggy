@@ -1,0 +1,20 @@
+{% extends "base/p_content.html" %}
+{% load staticfiles %}
+
+{% block head %}
+	<meta http-equiv="refresh" content="1; url={% url 'frontend.login' %}">
+{% endblock %}
+
+{% block content %}
+	
+	<p class="lead">You are now logged out</p>
+	<p>You will be redirected in a second, if not click on the button below to continue.</p>
+	<p><a href="{% url 'frontend.login' %}" class="btn btn-primary">Continue</a></p>
+
+    <!-- Script callbacks -->
+    <script type="text/javascript">
+    var o = window.opener || window.parent;
+    o.postMessage(JSON.stringify({"action": "logout", "session": {}}), "*");
+    </script>
+
+{% endblock %}

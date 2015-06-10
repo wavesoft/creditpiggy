@@ -19,6 +19,8 @@
 
 import hashlib
 
+from django.http import HttpResponse
+
 from creditpiggy.api.protocol import APIError
 from creditpiggy.core.models import ProjectCredentials
 from functools import wraps

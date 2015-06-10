@@ -88,6 +88,25 @@ def textify_dict(sdict):
 	# Return string
 	return ans
 
+def dump_var(var, prefix=""):
+	"""
+	"""
+	ans = []
+
+	# If list or tuple, show as k: v[,v..] format
+	if isinstance(var, list) or isinstance(var, tuple):
+		if len(var) == 0:
+			ans.append("%s:" % prefix)
+		else:
+			i = 0
+			for v in var:
+				ans += dump_var( v, "%s%i" % ( prefix, i ) )
+				i += 1
+
+	elif isinstance(var, dict):
+		for k,v in var.iteritems():
+			ans += dump_var( v, "%s%s." % (prefix, k) )
+
 class TEXTProtocol(APIProtocol):
 	"""
 	TEXT Implementation of the CreditPiggy API Protocol
