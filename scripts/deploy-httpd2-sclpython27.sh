@@ -527,6 +527,24 @@ ensure_dir_policy ${DEPLOY_DIR}/logs httpd_log_t
 echo -n " - Checking SELinux policy in ${PROJECT_DIR}..."
 ensure_dir_policy ${PROJECT_DIR} httpd_sys_content_t
 
+# Grant apache SELinux policy to access REDIS
+echo -n " - Checking SELinux policy for REDIS port..."
+if [ $(semanage port -l | egrep '(^http_port_t|6379)' | grep -c 6379) -eq 0 ]; then
+	semanage port -a -t http_port_t -p tcp 6379
+	echo "fixed"
+else
+	echo "ok"
+fi
+
+# Grant apache SELinux policy to access memcached
+echo -n " - Checking SELinux policy for memcached port..."
+if [ $(semanage port -l | egrep '(^http_port_t|11211)' | grep -c 11211) -eq 0 ]; then
+	semanage port -a -t http_port_t -p tcp 11211
+	echo "fixed"
+else
+	echo "ok"
+fi
+
 # ===================================
 # 5) Symlink to apache configuration
 # ===================================
