@@ -24,88 +24,30 @@ from django.http import HttpResponse
 
 import json
 
-def list_to_kv(slist):
-	"""
-	Convert a list to a comma-separated, single-line string
-	"""
-
-	# Loop over items
-	ans = ""
-	for k,v in sdict.iteritems():
-		if ans:
-			ans += ", "
-
-		# Process value according to type
-		if isinstance(k, dict):
-			ans += "%s=(%s)" % (str(k), dict_to_kv(v))
-		elif isinstance(k, list):
-			ans += "%s=(%s)" % (str(k), list_to_kv(v))
-		else:
-			ans += "%s=%s" % (str(k), str(v))
-
-	# Return string
-	return ans
-
-def dict_to_kv(sdict):
-	"""
-	Convert a dict to a key=value single-line string
-	"""
-
-	# Loop over items
-	ans = ""
-	for k,v in sdict.iteritems():
-		if ans:
-			ans += ", "
-
-		# Process value according to type
-		if isinstance(k, dict):
-			ans += "%s=(%s)" % (str(k), dict_to_kv(v))
-		elif isinstance(k, list):
-			ans += "%s=(%s)" % (str(k), list_to_kv(v))
-		else:
-			ans += "%s=%s" % (str(k), str(v))
-
-	# Return string
-	return ans
-
-def textify_dict(sdict):
-	"""
-	Convert a dict to key: value, multiline string
-	"""
-
-	# Loop over items
-	ans = ""
-	for k,v in sdict.iteritems():
-
-		# Process value according to type
-		if isinstance(k, dict):
-			ans += "%s: %s\n" % (str(k), dict_to_kv(v))
-		elif isinstance(k, list):
-			ans += "%s: %s\n" % (str(k), list_to_kv(v))
-		else:
-			ans += "%s: %s\n" % (str(k), str(v))
-
-	# Return string
-	return ans
-
 def dump_var(var, prefix=""):
 	"""
+	Recursively dump the specified variable
 	"""
 	ans = []
 
-	# If list or tuple, show as k: v[,v..] format
 	if isinstance(var, list) or isinstance(var, tuple):
-		if len(var) == 0:
-			ans.append("%s:" % prefix)
-		else:
-			i = 0
-			for v in var:
-				ans += dump_var( v, "%s%i" % ( prefix, i ) )
-				i += 1
+		if prefix:
+			prefix = prefix + "."
+		i = 0
+		for v in var:
+			ans += dump_var( v, "%s%i" % ( prefix, i ) )
+			i += 1
 
 	elif isinstance(var, dict):
+		if prefix:
+			prefix = prefix + "."
 		for k,v in var.iteritems():
-			ans += dump_var( v, "%s%s." % (prefix, k) )
+			ans += dump_var( v, "%s%s" % (prefix, k) )
+
+	else:
+		ans.append("%s: %s" % (prefix, str(var)))
+
+	return ans
 
 class TEXTProtocol(APIProtocol):
 	"""
@@ -196,7 +138,7 @@ class TEXTProtocol(APIProtocol):
 		# Process dictionaries
 		elif isinstance(data, dict):
 			# Convert dict to TEXT
-			response = textify_dict(data)
+			response = "\n".join(dump_var(data))
 
 		# Otherwise stringify
 		else:
@@ -236,7 +178,7 @@ class TEXTProtocol(APIProtocol):
 		# Process dictionaries
 		elif isinstance(data, dict):
 			# Convert dict to TEXT
-			response = textify_dict(data)
+			response = "\n".join(dump_var(data))
 
 		# Otherwise stringify
 		else:
