@@ -102,10 +102,14 @@ class Metrics:
 	# Timeseries
 	######################################
 
-	def timeseries(self, seriesName, metric=None):
+	def timeseries(self, seriesName, metric=None, size=settings.TS_VALUE_COUNT, interval=0, fill_value=0.0):
 		"""
 		Using this function you can fetch the timeseries stored
 		under the particular key by the housekeeping functions.
+
+		If the sample is smaller than the 'size' argument, additional
+		values will be inserted at intervals defined by 'interval', with
+		value 'fill_value'.
 		"""
 
 		# Return timestamps and values
@@ -118,7 +122,6 @@ class Metrics:
 
 		# If metric is 'none', return all metrics as dict
 		if metric is None:
-
 			# Return a tuple with ( [ timestamp, .. ], [ {key: value}, .. ] )
 			return (ans[0], ans[1])
 
@@ -443,25 +446,11 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 					pipeline,				# Use the allocated pipeline
 					metrics,				# Put values of counter
 					"%s/ts/hourly" % ns,	# In that ring
-					24						# Having that many items at maximum
+					settings.TS_VALUE_COUNT	# Having that many items at maximum
 					)
 
 			# Execute pipeline
 			pipeline.execute()
-
-		# Handle all metrics with features 'delta_hourly'
-		if 'delta_hourly' in self.features:
-
-			# Create a redis pipeline since all the operations
-			# that we are going to perform are write-only.
-			pipeline = self.redis.pipeline()
-			
-			# Perform operations
-			for ns, metrics in self.features['ts_hourly'].iteritems():
-
-				# Get only the specified metrics from the counters
-				c = self.counters[ns]
-				metrics = dict([ (x,c[x]) for x in list(set(c.keys()) & set(metrics)) ])
 
 	@periodical(seconds=30)
 	def rotate_daily(self):
@@ -488,7 +477,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 					pipeline,				# Use the allocated pipeline
 					metrics,				# Put values of counter
 					"%s/ts/daily" % ns,		# In that ring
-					7						# Having that many items at maximum
+					settings.TS_VALUE_COUNT	# Having that many items at maximum
 					)
 
 			# Execute pipeline
@@ -519,7 +508,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 					pipeline,				# Use the allocated pipeline
 					metrics,				# Put values of counter
 					"%s/ts/weekly" % ns,	# In that ring
-					4						# Having that many items at maximum
+					settings.TS_VALUE_COUNT	# Having that many items at maximum
 					)
 
 			# Execute pipeline
@@ -550,7 +539,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 					pipeline,				# Use the allocated pipeline
 					metrics,				# Put values of counter
 					"%s/ts/monthly" % ns,	# In that ring
-					13						# Having that many items at maximum
+					settings.TS_VALUE_COUNT	# Having that many items at maximum
 					)
 
 			# Execute pipeline
@@ -581,7 +570,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 					pipeline,				# Use the allocated pipeline
 					metrics,				# Put values of counter
 					"%s/ts/yearly" % ns,	# In that ring
-					5						# Having that many items at maximum
+					settings.TS_VALUE_COUNT	# Having that many items at maximum
 					)
 
 			# Execute pipeline

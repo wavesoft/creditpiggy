@@ -29,6 +29,9 @@ REDIS_PORT = 6379
 REDIS_DB = 0
 REDIS_KEYS_PREFIX = ""
 
+# Timeseries value count
+TS_VALUE_COUNT = 30
+
 # Default Database
 DEFAULT_DATABASE = {
 	'ENGINE': 'django.db.backends.sqlite3',

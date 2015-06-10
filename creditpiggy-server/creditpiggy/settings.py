@@ -75,6 +75,9 @@ REDIS_PORT = _CONFIG_.REDIS_PORT
 REDIS_DB = _CONFIG_.REDIS_DB
 REDIS_KEYS_PREFIX = _CONFIG_.REDIS_KEYS_PREFIX
 
+# Creditpiggy timeseries ring size
+TS_VALUE_COUNT = _CONFIG_.TS_VALUE_COUNT
+
 # CreditPiggy API Protocols
 CREDITPIGGY_API_PROTOCOLS = (
 	'creditpiggy.api.protocols.json.JSONProtocol',
