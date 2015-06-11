@@ -117,16 +117,16 @@
 
 		// Trigger "login" if we didn"t have a profile before
 		if ((!this.session || !this.session["profile"]) && newSession["profile"]) {
-			this.trigger("login", newSession["profile"]);
+			$(this).triggerHandler("login", [ newSession["profile"] ]);
 		} 
 		// Trigger "logout" if we did have a profile and now we don"t
 		else if ((!newSession || !newSession["profile"]) && (this.session && this.session["profile"])) {
-			this.trigger("logout", this.session["profile"]);
+			$(this).triggerHandler("logout", [ this.session["profile"] ]);
 		}
 
 		// Trigger the "profile" event if we have a profile
 		if (newSession["profile"]) {
-			this.trigger("profile", newSession["profile"]);
+			$(this).triggerHandler("profile", [ newSession["profile"] ]);
 		}
 
 		// Update session
@@ -177,96 +177,6 @@
 	//////////////////////////////////////////////////////////////////////////////
 
 	// ---------------------------------------------------------------------------
-	//  Low-Level APIs
-	// ---------------------------------------------------------------------------
-
-	/**
-	 * Register a function to the named callback.
-	 */
-	CreditPiggy.on = function( callback, fn ) {
-		// Allocate space
-		if (!this.__callbacks[callback])
-			this.__callbacks[callback] = [];
-
-		// Register function
-		this.__callbacks[callback].push(fn);
-
-		// Return this for chained calls
-		return this;
-	}
-
-	/**
-	 * Register a function to the named callback.
-	 */
-	CreditPiggy.onOnce = function( callback, fn ) {
-		// Allocate space
-		if (!this.__callbacks[callback])
-			this.__callbacks[callback] = [];
-
-		// Create a deregistrable function
-		var onceCallback = (function() {
-			// Remove listener
-			this.off( callback, onceCallback );
-			// Fire callback
-			callback.apply( this, arguments );
-		}).bind(this);
-
-		// Register the once callback
-		this.on( callback, onceCallback );
-
-		// Return this for chained calls
-		return this;
-	}
-
-	/**
-	 * Unregister a function to the named callback.
-	 */
-	CreditPiggy.off = function( callback, fn ) {
-		// Skip if missing
-		if (!this.__callbacks[callback]) return this;
-
-		// Remove function
-		var i = this.__callbacks[callback].indexOf(fn);
-		if (i < 0) return this;
-		this.__callbacks[callback].splice(i,1);
-
-		// Check if that was the last function in the array
-		if (this.__callbacks[callback].length == 0)
-			delete this.__callbacks[callback];
-
-		// Return this for chained calls
-		return this;
-	}
-
-	/**
-	 * Fire all named callbacks
-	 */
-	CreditPiggy.trigger = function() {
-
-		// Prepare arguments
-		var args = Array.prototype.slice.call(arguments),
-			name = args.shift();
-		console.log("Triggering",name,args);
-
-		// If we don"t have such callback, quit
-		if (!this.__callbacks[name])
-			return;
-
-		// Trigger callbacks
-		for (var i=0; i<this.__callbacks[name].length; i++) {
-			try {
-				this.__callbacks[name].apply(this, args);
-			} catch (e) {
-				console.error("CreditPiggy: Error triggering callback ", name);
-				console.error(e.stack);
-			}
-		}
-
-		// Return this for chained calls
-		return this;
-	}
-
-	// ---------------------------------------------------------------------------
 	//  High-level APIs
 	// ---------------------------------------------------------------------------
 
@@ -294,11 +204,10 @@
 	 * This functino returns 'false' if the user is already logged in
 	 * or 'true' if the window was openned.
 	 */
-	CreditPiggy.showLogin = function( callback ) {
+	CreditPiggy.showLogin = function( ) {
 
 		// If the user is already logged in, just fire callback
 		if (this.session && this.session["profile"]) {
-			if (callback) callback(this.session["profile"]);
 			return false;
 		}
 
@@ -306,7 +215,6 @@
 		this.__popup( this.baseURL + "/login/?project=" + escape(this.project) );
 
 		// Register the callback for the "login" event, once
-		if (callback) this.onOnce( "login", callback );
 		return true;
 
 	}
