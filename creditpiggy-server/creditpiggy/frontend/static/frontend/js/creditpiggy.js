@@ -59,6 +59,14 @@ cpjs.initialize = function( context ) {
 		new this.dyn_graphs($(e));
 	}).bind(this))
 
+	// Enable popovers
+	$(".achievements > div").click(function(e) {
+		var msg = $(this).data('popup-id');
+		if (!msg) return;
+
+		$(msg).modal();
+	});
+
 }
 
 /**

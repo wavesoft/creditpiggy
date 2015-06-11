@@ -17,10 +17,35 @@
 ################################################################
 
 import time
+import pytz
+
+from django.conf import settings
 from django import template
+from datetime import datetime
 
 # Get registry
 register = template.Library()
+
+@register.filter(name='get_metrics')
+def get_metrics(value):
+	"""
+	Get the achievement metric
+	"""
+	return value.getMetrics().iteritems()
+
+@register.filter(name='timestamp')
+def timestamp(value): # Only one argument.
+	"""
+	Unix timestamp to timezoned date
+	"""
+
+	# Normalize date
+	local_tz = pytz.timezone( settings.TIME_ZONE ) 
+	utc_dt = datetime.utcfromtimestamp(int(value)).replace(tzinfo=pytz.utc)
+	local_dt = local_tz.normalize(utc_dt.astimezone(local_tz))
+
+	# Stringify and return
+	return str(local_dt)
 
 @register.filter(name='time_delta')
 def time_delta(value): # Only one argument.

@@ -19,7 +19,8 @@
 
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
-from django.shortcuts import render, redirect
+from django.shortcuts import render_to_response, redirect
+
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -40,14 +41,34 @@ def list(request):
 	return context()
 
 @login_required()
-@render_to("project_details.html")
-def details(request, id=0):
+@render_to("project.html")
+def details(request, uuid=""):
 	"""
 	Display project details
-	"""
+	"""	
+
+	# Lookup project based on uuid
+	try:
+		if (uuid.isdigit()):
+			project = PiggyProject.objects.get(id=int(uuid))
+		else:
+			project = PiggyProject.objects.get(uuid=uuid)
+	except PiggyProject.DoesNotExist:
+
+		# Render error page
+		return render_to_response("error.html", context(
+				message="Could not find the project specified!"
+			))
+
+	# Get project achievements
+	achievements = project.achievementStatus(request.user)
 
 	# Return context
-	return context()
+	return context(
+		project=project,
+		achievements=achievements,
+		counters=project.metrics().counters()
+		)
 
 @login_required()
 @render_to("dashboard.html")

@@ -58,6 +58,13 @@ h2 {
     }
 }
 
+// Green border and back
+// ---------------------------------
+.btn-achieved {
+	border: solid 1px #4caf50;
+	background-color: #E0F1E0;
+}
+
 // Composition for structuring login
 // page elements
 // ---------------------------------
@@ -146,6 +153,33 @@ div.plot {
 	background-position: center center;
 }
 
+// Achievements layout
+// ---------------------------------
+div.achievements {
+	> div {
+		label {
+			width: 100px;
+		}
+		.icon {
+			position: relative;
+			width: 100px;
+			height: 80px;
+			margin: 0 auto;
+			background-position: center center;
+			background-size: contain;
+			background-repeat: no-repeat;
+
+			.edge-badge {
+				position: absolute;
+				right: -5px;
+				bottom: -5px;
+				color: #4caf50;
+				font-size: 25px;
+			}
+		}
+	}
+}
+
 // =================================
 //  COMPLEX COMPONENTS
 // =================================
@@ -180,4 +214,3 @@ div.collapsible {
 		}
 	}
 }
-

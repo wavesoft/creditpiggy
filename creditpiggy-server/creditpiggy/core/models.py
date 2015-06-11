@@ -135,6 +135,9 @@ class Achievement(models.Model):
 	#: Metrics required for this achievement as a JSON field
 	metrics = models.TextField(default="{}")
 
+	def __unicode__(self):
+		return self.name
+
 	def getMetrics(self):
 		"""
 		Return metrics json
@@ -190,6 +193,46 @@ class PiggyProject(MetricsModelMixin, models.Model):
 
 	def __unicode__(self):
 		return u"%s" % self.display_name
+
+	def achievementStatus(self, user=None):
+		"""
+		Return the achievement with their status
+		"""
+
+		ans = []
+		for a in self.achievements.all():
+
+			# Count achievement instances
+			if user is None:
+
+				# Just count how many instances we have
+				ans.append({
+						"achievement": a,
+						"instances": AchievementInstance.objects.filter(project=self, achievement=a).count()
+					})
+
+				# Sort by instances
+				ans = sorted(ans, lambda x,y: y['instances'] - x['instances'] )
+
+			else:
+
+				# Check if the user has it
+				try:
+					achoeved = AchievementInstance.objects.get(project=self, achievement=a, user=user)
+				except AchievementInstance.DoesNotExist:
+					achoeved = None
+
+				# Include additional meta
+				ans.append({
+						"achievement": a,
+						"achieved": achoeved
+					})
+
+				# Achieved first
+				ans = sorted(ans, lambda x,y: int(bool(y['achieved'])) - int(bool(x['achieved'])) )
+
+		# Return achievements and their status
+		return ans
 
 class ProjectUserRole(models.Model):
 	"""

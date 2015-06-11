@@ -17,18 +17,32 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+from django.core.urlresolvers import reverse
+
 def compile_session(user):
 	"""
 	Compile session information
 	"""
 
+	# Common profile
+	session = {
+		"urls": {
+			"login": reverse('frontend.login'),
+			"logout": reverse('frontend.logout'),
+			"profile": reverse('frontend.profile')
+		}
+	}
+
 	# If user is authenticated, return profile
 	if user.is_authenticated():
-		return {
-			"profile": user.profile()
-		}
+
+		# Insert user details
+		session.update({
+			"profile": user.profile(),
+		})
+		return session
 
 	# If not, return blank array
 	else:
-		return { }
+		return common
 

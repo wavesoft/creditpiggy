@@ -1,0 +1,32 @@
+{% extends "base/p_content.html" %}
+{% load staticfiles %}
+
+{% block content %}
+	
+	<h2>{{ project.display_name }} - Project Details</h2>
+
+	<div class="media">
+		<div class="media-left">
+			<a href="#">
+	      		<img class="media-object" style="width: 120px" src="{{ project.profile_image }}" alt="Project Image">
+			</a>
+		</div>
+		<div class="media-body text-smaller">
+	        <div>
+	      		{{ project.desc|safe }}
+	        </div>
+	      <p>
+	      	{% if project.project_url %}
+	        <a href="{{ project.project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
+	      	{% endif %}
+	      </p>
+
+		  {% include "chunks/achievements.html" %}
+
+		</div>
+	</div>
+
+
+	<p><a href="{% url 'frontend.login' %}" class="btn btn-primary">Project List</a></p>
+
+{% endblock %}

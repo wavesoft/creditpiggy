@@ -30,6 +30,10 @@ h2 {
   position: absolute;
   right: 0;
 }
+.btn-achieved {
+  border: solid 1px #4caf50;
+  background-color: #E0F1E0;
+}
 .piggylogo-big > img {
   width: 100%;
 }
@@ -80,6 +84,25 @@ div.plot div.plot-graph {
   background-image: url(../img/loading.gif);
   background-repeat: no-repeat;
   background-position: center center;
+}
+div.achievements > div label {
+  width: 100px;
+}
+div.achievements > div .icon {
+  position: relative;
+  width: 100px;
+  height: 80px;
+  margin: 0 auto;
+  background-position: center center;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+div.achievements > div .icon .edge-badge {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  color: #4caf50;
+  font-size: 25px;
 }
 div.collapsible > div {
   -webkit-transition: max-height 0.25s ease-in;
