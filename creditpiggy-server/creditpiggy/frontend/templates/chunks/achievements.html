@@ -1,10 +1,10 @@
 {% load piggy_extras %}
+{% load tz %}
 <h2>Achievements</h2>
 <div class="achievements">
 	{% for a in achievements %}
-		<div class="btn btn-default" data-popup-id="#achievement-payload-{{ forloop.counter }}">
-			<label>{{ a.achievement.name }}</label>
-			<div class="icon" style="background-image: url( {{ a.achievement.icon }} )">
+		<div class="btn {% if a.achieved %}btn-default{% endif %}" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}" data-popup-id="#achievement-payload-{{ forloop.counter }}">
+			<div class="icon {% if not a.achieved %}inactive{% endif %}" style="background-image: url( {{ a.achievement.icon }} )">
 				{% if a.achieved %}
 				<i class="fa fa-check-circle edge-badge"></i>
 				{% endif %}
@@ -28,7 +28,9 @@
 						<!-- Unlocked / Achieved date -->
 						{% if a.achieved %}
 							<p class="text-success">
-								Achieved on <strong>{{ a.achieved.date|timestamp }}</strong>
+								{% localtime on %}
+								Achieved on <strong>{{ a.achieved.date }}</strong>
+								{% endlocaltime %}
 							</p>
 						{% endif %}
 						<!-- Requirements -->

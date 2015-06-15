@@ -54,6 +54,11 @@
 		 */
 		"__initialised": false,
 
+		/**
+		 * Cryptographic key used for various operations
+		 */
+		"__cryptokey": null,
+
 	};
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -128,6 +133,10 @@
 		if (newSession["profile"]) {
 			$(this).triggerHandler("profile", [ newSession["profile"] ]);
 		}
+
+		// If we have a crypto-key, update it
+		if (newSession['cryptokey'])
+			this.__cryptokey = newSession['cryptokey'];
 
 		// Update session
 		this.session = newSession;
@@ -250,6 +259,60 @@
 
 		// Register the callback for the "login" event, once
 		return true;
+
+	}
+
+	/**
+	 * Claim a working unit
+	 */
+	CreditPiggy.claimWorker = function( vmid, callback ) {
+
+		// Forward the claim request
+		this.__api("lib/claim", { 'vmid': vmid }, function(data) {
+			if (!callback) return;
+
+			// According to the response, fire callback
+			if (!data) {
+				callback(false, "Unable to handle your request");
+			} else {
+				if (data['result'] != 'ok') {
+					callback(false, data['error'])
+				} else {
+					callback(true);
+				}
+			}
+		});
+
+	}
+
+	/**
+	 * Release a working unit
+	 */
+	CreditPiggy.releaseWorker = function( vmid, callback ) {
+
+		// Forward the release request
+		this.__api("lib/release", { 'vmid': vmid }, function(data) {
+			if (!callback) return;
+
+			// According to the response, fire callback
+			if (!data) {
+				callback(false, "Unable to handle your request");
+			} else {
+				if (data['result'] != 'ok') {
+					callback(false, data['error'])
+				} else {
+					callback(true);
+				}
+			}
+		});
+
+	}
+
+
+	/**
+	 * Try to log-in using an offline session key 
+	 */
+	CreditPiggy.resumeSesion = function( ckey, callback ) {
 
 	}
 

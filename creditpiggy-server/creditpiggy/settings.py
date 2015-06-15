@@ -189,6 +189,7 @@ MIDDLEWARE_CLASSES = (
 	'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'creditpiggy.core.middleware.TimezoneMiddleware',
 
 	# - Social Auth ---
 	'social.apps.django_app.middleware.SocialAuthExceptionMiddleware'
@@ -235,7 +236,7 @@ EMAIL_FILE_PATH = "/Users/icharala/Develop/creditpiggy/data.local"
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Athens'
 
 USE_I18N = True
 USE_L10N = True

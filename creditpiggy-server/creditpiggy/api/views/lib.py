@@ -21,42 +21,85 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.clickjacking import xframe_options_deny
 from django.views.decorators.cache import cache_page
+from django.contrib.auth import login as auth_login
 
 from creditpiggy.core.models import CreditSlot, ComputingUnit
+from creditpiggy.api.models import SingleAuthLoginToken, new_token
+
 from creditpiggy.api.protocol import render_with_api, APIError
-from creditpiggy.api.auth import allow_cors
+from creditpiggy.api.auth import allow_cors, require_valid_user
 from creditpiggy.api import information
 
 ##########################################
 # Library API Calls
 ##########################################
 
-@xframe_options_deny
+@render_with_api(context="js.claim")
+@allow_cors()
+@require_valid_user()
+def claim(request, api="json"):
+	"""
+	Claim (link) a working unit by the current user
+	"""
+	return { }
+
+@render_with_api(context="js.release")
+@allow_cors()
+@require_valid_user()
+def release(request, api="json"):
+	"""
+	Release (unlink) a working unit by the current user
+	"""
+	return { }
+
 @render_with_api(context="js.handshake")
-@allow_cors(headers=["Content-Type"])
+@allow_cors()
 def handshake(request, api="json"):
 	"""
 	Initial handshake between the javascript library and the server
 	"""
 	return { }
 
-@xframe_options_deny
 @render_with_api(context="js.session")
-@allow_cors(headers=["Content-Type"])
+@allow_cors()
 def session(request, api="json"):
 	"""
 	Return the current session information
 	"""
 	
-	# Allocate slot or raise APIErrors
-	return information.compile_session(request.user)
+	# Return session details
+	return information.compile_session(request)
 
+@render_with_api(context="js.reheat")
+@allow_cors()
+def reheat(request, api="json"):
+	"""
+	Reheat a frozen session
+	"""
 
-@xframe_options_deny
+	# Fetch login token
+	token = None
+	if 'token' in request.GET:
+		try:
+			token = SingleAuthLoginToken.objects.get( token=request.GET['token'] )
+		except SingleAuthLoginToken.DoesNotExist:
+			raise APIError("No such token was found", code=404)
+	else:
+		raise APIError("Missing 'token' argument")
+
+	# Log-in such user
+	token.user.backend = "django.contrib.auth.backends.ModelBackend"
+	auth_login( request, token.user )
+
+	# Consume
+	token.delete()
+	
+	# Return session details
+	return information.compile_session(request)
+
 @render_with_api(context="js.poll")
-@allow_cors(headers=["Content-Type"])
+@allow_cors()
 @cache_page(30)
 def poll(request, api="json"):
 	"""

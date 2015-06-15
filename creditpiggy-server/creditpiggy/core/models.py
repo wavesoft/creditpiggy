@@ -21,6 +21,8 @@ import uuid
 import time
 import json
 import random
+import pytz
+import datetime
 
 from django.db import models, transaction
 from django.contrib.auth.models import AbstractUser
@@ -77,6 +79,9 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	can be linked to this profile.
 	"""
 
+	#: Time zones
+	TIMEZONES = [ (x,x) for x in pytz.all_timezones ]
+
 	#: Metrics information
 	METRICS_FEATURES = {
 		"credits" 			: ( 'ts_hourly', 'ts_daily', 'ts_weekly', 'ts_monthly', 'ts_yearly' ),
@@ -91,6 +96,9 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 
 	#: How the user will be visible to the public
 	display_name = models.CharField(max_length=200, default="")
+
+	#: The user's timezone
+	timezone = models.CharField(max_length=255, default="UTC", choices=TIMEZONES)
 
 	def profile(self):
 		"""
@@ -189,7 +197,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	project_url = models.URLField(default="", blank=True)
 
 	#: Achievements related to this project
-	achievements = models.ManyToManyField( Achievement )
+	achievements = models.ManyToManyField( Achievement, blank=True )
 
 	def __unicode__(self):
 		return u"%s" % self.display_name
@@ -234,7 +242,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 		# Return achievements and their status
 		return ans
 
-class ProjectUserRole(models.Model):
+class ProjectUserRole(MetricsModelMixin, models.Model):
 	"""
 	The relationship between a user and a project
 	"""
@@ -262,6 +270,15 @@ class ProjectUserRole(models.Model):
 	#: The relationship
 	role = models.IntegerField( choices=MEMBER_ROLE, default=MEMBER )
 
+	#: First action (timestamp)
+	firstAction = models.DateTimeField(auto_now_add=True)
+
+	#: Last action (timestamp)
+	lastAction = models.DateTimeField(auto_now=True)
+
+	#: The credits of the user in this model
+	credits = models.IntegerField(default=0)
+
 class ProjectCredentials(models.Model):
 	"""
 	Credentials for each project
@@ -277,20 +294,6 @@ class ProjectCredentials(models.Model):
 
 	#: The project
 	project = models.ForeignKey( PiggyProject )
-
-class ProjectUserCredit(MetricsModelMixin, models.Model):
-	"""
-	Credits given to a user for the participation in the project
-	"""
-
-	#: The user
-	user = models.ForeignKey( PiggyUser )
-
-	#: The project
-	project = models.ForeignKey( PiggyProject )
-
-	#: The credits of the user in this model
-	credits = models.IntegerField(default=0)
 
 class CreditSlot(MetricsModelMixin, models.Model):
 	"""
@@ -356,10 +359,10 @@ class Campaign(MetricsModelMixin, models.Model):
 		help_text="Campaign description")
 
 	#: Start date unix timestamp
-	start_time = models.IntegerField(default=time.time)
+	start_time = models.DateTimeField(default=datetime.datetime.now)
 
 	#: End date unix timestamp
-	end_time = models.IntegerField(default=time.time)
+	end_time = models.DateTimeField(default=datetime.datetime.now)
 
 	#: True if the campaign is published
 	published = models.BooleanField(default=False)
@@ -368,22 +371,25 @@ class Campaign(MetricsModelMixin, models.Model):
 	active = models.BooleanField(default=False)
 
 	@classmethod
-	def ofProject(cls, project):
+	def ofProject(cls, project, active=False):
 		"""
 		Return all the Campaigns containing this project
 		"""
-
-		# Get time
-		now = time.time()
-
+		
 		# Get all valid campaigns for this project
-		return CampaignProject.objects.filter( 
-			campaign__start_time__gte=now, 
-			campaign__end_time__lte=now,
-			campaign__active=True,
-			campaign__published=True,
-			project=project
-			)
+		if active:
+			return CampaignProject.objects.filter( 
+				campaign__start_time__gte=datetime.datetime.now(), 
+				campaign__end_time__lte=datetime.datetime.now(),
+				campaign__active=True,
+				campaign__published=True,
+				project=project
+				)
+
+		else:
+			return CampaignProject.objects.filter( 
+				project=project
+				)
 
 class CampaignUserCredit(MetricsModelMixin, models.Model):
 	"""
@@ -431,7 +437,10 @@ class AchievementInstance(models.Model):
 	achievement = models.ForeignKey(Achievement)
 
 	#: The date he/she achieved it
-	date = models.IntegerField(default=0)
+	date = models.DateTimeField(auto_now_add=True)
+
+	def __unicode__(self):
+		return "%s/%s for %s" % (self.achievement.name, self.project.display_name, self.user.display_name)
 
 ###################################################################
 # Utility Classes

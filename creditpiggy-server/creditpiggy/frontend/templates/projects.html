@@ -6,7 +6,7 @@
 <div class="media">
 	<div class="media-left">
 		<a href="/project/{{ id }}">
-      		<img class="media-object" style="width: 80px" src="{{ profile_image }}" alt="Project Image">
+      	<img class="media-object" style="width: 80px" src="{{ profile_image }}" alt="{{ display_name }} logo">
 		</a>
 	</div>
 	<div class="media-body">
@@ -25,16 +25,9 @@
         {{/project_url}}
       </p>
     	<br />
-    	<table class="table table-condensed">
-    		<tr>
-    			<th>Progress:</th>
-    			<td>30%</td>
-    		</tr>
-    		<tr>
-    			<th>Users:</th>
-    			<td>412</td>
-    		</tr>
-    	</table>
+      {% endverbatim %}
+      {% include "chunks/projectfooter.html" %}
+      {% verbatim %}
 	</div>
 </div>
 </script>

@@ -7,18 +7,27 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="//bootswatch.com/paper/bootstrap.min.css" rel="stylesheet">
+    -->
+    <link href="{% static "lib/css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "lib/css/bootstrap-theme-paper.min.css" %}" rel="stylesheet">
+    <link href="{% static "lib/css/font-awesome.min.css" %}" rel="stylesheet">
     <link href="{% static "frontend/css/theme.css" %}" rel="stylesheet">
     {% block css %}{% endblock %}
   </head>
   <body>
     {% block body %}{% endblock %}
-    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+    <!--    
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script> 
     <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="{% static "frontend/js/creditpiggy.js" %}"></script>
+    -->
+    <script type="text/javascript" src="{% static "lib/js/jquery-2.1.1.js" %}"></script>
+    <script type="text/javascript" src="{% static "lib/js/bootstrap-3.1.1.js" %}"></script>
     <script type="text/javascript" src="{% static "lib/js/mustache.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "frontend/js/creditpiggy.js" %}"></script>
     {% block javascript %}{% endblock %}
     <script type="text/javascript">cpjs.initialize();</script>
   </body>

@@ -18,7 +18,7 @@
 ################################################################
 
 from creditpiggy.core.achievements import check_achievements
-from creditpiggy.core.models import ProjectUserCredit, Campaign
+from creditpiggy.core.models import ProjectUserRole, Campaign
 
 def alloc_slot( slot ):
 	"""
@@ -85,8 +85,8 @@ def claim_slot( slot, machine ):
 		m_owner.cincr( machine_counters )			# Squash all macine counters to the owner
 
 		# Find the project/owner link
-		(pu_credits, created) = ProjectUserCredit.objects.get_or_create(
-				user=machine.owner, project=slot.project
+		(pu_credits, created) = ProjectUserRole.objects.get_or_create(
+				user=machine.owner, project=slot.project, role=ProjectUserRole.MEMBER
 			)
 
 		# Stack machine credits
@@ -129,7 +129,7 @@ def discard_slot( slot, reason ):
 	m_project.hadd( "discard_reason", reason, 1 )	# Update the histogram distribution
 
 	# Update all relevant campaigns running for the project
-	campaigns = Campaign.ofProject( slot.project )
+	campaigns = Campaign.ofProject( slot.project, active=True )
 	for campaign in campaigns:
 
 		# Update campaign metrics

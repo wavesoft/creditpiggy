@@ -17,32 +17,67 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-from django.core.urlresolvers import reverse
+import random
 
-def compile_session(user):
+from django.core.urlresolvers import reverse
+from creditpiggy.api.models import SingleAuthLoginToken
+
+def gen_crypto_key():
+	"""
+	Cryptographic key generator
+	"""
+	# Token charset
+	charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
+	key = ""
+	for i in range(0, 48):
+		key += charset[random.randint(0, len(charset)-1)]
+	# Return a unique key
+	return key
+
+def compile_session(request):
 	"""
 	Compile session information
 	"""
 
+	# Get user
+	user = request.user
+
+	# Get/create session crypto-key
+	if 'cryptokey' in request.session:
+		ckey = request.session['cryptokey']
+	else:
+		ckey = gen_crypto_key()
+		request.session['cryptokey'] = ckey
+
 	# Common profile
 	session = {
+		
+		# Cryptographic key for hashing and other session-wide operations
+		"cryptokey": ckey,
+
+		# Poll URLs
 		"urls": {
 			"login": reverse('frontend.login'),
 			"logout": reverse('frontend.logout'),
 			"profile": reverse('frontend.profile')
 		}
+
 	}
 
 	# If user is authenticated, return profile
 	if user.is_authenticated():
 
+		# Lookup or create relevant single-auth token
+		(token, created) = SingleAuthLoginToken.objects.get_or_create(user=user)
+
 		# Insert user details
 		session.update({
 			"profile": user.profile(),
+			"auth_token": token.token
 		})
 		return session
 
 	# If not, return blank array
 	else:
-		return common
+		return session
 

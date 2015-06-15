@@ -95,7 +95,7 @@ def profile(request):
 
 	# Return context
 	return context(
-			session=json.dumps(information.compile_session(request.user))
+			session=json.dumps(information.compile_session(request))
 		)
 
 @render_to("status.html")

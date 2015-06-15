@@ -17,26 +17,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-import uuid
-from django.db import models
+import pytz
+from django.utils import timezone
 
-from creditpiggy.core.models import PiggyUser
+class TimezoneMiddleware(object):
+	def process_request(self, request):
+		tzname = request.session.get('django_timezone')
 
-def new_token():
-	"""
-	UUID Generator
-	"""
-	return uuid.uuid4().hex
+		# Apply user's timezone
+		if request.user.is_authenticated():
+			timezone.activate(pytz.timezone(request.user.timezone))
 
-class SingleAuthLoginToken(models.Model):
-	"""
-	A token that can be used for token-only authentication.
-	Such tokens expire after use and have to be re-issued. 
-	"""
+		# Otherwise, detect from session
+		elif tzname:
+			timezone.activate(pytz.timezone(tzname))
 
-	#: Authentication token
-	token = models.CharField(max_length=32, default=new_token, unique=True, db_index=True, 
-		help_text="Single-use log-in token")
-
-	#: The user
-	user = models.ForeignKey( PiggyUser )
+		else:
+			timezone.deactivate()

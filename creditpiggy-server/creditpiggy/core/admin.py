@@ -24,16 +24,16 @@ from creditpiggy.core.models import *
 admin.site.register(PiggyUser)
 admin.site.register(ComputingUnit)
 admin.site.register(PiggyProject)
-admin.site.register(ProjectUserCredit)
 admin.site.register(ProjectCredentials)
 admin.site.register(Achievement)
-admin.site.register(AchievementInstance)
+
 admin.site.register(Campaign)
 admin.site.register(CampaignUserCredit)
 admin.site.register(CampaignProject)
 
 class ProjectUserRoleAdmin(admin.ModelAdmin):
-	list_display = ('user', 'project', 'role')
+	list_display = ('user', 'project', 'role', 'firstAction' , 'lastAction')
+	list_filter = ('role',)
 
 admin.site.register(ProjectUserRole, ProjectUserRoleAdmin)
 
@@ -42,3 +42,9 @@ class CreditSlotAdmin(admin.ModelAdmin):
 	list_filter = ('status',)
 
 admin.site.register(CreditSlot, CreditSlotAdmin)
+
+class AchievementInstanceAdmin(admin.ModelAdmin):
+	list_display = ('achievement', 'user', 'project', 'campaign', 'date')
+	list_filter = ('achievement','user','project','campaign')
+
+admin.site.register(AchievementInstance, AchievementInstanceAdmin)
