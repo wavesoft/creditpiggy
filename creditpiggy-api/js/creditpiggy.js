@@ -122,15 +122,18 @@
 
 		// Trigger "login" if we didn"t have a profile before
 		if ((!this.session || !this.session["profile"]) && newSession["profile"]) {
+			this.profile = newSession['profile'];
 			$(this).triggerHandler("login", [ newSession["profile"] ]);
 		} 
 		// Trigger "logout" if we did have a profile and now we don"t
 		else if ((!newSession || !newSession["profile"]) && (this.session && this.session["profile"])) {
 			$(this).triggerHandler("logout", [ this.session["profile"] ]);
+			this.profile = null;
 		}
 
 		// Trigger the "profile" event if we have a profile
 		if (newSession["profile"]) {
+			this.profile = newSession['profile'];
 			$(this).triggerHandler("profile", [ newSession["profile"] ]);
 		}
 
@@ -268,7 +271,7 @@
 	CreditPiggy.claimWorker = function( vmid, callback ) {
 
 		// Forward the claim request
-		this.__api("lib/claim", { 'vmid': vmid }, function(data) {
+		this.__api("lib/claim", { 'vmid': vmid }, (function(data) {
 			if (!callback) return;
 
 			// According to the response, fire callback
@@ -281,7 +284,7 @@
 					callback(true);
 				}
 			}
-		});
+		}).bind(this));
 
 	}
 
@@ -291,7 +294,7 @@
 	CreditPiggy.releaseWorker = function( vmid, callback ) {
 
 		// Forward the release request
-		this.__api("lib/release", { 'vmid': vmid }, function(data) {
+		this.__api("lib/release", { 'vmid': vmid }, (function(data) {
 			if (!callback) return;
 
 			// According to the response, fire callback
@@ -304,16 +307,45 @@
 					callback(true);
 				}
 			}
-		});
+		}).bind(this));
 
 	}
 
+	/**
+	 * Try to log-in using an offline session key
+	 *
+	 * If the log-in was successfful, a new authentication token is allocated
+	 * and passed as a first parameter in the callback function.
+	 */
+	CreditPiggy.reheatSession = function( token, callback ) {
+
+		// Forward the release request
+		this.__api("lib/reheat", { 'token': token }, (function(data) {
+			if (!callback) return;
+
+			// According to the response, fire callback
+			if (!data) {
+				callback(false, "Unable to handle your request");
+			} else {
+				if (data['result'] != 'ok') {
+					callback(false, data['error'])
+				} else {
+					// Handle session information
+					this.__applySessionChanges( data );
+					// Callback the new authentication token
+					callback(data['auth_token']);
+				}
+			}
+		}).bind(this));
+
+	}
 
 	/**
-	 * Try to log-in using an offline session key 
+	 * Thaw session information and return a payload
+	 * that can be passed to reheatSession in order to resume it
 	 */
-	CreditPiggy.resumeSesion = function( ckey, callback ) {
-
+	CreditPiggy.thawSession = function() {
+		return this.session['auth_token'];
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
