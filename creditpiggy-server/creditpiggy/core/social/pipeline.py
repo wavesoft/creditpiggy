@@ -19,6 +19,7 @@
 
 
 from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from social.pipeline.social_auth import social_user
 from social.apps.django_app.default.models import UserSocialAuth
 

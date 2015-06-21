@@ -35,11 +35,11 @@
 
     <p>
       <div class="btn-group pull-right" role="group" aria-label="sort-order">
-        <a href="{% url 'frontend.dashboard' page='overview' %}" class="btn {% if page == 'overview' %}btn-info{% else %}btn-default{% endif %}">Overview</a>
-        <a href="{% url 'frontend.dashboard' page='projects' %}" class="btn {% if page == 'projects' %}btn-info{% else %}btn-default{% endif %}">Projects</a>
-        <a href="{% url 'frontend.dashboard' page='details' %}" class="btn {% if page == 'details' %}btn-info{% else %}btn-default{% endif %}">Details</a>
+        <a href="{% url 'frontend.dashboard' page='overview' %}?{{url_suffix}}" class="btn {% if page == 'overview' %}btn-info{% else %}btn-default{% endif %}">Overview</a>
+        <a href="{% url 'frontend.dashboard' page='projects' %}?{{url_suffix}}" class="btn {% if page == 'projects' %}btn-info{% else %}btn-default{% endif %}">Projects</a>
+        <a href="{% url 'frontend.dashboard' page='details' %}?{{url_suffix}}" class="btn {% if page == 'details' %}btn-info{% else %}btn-default{% endif %}">Details</a>
       </div>
-      <a class="btn btn-default" href="/"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
+      <a class="btn btn-default" href="/?{{url_suffix}}"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
     </p>
     
     <hr />

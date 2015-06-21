@@ -22,8 +22,9 @@ import hashlib
 from django.http import HttpResponse
 
 from creditpiggy.api.protocol import APIError
-from creditpiggy.core.models import ProjectCredentials
+from creditpiggy.api.models import ProjectCredentials, WebsiteCredentials
 from functools import wraps
+from urlparse import urlparse
 
 def _validate_project_auth( payload, auth ):
 	"""
@@ -116,6 +117,45 @@ def require_valid_user():
 
 			# Run function
 			return func(request, *args, **kwargs)
+
+		return wrapper
+	return decorator
+
+def require_website_auth():
+	"""
+	Demand a valid website authentication credentials to be present
+	in the request parameters.
+	"""
+	def decorator(func):
+		@wraps(func)
+		def wrapper(request, api="json", *args, **kwargs):
+
+			# Raise syntax error if 'proto' does not exist in header
+			if not hasattr(request, 'proto'):
+				raise SyntaxError("The 'require_website_auth' decorator requires a 'render_with_api' decorator first!")
+
+			# Parse referer header
+			referer = request.META.get('HTTP_REFERER', '')
+			url = urlparse(referer)
+
+			# Lookup authentication token
+			token = request.proto.get('webid', required=True)
+
+			# Lookup an API token
+			try:
+				cred = WebsiteCredentials.objects.get( token=token )
+			except WebsiteCredentials.DoesNotExist:
+				raise APIError("You are not authorized to use this resource", code=401)
+
+			# Validate domain
+			if not cred.hasDomain( url.netloc ):
+				raise APIError("Your domain is not authorized to use this resource", code=401)
+
+			# Set website
+			request.website = cred.website
+
+			# Run function
+			return func(request, api, *args, **kwargs)
 
 		return wrapper
 	return decorator

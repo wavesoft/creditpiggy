@@ -2,14 +2,14 @@
 {% load staticfiles %}
 
 {% block head %}
-	<meta http-equiv="refresh" content="1; url={% url 'frontend.login' %}">
+	<meta http-equiv="refresh" content="0; url={% url 'frontend.login' %}">
 {% endblock %}
 
 {% block content %}
 	
 	<p class="lead">You are now logged out</p>
 	<p>You will be redirected in a second, if not click on the button below to continue.</p>
-	<p><a href="{% url 'frontend.login' %}" class="btn btn-primary">Continue</a></p>
+	<p><a href="{% url 'frontend.login' %}?{{url_suffix}}" class="btn btn-primary">Continue</a></p>
 
     <!-- Script callbacks -->
     <script type="text/javascript">

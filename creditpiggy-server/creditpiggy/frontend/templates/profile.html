@@ -12,46 +12,46 @@
     <div class="row">
       <div class="col-sm-4">
 
-        <div class="panel panel-default" href="#">
+        <div class="panel panel-default">
           <div class="panel-body text-center">
             <h4>Projects</h4>
             <p>
               Many amazing projects are awaiting for you to explore.
             </p>
-            <p><a class="btn btn-default" href="{% url 'frontend.projects' %}">Explore</a></p>        
+            <p><a class="btn btn-default" href="{% url 'frontend.projects' %}?{{url_suffix}}">Explore</a></p>        
           </div>
         </div>
 
       </div>
       <div class="col-sm-4">
 
-        <div class="panel panel-default" href="#">
+        <div class="panel panel-default">
           <div class="panel-body text-center">
             <h4>About me</h4>
             <p>
               Overview of what you have contributed to all the projects.
             </p>
-            <p><a class="btn btn-default" href="{% url 'frontend.dashboard' page='overview' %}">Dashboard</a></p>        
+            <p><a class="btn btn-default" href="{% url 'frontend.dashboard' page='overview' %}?{{url_suffix}}">Dashboard</a></p>        
           </div>
         </div>
 
       </div>
       <div class="col-sm-4">
 
-        <div class="panel panel-default" href="#">
+        <div class="panel panel-default">
           <div class="panel-body text-center">
             <h4>Leaderboards</h4>
             <p>
               See who is leading
             </p>
-            <p><a class="btn btn-default" href="/logout/">Leaderboard</a></p>        
+            <p><a class="btn btn-default" href="/logout/?{{url_suffix}}">Leaderboard</a></p>        
           </div>
         </div>
 
       </div>
     </div>
 
-    <p><a class="btn btn-primary" href="/logout/">Logout</a></p>
+    <p><a class="btn btn-primary" href="/logout/?{{url_suffix}}">Logout</a></p>
 
     <!-- Script callbacks -->
     <script type="text/javascript">

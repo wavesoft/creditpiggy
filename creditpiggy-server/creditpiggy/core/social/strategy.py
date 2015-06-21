@@ -17,33 +17,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-def url_suffix(request):
-	"""
-	Calculate any required url suffix to be appended
-	"""
-	ans = ""
+from django.conf import settings
+from social.strategies.django_strategy import DjangoStrategy
 
-	# Forward 'apiid'
-	if hasattr(request, 'apiid'):
-		ans += "apiid=%s" % request.apiid
-	elif 'apiid' in request.GET:
-		ans += "apiid=%s" % request.GET['apiid']
+class DjangoStrategyWithAPIID(DjangoStrategy):
 
-	# Return url suffix
-	return ans
-
-def context(request, **extra):
-	"""
-	Common context generator for all templates below
-	"""
-	# Check for apiid
-	apiid = ""
-	if hasattr(request, 'apiid'):
-		apiid = request.apiid
-
-	# Return dict
-	return dict({
-		'url_suffix': url_suffix(request),
-		'apiid': apiid
-	}, **extra)
-
+	def __init__(self, storage, request=None, tpl=None):
+		super(DjangoStrategyWithAPIID, self).__init__(storage, request, tpl)

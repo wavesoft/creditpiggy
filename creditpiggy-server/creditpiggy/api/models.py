@@ -17,16 +17,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import json
 import uuid
 from django.db import models
 
-from creditpiggy.core.models import PiggyUser
+from creditpiggy.core.models import gen_token_key, new_uuid, new_token, PiggyUser, PiggyProject, Website
 
-def new_token():
-	"""
-	UUID Generator
-	"""
-	return uuid.uuid4().hex
+###################################################################
+# Authentication Models
+###################################################################
 
 class SingleAuthLoginToken(models.Model):
 	"""
@@ -40,3 +39,51 @@ class SingleAuthLoginToken(models.Model):
 
 	#: The user
 	user = models.ForeignKey( PiggyUser )
+
+class ProjectCredentials(models.Model):
+	"""
+	Credentials for each project
+	"""
+
+	#: Authentication token
+	token = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
+		help_text="Anonymous authentication token for the credentials")
+
+	#: Shared secret between
+	secret = models.CharField(max_length=48, default=gen_token_key, 
+		help_text="Shared secret between project and administrator")
+
+	#: The project
+	project = models.ForeignKey( PiggyProject )
+
+class WebsiteCredentials(models.Model):
+	"""
+	Credentials for each website
+	"""
+
+	#: Authentication token
+	token = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
+		help_text="Anonymous authentication token for the website")
+
+	#: The website linked to this credentials
+	website = models.ForeignKey( Website )
+
+	#: A list of valid domains
+	domains = models.TextField(default="[]")
+
+	# Check if domain is authenticated
+	def hasDomain(self, domainName):
+		"""
+		Check if the specified domain is registered in the list of authenticated domains
+		"""
+
+		# Load domains
+		domains = json.loads(self.domains)
+		return domainName.lower() in domains
+
+	def getDomains(self):
+		"""
+		Return a list of all domains
+		"""
+		return json.loads(self.domains)
+

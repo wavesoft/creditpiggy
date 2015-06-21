@@ -17,33 +17,19 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-def url_suffix(request):
-	"""
-	Calculate any required url suffix to be appended
-	"""
-	ans = ""
+def social_login_redirect(request):
+    """
+    Load current redirect to context.
+    """
+    value = request.method == 'POST' and \
+                request.POST.get(REDIRECT_FIELD_NAME) or \
+                request.GET.get(REDIRECT_FIELD_NAME)
+    querystring = value and (REDIRECT_FIELD_NAME + '=' + value) or ''
 
-	# Forward 'apiid'
-	if hasattr(request, 'apiid'):
-		ans += "apiid=%s" % request.apiid
-	elif 'apiid' in request.GET:
-		ans += "apiid=%s" % request.GET['apiid']
+    ">>>>>>>> %r" % dir(request)
 
-	# Return url suffix
-	return ans
-
-def context(request, **extra):
-	"""
-	Common context generator for all templates below
-	"""
-	# Check for apiid
-	apiid = ""
-	if hasattr(request, 'apiid'):
-		apiid = request.apiid
-
-	# Return dict
-	return dict({
-		'url_suffix': url_suffix(request),
-		'apiid': apiid
-	}, **extra)
-
+    return {
+        'REDIRECT_FIELD_NAME': REDIRECT_FIELD_NAME,
+        'REDIRECT_FIELD_VALUE': value,
+        'REDIRECT_QUERYSTRING': querystring
+    }

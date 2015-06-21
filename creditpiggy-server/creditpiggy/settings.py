@@ -63,6 +63,13 @@ CACHES = {
 	'default': _CONFIG_.DEFAULT_CACHE
 }
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+
+# API Session
+SESSION_COOKIE_NAME_API = "sessionfor"
+APIID_COOKIE_NAME = "_cpapiid"
+APIID_COOKIE_SALT = "xbo37ga86v31"
+
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
@@ -131,6 +138,9 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'locale': 'en_US'}
 SOCIAL_AUTH_LIVE_KEY = _CONFIG_.SOCIAL_AUTH_LIVE_KEY
 SOCIAL_AUTH_LIVE_SECRET = _CONFIG_.SOCIAL_AUTH_LIVE_SECRET
 
+# Use custom auth strategy
+SOCIAL_AUTH_STRATEGY = 'creditpiggy.core.social.strategy.DjangoStrategyWithAPIID'
+
 # Social login redirection URLs
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/profile/'
@@ -143,8 +153,8 @@ SOCIAL_AUTH_PIPELINE = (
 	'social.pipeline.social_auth.auth_allowed',
 
 	# Overrides 'social.pipeline.social_auth.social_user'
-	# in order to provide linking with previously created profiles.
-	#'creditpiggy.core.pipelines.social_user_withlink',
+	# in order to provide linking with p#reviously created profiles.
+	#'creditpiggy.core.social.pipeline.sial_user_withlink',
 	'social.pipeline.social_auth.social_user',
 
 	'social.pipeline.user.get_username',
@@ -153,12 +163,13 @@ SOCIAL_AUTH_PIPELINE = (
 	'social.pipeline.social_auth.load_extra_data',
 	'social.pipeline.user.user_details',
 
-	'creditpiggy.core.pipelines.social_update_displayname',
+	'creditpiggy.core.social.pipeline.social_update_displayname',
 )
+
 
 # Storing additional fields in session, used for
 # identifying linking requests
-FIELDS_STORED_IN_SESSION = [ 'mode', 'a' ]
+FIELDS_STORED_IN_SESSION = [ 'mode', 'a', 'apiid' ]
 
 # -----------------
 
@@ -182,7 +193,9 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-	'django.contrib.sessions.middleware.SessionMiddleware',
+	#'django.contrib.sessions.middleware.SessionMiddleware',
+	'creditpiggy.core.middleware.SessionWithAPIMiddleware',
+	
 	'django.middleware.common.CommonMiddleware',
 	'django.middleware.csrf.CsrfViewMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -190,6 +203,8 @@ MIDDLEWARE_CLASSES = (
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'creditpiggy.core.middleware.TimezoneMiddleware',
+
+	'creditpiggy.core.middleware.URLSuffixMiddleware',
 
 	# - Social Auth ---
 	'social.apps.django_app.middleware.SocialAuthExceptionMiddleware'

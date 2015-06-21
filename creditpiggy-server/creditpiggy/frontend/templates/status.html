@@ -14,7 +14,7 @@
 				<td>{{ p.project.display_name }}</td>
 				<td>{{ p.credits }}</td>
 				<td>
-					<a href="/credits/?project={{ p.project.id }}" class="btn btn-primary btn-xs">See Slots</a>
+					<a href="/credits/?project={{ p.project.id }}?{{url_suffix}}" class="btn btn-primary btn-xs">See Slots</a>
 				</td>
 			</tr>
 			{% endfor %}

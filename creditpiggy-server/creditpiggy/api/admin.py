@@ -17,9 +17,41 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import json
 import hashlib
 from django.contrib import admin
+from django.forms import ModelForm
+from django.core.exceptions import ValidationError
 
 from creditpiggy.api.models import *
 
-admin.site.register(SingleAuthLoginToken)
+class SingleAuthLoginTokenAdmin(admin.ModelAdmin):
+	list_display = ('user', 'token')
+
+admin.site.register(SingleAuthLoginToken, SingleAuthLoginTokenAdmin)
+
+class ProjectCredentialsAdmin(admin.ModelAdmin):
+	list_display = ('project', 'token')
+
+admin.site.register(ProjectCredentials, ProjectCredentialsAdmin)
+
+class WebsiteCredentialsForm(ModelForm):
+	def clean_domains(self):
+
+		# Try to parse json
+		try:
+			json.loads( self.cleaned_data["domains"] )
+		except Exception as e:
+			raise ValidationError("Error parsing JSON: %r" % e)
+
+		# Return data
+		return self.cleaned_data["domains"]
+
+class WebsiteCredentialsAdmin(admin.ModelAdmin):
+	list_display = ('website', 'token', 'authorized_domains')
+	form = WebsiteCredentialsForm
+
+	def authorized_domains(self, obj):
+		return ", ".join(obj.getDomains())
+
+admin.site.register(WebsiteCredentials, WebsiteCredentialsAdmin)

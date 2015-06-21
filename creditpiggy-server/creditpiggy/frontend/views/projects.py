@@ -38,7 +38,7 @@ def list(request):
 	"""
 
 	# Return context
-	return context()
+	return context(request)
 
 @login_required()
 @render_to("project.html")
@@ -64,7 +64,7 @@ def details(request, uuid=""):
 	achievements = project.achievementStatus(request.user)
 
 	# Return context
-	return context(
+	return context(request,
 		project=project,
 		achievements=achievements,
 		counters=project.metrics().counters()
@@ -78,4 +78,6 @@ def dashboard(request, page):
 	"""
 
 	# Return context
-	return context( page=page )
+	return context(request,
+		page=page
+		)

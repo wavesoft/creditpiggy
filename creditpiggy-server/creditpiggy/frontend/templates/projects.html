@@ -5,7 +5,7 @@
 <script type="x-tmpl-mustache" id="tpl-project">
 <div class="media">
 	<div class="media-left">
-		<a href="/project/{{ id }}">
+		<a href="/project/{{ id }}{% endverbatim %}?{{url_suffix}}{% verbatim %}">
       	<img class="media-object" style="width: 80px" src="{{ profile_image }}" alt="{{ display_name }} logo">
 		</a>
 	</div>
@@ -19,9 +19,9 @@
         <label for="col_{{ id }}"><span></span></label>
     	</div>
       <p>
-        <a href="/project/{{ id }}" class="btn btn-sm btn-primary">More details</a>
+        <a href="/project/{{ id }}{% endverbatim %}?{{url_suffix}}{% verbatim %}" class="btn btn-sm btn-primary">More details</a>
         {{#project_url}}
-        <a href="{{ project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
+        <a href="{{ project_url }}{% endverbatim %}?{{url_suffix}}{% verbatim %}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
         {{/project_url}}
       </p>
     	<br />
@@ -47,7 +47,7 @@
         <button type="button" class="btn btn-default">Most active</button>
         <button type="button" class="btn btn-default">Newest</button>
       </div>
-      <a class="btn btn-default" href="/"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
+      <a class="btn btn-default" href="/?{{url_suffix}}"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
     </p>
    	<hr />
 

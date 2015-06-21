@@ -10,7 +10,7 @@
 	 * Check if jQuery requirement was not available as expected.
 	 */
 	if (!$) {
-		console.error("CreditPiggy: jQuery must available in order to use creditpiggy.js!");
+		console.error("CreditPiggy: jQuery must loaded prior to creditpiggy.js!");
 		return null;
 	}
 
@@ -28,11 +28,6 @@
 		 * The API Endpoint
 		 */
 		"baseURL":  "http://127.0.0.1:8000", //"//creditpiggy.cern.ch/api",
-
-		/**
-		 * The ID for the project we are focusing at
-		 */
-		"project": null,
 
 		/**
 		 * Session data
@@ -59,11 +54,60 @@
 		 */
 		"__cryptokey": null,
 
+		/**
+		 * Stack of claimed workers
+		 */
+		"__claimedWorkers": [],
+
+		/**
+		 * The ID of the VM
+		 */
+		"__webid": null,
+
 	};
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Internal API functions
 	//////////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Check if two object properties are the same
+	 */
+	CreditPiggy.__same = function( a, b ) {
+
+		// Check for undefined match
+		if ((a == undefined) && (b == undefined)) return true;
+		if ((a == undefined) || (b == undefined)) return false;
+
+		// Check if properties of 'a' do not exist in 'b'
+		// and for the ones found common, check if they match
+		for (var k in a) {
+			if (a.hasOwnProperty(k)) {
+				if (b.hasOwnProperty(k)) {
+					// Property types do not match? return
+					if (typeof(a[k]) != typeof(b[k])) return false;
+					// If properties are objects, perform nested __same call
+					if (typeof(a[k]) == 'object')
+						if (!this.__same(a[k], b[k])) return false;
+					// Otherwise if values are not the same, return false
+					if (a[k] != b[k]) return false;
+				} else {
+					// Property of 'a' not in 'b'				
+					return false
+				}
+			}
+		}
+
+		// If for any reason a property of b is 
+		// not in a, quit anyways.
+		for (var k in b)
+			if (b.hasOwnProperty(k) && !a.hasOwnProperty(k))
+				return false;
+
+		// All checks passed
+		return true;
+
+	}
 
 	/**
 	 * (Re-)open a pop-up window
@@ -96,13 +140,15 @@
 	 * @param {function} callback - The callback to fire upon receiving a response.
 	 */
 	CreditPiggy.__api = function(action, data, callback) {
+		// Update parameters that always should pass through
+		var data = data || { };
+		data['version'] = this.version;
+		data['webid'] = this.__webid;
 		// Perform AJAX API Request
 		$.ajax({
 			"url": this.baseURL + "/api/" + action + ".jsonp",
 			"dataType": "jsonp",
-			"data": data || {
-				"version": this.version
-			},
+			"data": data,
 			"method": "GET",
 		})
 		.done((function( data, textStatus, jqXHR ) {
@@ -119,9 +165,10 @@
 	 * Trigger appropriate events upon changing data in the session
 	 */
 	CreditPiggy.__applySessionChanges = function( newSession ) {
+		var currProfile = this.profile;
 
 		// Trigger "login" if we didn"t have a profile before
-		if ((!this.session || !this.session["profile"]) && newSession["profile"]) {
+		if ((!this.session || !this.session["profile"]) && newSession && newSession["profile"]) {
 			this.profile = newSession['profile'];
 			$(this).triggerHandler("login", [ newSession["profile"] ]);
 		} 
@@ -132,13 +179,15 @@
 		}
 
 		// Trigger the "profile" event if we have a profile
-		if (newSession["profile"]) {
-			this.profile = newSession['profile'];
-			$(this).triggerHandler("profile", [ newSession["profile"] ]);
+		if (newSession && newSession["profile"]) {
+			if (!this.__same(newSession['profile'], currProfile)) {
+				this.profile = newSession['profile'];
+				$(this).triggerHandler("profile", [ newSession["profile"] ]);
+			}
 		}
 
 		// If we have a crypto-key, update it
-		if (newSession['cryptokey'])
+		if (newSession && newSession['cryptokey'])
 			this.__cryptokey = newSession['cryptokey'];
 
 		// Update session
@@ -153,7 +202,6 @@
 
 		// Update Session Information
 		this.__api("lib/session", {
-			"project": this.project
 		}, (function(data) {
 
 			// If there was an error, reset profile
@@ -181,9 +229,23 @@
 		this.__updateSession();
 		// We are now initialised
 		this.__initialised = true;
-
 	}
 
+	/**
+	 * Check and/or refresh session
+	 */
+	CreditPiggy.__checkSession = function( callback ) {
+
+		// If we have a profile, we are logged in
+		if (this.profile) {
+			if (callback)
+				callback(true);
+		} else {
+			if (callback)
+				callback(false);
+		}
+	}
+ 
 	//////////////////////////////////////////////////////////////////////////////
 	// External API functions
 	//////////////////////////////////////////////////////////////////////////////
@@ -195,10 +257,10 @@
 	/**
 	 * Configure the CreditPiggy API 
 	 */
-	CreditPiggy.configure = function( parameters ) {
+	CreditPiggy.configure = function( webid ) {
 
 		// Update parameters
-		if (parameters['project']) this.project = parameters['project'];
+		this.__webid = webid;
 
 		// If the page was loaded but not initialized
 		// initialize now, otherwise update session
@@ -211,9 +273,30 @@
 	}
 
 	/**
+	 * Perform user log-out
+	 * 
+	 * This function returns 'false' if the user is already logged in
+	 * or 'true' if the window was openned.
+	 */
+	CreditPiggy.logout = function( ) {
+
+		// If the user is already logged out, just fire callback
+		if (!this.session || !this.session["profile"]) {
+			return false;
+		}
+
+		// Open pop-up
+		this.__api("lib/logout");
+
+		// We are done logging out.
+		return true;
+
+	}
+
+	/**
 	 * Perform user log-in and fire callback upon completion
 	 * 
-	 * This functino returns 'false' if the user is already logged in
+	 * This function returns 'false' if the user is already logged in
 	 * or 'true' if the window was openned.
 	 */
 	CreditPiggy.showLogin = function( ) {
@@ -224,7 +307,7 @@
 		}
 
 		// Open pop-up
-		this.__popup( this.baseURL + "/login/?project=" + escape(this.project) );
+		this.__popup( this.baseURL + "/login/?webid=" + escape(this.__webid) );
 
 		// Register the callback for the "login" event, once
 		return true;
@@ -234,7 +317,7 @@
 	/**
 	 * Show user's profile
 	 * 
-	 * This functino returns 'false' if the user is not logged in
+	 * This function returns 'false' if the user is not logged in
 	 * or 'true' if the window was openned.
 	 */
 	CreditPiggy.showProfile = function( ) {
@@ -245,20 +328,7 @@
 		}
 
 		// Open pop-up
-		this.__popup( this.baseURL + "/profile/?project=" + escape(this.project) );
-
-		// Register the callback for the "login" event, once
-		return true;
-
-	}
-
-	/**
-	 * Show project's status page
-	 */
-	CreditPiggy.showProject = function( ) {
-
-		// The project website is accessible without log-in
-		this.__popup( this.baseURL + "/project/" + this.project + "/" );
+		this.__popup( this.baseURL + "/profile/?webid=" + escape(this.__webid) );
 
 		// Register the callback for the "login" event, once
 		return true;
@@ -269,46 +339,66 @@
 	 * Claim a working unit
 	 */
 	CreditPiggy.claimWorker = function( vmid, callback ) {
+		this.__checkSession((function(is_valid) {
+			if (!is_valid) {
 
-		// Forward the claim request
-		this.__api("lib/claim", { 'vmid': vmid }, (function(data) {
-			if (!callback) return;
+				// If we don't have a session, fire error callback
+				if (callback)
+					callback(false, "You are not logged in!");
 
-			// According to the response, fire callback
-			if (!data) {
-				callback(false, "Unable to handle your request");
 			} else {
-				if (data['result'] != 'ok') {
-					callback(false, data['error'])
-				} else {
-					callback(true);
-				}
-			}
-		}).bind(this));
 
+				// Forward the claim request
+				this.__api("lib/claim", { 'vmid': vmid }, (function(data) {
+					if (!callback) return;
+
+					// According to the response, fire callback
+					if (!data) {
+						callback(false, "Unable to handle your request");
+					} else {
+						if (data['result'] != 'ok') {
+							callback(false, data['error'])
+						} else {
+							callback(true);
+						}
+					}
+				}).bind(this));
+			}
+
+		}).bind(this));
 	}
 
 	/**
 	 * Release a working unit
 	 */
 	CreditPiggy.releaseWorker = function( vmid, callback ) {
+		this.__checkSession((function(is_valid) {
+			if (!is_valid) {
 
-		// Forward the release request
-		this.__api("lib/release", { 'vmid': vmid }, (function(data) {
-			if (!callback) return;
+				// If we don't have a session, fire error callback
+				if (callback)
+					callback(false, "You are not logged in!");
 
-			// According to the response, fire callback
-			if (!data) {
-				callback(false, "Unable to handle your request");
 			} else {
-				if (data['result'] != 'ok') {
-					callback(false, data['error'])
-				} else {
-					callback(true);
-				}
-			}
-		}).bind(this));
 
+				// Forward the claim request
+				this.__api("lib/release", { 'vmid': vmid }, (function(data) {
+					if (!callback) return;
+
+					// According to the response, fire callback
+					if (!data) {
+						callback(false, "Unable to handle your request");
+					} else {
+						if (data['result'] != 'ok') {
+							callback(false, data['error'])
+						} else {
+							callback(true);
+						}
+					}
+				}).bind(this));
+			}
+
+		}).bind(this));
 	}
 
 	/**
@@ -317,12 +407,14 @@
 	 * If the log-in was successfful, a new authentication token is allocated
 	 * and passed as a first parameter in the callback function.
 	 */
-	CreditPiggy.reheatSession = function( token, callback ) {
+	CreditPiggy.thawSession = function( token, callback ) {
+
+		// If token is wrong, exit
+		if (!token) return;
 
 		// Forward the release request
-		this.__api("lib/reheat", { 'token': token }, (function(data) {
+		this.__api("lib/thaw", { 'token': token }, (function(data) {
 			if (!callback) return;
-
 			// According to the response, fire callback
 			if (!data) {
 				callback(false, "Unable to handle your request");
@@ -344,9 +436,14 @@
 	 * Thaw session information and return a payload
 	 * that can be passed to reheatSession in order to resume it
 	 */
-	CreditPiggy.thawSession = function() {
-		return this.session['auth_token'];
+	CreditPiggy.freezeSession = function() {
+		if (!this.session) {
+			return "";
+		} else {		
+			return this.session['auth_token'];
+		}
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Initiators
@@ -355,11 +452,16 @@
 	// Initialize upon loading
 	$((function() {
 		
-		// If we don't have a project specified, don't initialize
+		// If we don't have a webid specified, don't initialize
 		// wait until the user calls configure()
-		if (!this.project) return;
+		if (!this.__webid) return;
 		this.__initialize();
 
+	}).bind(CreditPiggy));
+
+	// Refresh profile on focus
+	$(window).on("focus", (function(ev) {
+		this.__updateSession();
 	}).bind(CreditPiggy));
 
 	// Receive HTML5 messages
@@ -373,23 +475,22 @@
 		}
 
 		// Handle CreditPiggy messages
+		var data;
 		try {
-			
 			// Parse data as JSON string
-			var data = JSON.parse(e.data);
-
-			// Handle actions:
-			if (data["action"] == "session") {
-				// [session] - Handle a session update
-				this.__applySessionChanges( data["session"] );
-			} else if (data["action"] == "logout") {
-				// [logout] - The user was disconnected
-				this.__applySessionChanges( null );
-			}
-
+			data = JSON.parse(e.data);
 		} catch (e) {
 			console.warn("CreditPiggy: Invalid message received");
 			return;
+		}
+
+		// Handle actions:
+		if (data["action"] == "session") {
+			// [session] - Handle a session update
+			this.__applySessionChanges( data["session"] );
+		} else if (data["action"] == "logout") {
+			// [logout] - The user was disconnected
+			this.__applySessionChanges( null );
 		}
 
 	}).bind(CreditPiggy));

@@ -5,7 +5,6 @@
  * Create creditpiggy namespace
  */
 var cpjs = global.cpjs = {
-	
 };
 
 /** 
@@ -30,16 +29,22 @@ cpjs.getCookie = function(name) {
 /**
  * Initialize the javascript API
  */
-cpjs.initialize = function( context ) {
+cpjs.initialize = function( apiid ) {
 
 	// Return TRUE if a method is safe for non-CSRF requests
 	function csrfSafeMethod(method) { return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method)); }
+
+	// Set suffix
+	cpjs.apiid = apiid;
 
 	// Setup CSRF protection
 	$.ajaxSetup({
 		beforeSend: function(xhr, settings) {
 			if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
 				xhr.setRequestHeader("X-CSRFToken", cpjs.getCookie('csrftoken'));
+			}
+			if (cpjs.apiid) {
+				xhr.setRequestHeader("X-API-ID", cpjs.apiid);
 			}
 		}
 	});
@@ -83,7 +88,7 @@ cpjs.dyn_blur_update = function( hostDOM ) {
 	var field_value = hostDOM.val();
 
 	// Perform AJAX Post
-	hostDOM.blur(function() {
+	hostDOM.blur((function() {
 		var elm = $(this),
 			url = elm.data('url'),
 			name = elm.attr('name'),
@@ -100,7 +105,7 @@ cpjs.dyn_blur_update = function( hostDOM ) {
 		// Send request
 		$.ajax({
 			method 		: "POST",
-			url 		: "/ajax/"+url+'/',
+			url 		: "/ajax/"+url+"/",
 			data 		: JSON.stringify(data),
 			dataType	: "json"
 		}).done(function(data) {
@@ -110,7 +115,7 @@ cpjs.dyn_blur_update = function( hostDOM ) {
 		.fail(function() {
 			console.error("AJAX: Could not perform "+url+"/"+name+" = ",value);
 		});
-	})
+	}).bind(this));
 
 }
 
@@ -184,7 +189,7 @@ cpjs.dyn_paginator = function( hostDOM ) {
 		// Send request
 		$.ajax({
 			method 		: "GET",
-			url 		: "/ajax/"+this.url+'/',
+			url 		: "/ajax/"+this.url+"/",
 			data 		: { 'page': this.page },
 			dataType	: "json"
 		}).done((function(data) {
@@ -287,7 +292,7 @@ cpjs.dyn_graphs = function( hostDOM ) {
 		// Send request
 		$.ajax({
 			method 		: "GET",
-			url 		: "/ajax/"+this.url+'/',
+			url 		: "/ajax/"+this.url,
 			data 		: { 'metrics': this.metrics, 'ts': this.ts },
 			dataType	: "json"
 		}).done((function(data) {

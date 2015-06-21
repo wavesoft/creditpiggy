@@ -21,13 +21,13 @@ import json
 
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.core.mail import EmailMessage
 
-from creditpiggy.frontend.views import context
+from creditpiggy.frontend.views import context, url_suffix
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
@@ -41,7 +41,7 @@ def logout(request):
     # Logout the user
     auth_logout(request)
     # Render the logout page
-    return context()
+    return context(request)
 
 def link(request, provider):
     """
@@ -58,6 +58,7 @@ def home(request):
 	else:
 		return redirect(reverse("frontend.login") )
 
+@render_to("login.html")
 def login(request):
 	"""
 	Login page
@@ -79,9 +80,9 @@ def login(request):
 			return redirect(reverse("frontend.profile") )
 
 	# Return context
-	return render_to_response("login.html", context(
+	return context(request,
 			project=project
-		))
+		)
 
 @ensure_csrf_cookie
 @render_to("profile.html")
@@ -91,10 +92,10 @@ def profile(request):
 	"""
 	# Redirect if not logged in
 	if not request.user.is_authenticated():
-		return redirect(reverse("frontend.login") + url_suffix)
+		return redirect(reverse("frontend.login"))
 
 	# Return context
-	return context(
+	return context(request,
 			session=json.dumps(information.compile_session(request))
 		)
 
@@ -110,7 +111,7 @@ def status(request):
 	projects = ProjectUserCredit.objects.filter( user=request.user )
 
 	# Return context
-	return context(
+	return context(request,
 			projects=projects
 		)
 
@@ -128,7 +129,7 @@ def credits(request):
 		.order_by( '-status' )
 
 	# Return context
-	return context(
+	return context(request,
 		slots=slots
 		)
 

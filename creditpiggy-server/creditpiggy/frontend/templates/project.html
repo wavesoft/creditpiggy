@@ -17,7 +17,7 @@
 	        </div>
 	      <p>
 	      	{% if project.project_url %}
-	        <a href="{{ project.project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
+	        <a href="{{ project.project_url }}?{{url_suffix}}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
 	      	{% endif %}
 	      </p>
 
@@ -27,6 +27,6 @@
 	</div>
 
 
-	<p><a href="{% url 'frontend.login' %}" class="btn btn-primary">Project List</a></p>
+	<p><a href="{% url 'frontend.login' %}?{{url_suffix}}" class="btn btn-primary">Project List</a></p>
 
 {% endblock %}

@@ -35,12 +35,6 @@ from tinymce.models import HTMLField
 # Utlity Functions
 ###################################################################
 
-def new_uuid():
-	"""
-	UUID Generator
-	"""
-	return uuid.uuid4().hex
-
 def gen_token_key():
 	"""
 	Token key generator
@@ -52,6 +46,18 @@ def gen_token_key():
 		key += charset[random.randint(0, len(charset)-1)]
 	# Return a unique key
 	return key
+
+def new_token():
+	"""
+	UUID Generator
+	"""
+	return uuid.uuid4().hex
+
+def new_uuid():
+	"""
+	UUID Generator
+	"""
+	return uuid.uuid4().hex
 
 def to_dict(instance):
 	"""
@@ -242,6 +248,31 @@ class PiggyProject(MetricsModelMixin, models.Model):
 		# Return achievements and their status
 		return ans
 
+class Website(MetricsModelMixin, models.Model):
+	"""
+	A website that can use creditpiggy
+	"""
+
+	#: Name of the website
+	name = models.CharField(max_length=200, default="",
+		help_text="Name of the website")
+
+	#: A short description for the website
+	desc = HTMLField(
+		help_text="Short description")
+
+	#: A short description for the website
+	short = models.CharField(max_length=200, default="")
+
+	#: Visual details: Icon of the login splash
+	icon = models.CharField(max_length=200, default="")
+
+	#: The projects this website host
+	projects = models.ManyToManyField( PiggyProject )
+
+	def __unicode__(self):
+		return self.name
+
 class ProjectUserRole(MetricsModelMixin, models.Model):
 	"""
 	The relationship between a user and a project
@@ -278,22 +309,6 @@ class ProjectUserRole(MetricsModelMixin, models.Model):
 
 	#: The credits of the user in this model
 	credits = models.IntegerField(default=0)
-
-class ProjectCredentials(models.Model):
-	"""
-	Credentials for each project
-	"""
-
-	#: Authentication token
-	token = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
-		help_text="Anonymous authentication token for the credentials")
-
-	#: Shared secret between
-	secret = models.CharField(max_length=48, default=gen_token_key, 
-		help_text="Shared secret between project and administrator")
-
-	#: The project
-	project = models.ForeignKey( PiggyProject )
 
 class CreditSlot(MetricsModelMixin, models.Model):
 	"""

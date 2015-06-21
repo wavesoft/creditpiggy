@@ -86,7 +86,7 @@ class APIError(Exception):
 		"""
 		Stringify exception to the message
 		"""
-		return message
+		return self.message
 
 def _get_supported_protocols():
 	"""

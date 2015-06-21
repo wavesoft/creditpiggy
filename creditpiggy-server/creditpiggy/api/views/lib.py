@@ -28,7 +28,7 @@ from creditpiggy.core.models import CreditSlot, ComputingUnit
 from creditpiggy.api.models import SingleAuthLoginToken, new_token
 
 from creditpiggy.api.protocol import render_with_api, APIError
-from creditpiggy.api.auth import allow_cors, require_valid_user
+from creditpiggy.api.auth import allow_cors, require_valid_user, require_website_auth
 from creditpiggy.api import information
 
 ##########################################
@@ -37,6 +37,7 @@ from creditpiggy.api import information
 
 @render_with_api(context="js.claim")
 @allow_cors()
+@require_website_auth()
 @require_valid_user()
 def claim(request, api="json"):
 	"""
@@ -46,6 +47,7 @@ def claim(request, api="json"):
 
 @render_with_api(context="js.release")
 @allow_cors()
+@require_website_auth()
 @require_valid_user()
 def release(request, api="json"):
 	"""
@@ -55,6 +57,7 @@ def release(request, api="json"):
 
 @render_with_api(context="js.handshake")
 @allow_cors()
+@require_website_auth()
 def handshake(request, api="json"):
 	"""
 	Initial handshake between the javascript library and the server
@@ -63,6 +66,7 @@ def handshake(request, api="json"):
 
 @render_with_api(context="js.session")
 @allow_cors()
+@require_website_auth()
 def session(request, api="json"):
 	"""
 	Return the current session information
@@ -71,11 +75,12 @@ def session(request, api="json"):
 	# Return session details
 	return information.compile_session(request)
 
-@render_with_api(context="js.reheat")
+@render_with_api(context="js.thaw")
 @allow_cors()
-def reheat(request, api="json"):
+@require_website_auth()
+def thaw(request, api="json"):
 	"""
-	Reheat a frozen session
+	Thaw a frozen session
 	"""
 
 	# Fetch login token
@@ -100,6 +105,7 @@ def reheat(request, api="json"):
 
 @render_with_api(context="js.poll")
 @allow_cors()
+@require_website_auth()
 @cache_page(30)
 def poll(request, api="json"):
 	"""
