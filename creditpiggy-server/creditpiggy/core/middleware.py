@@ -48,7 +48,8 @@ class TimezoneMiddleware(object):
 
 class URLSuffixMiddleware(object):
 	"""
-	Append required URL suffixes
+	Automatically append ?appid GET parameter in the URL
+	when redirecting.
 	"""
 
 	def process_response(self, request, response):
@@ -69,10 +70,7 @@ class URLSuffixMiddleware(object):
 
 				# Create a new object (because 'url' is read-only),
 				# but copy all other attributes
-				print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-				print "Setting url from '%s' to '%s'" % (response.url, url)
 				response['Location'] = url
-				print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 		# Return response
 		return response
@@ -100,8 +98,6 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 		"""
 		Check for 'appid' presence
 		"""
-		print "\n-- REQUEST ------------------"
-		print "Path: %s" % request.path
 
 		# Check for social URLs
 		self.fromSocial = (request.path.startswith("/complete/")) or (request.path.startswith("/login/"))
@@ -114,19 +110,13 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 		if not self.apiid and 'HTTP_X_API_ID' in request.META:
 			self.apiid = request.META['HTTP_X_API_ID']
 		if not self.apiid and self.fromSocial:
-			print "APPID Cookie:",
 			try:
 				self.apiid = request.get_signed_cookie(settings.APIID_COOKIE_NAME, salt=settings.APIID_COOKIE_SALT)
 				self.apiidFromSocial = True
-				print "got"
 			except KeyError:
 				self.apiid = None
-				print "missing"
 			except BadSignature:
 				self.apiid = None
-				print "invalid"
-
-		print "APP ID: %s" % self.apiid
 
 		# If there is no API ID, don't override cookie name
 		_tmp_name = settings.SESSION_COOKIE_NAME
@@ -136,14 +126,10 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 			request.apiid = self.apiid
 
 		# Call super class
-		print "Cookie: %s" % settings.SESSION_COOKIE_NAME
 		ret = super(SessionWithAPIMiddleware, self).process_request(request)
 
-		print "Session: %s" % (", ".join([ "%s=%s" % ( str(x[0]), str(x[1]) ) for x in request.session.iteritems() ]))
 		# Restore cookie name
 		settings.SESSION_COOKIE_NAME = _tmp_name
-
-		print "-----------------------------"
 		return ret
 
 	def process_response(self, request, response):
@@ -180,10 +166,6 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 					domain=settings.SESSION_COOKIE_DOMAIN,
 					path=settings.SESSION_COOKIE_PATH
 					)
-
-		print "-- RESPONSE -----------------"
-		print "Session: %s" % (", ".join([ "%s=%s" % ( str(x[0]), str(x[1]) ) for x in request.session.iteritems() ]))
-		print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 		# Return response
 		return response

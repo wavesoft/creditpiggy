@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 {% block head %}
-	<meta http-equiv="refresh" content="0; url={% url 'frontend.login' %}">
+	<meta http-equiv="refresh" content="0; url={% url 'frontend.login' %}?{{url_suffix}}">
 {% endblock %}
 
 {% block content %}
