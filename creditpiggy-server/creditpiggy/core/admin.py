@@ -84,6 +84,9 @@ class AchievementInstanceAdmin(admin.ModelAdmin):
 admin.site.register(AchievementInstance, AchievementInstanceAdmin)
 
 class WebsiteAdmin(admin.ModelAdmin):
-	list_display = ('name', 'short', 'icon')
+	list_display = ('name', 'short', 'image')
+
+	def image(self, obj):
+		return mark_safe('<img src="%s" style="width: 32px; vertical-align: absmiddle" />' % obj.icon)
 
 admin.site.register(Website, WebsiteAdmin)

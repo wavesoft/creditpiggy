@@ -64,6 +64,11 @@
 		 */
 		"__webid": null,
 
+		/**
+		 * Thaw status callback
+		 */
+		"__thawStatusCallback": null,
+
 	};
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -106,6 +111,31 @@
 
 		// All checks passed
 		return true;
+
+	}
+
+	/**
+	 * Trigger 'thaw' handlers and callbak
+	 */
+	CreditPiggy.__thawFirst = function( callback ) {
+		var thawListeners = jQuery._data(this,"events")['thaw'];
+
+		// If nobody is listening for 'thaw', fire callback right away
+		if (!thawListeners || !thawListeners.length) {
+			callback();
+			return;
+		}
+
+		// Register a thaw callback
+		this.__thawStatusCallback = (function(success) {
+			// If successful, 'login' will be fired.
+			// Otherwise we will need to do the current log-in.
+			if (!success) callback();
+		}).bind(this);
+
+		// Fire the thaw handler and expect a
+		// thaw event to be fired within scope
+		$(this).triggerHandler("thaw", [ this.session['auth_token'] ]);
 
 	}
 
@@ -164,41 +194,81 @@
 	/**
 	 * Trigger appropriate events upon changing data in the session
 	 */
-	CreditPiggy.__applySessionChanges = function( newSession ) {
-		var currProfile = this.profile;
-
-		// Trigger "login" if we didn"t have a profile before
-		if ((!this.session || !this.session["profile"]) && newSession && newSession["profile"]) {
-			this.profile = newSession['profile'];
-			$(this).triggerHandler("login", [ newSession["profile"] ]);
-		} 
-		// Trigger "logout" if we did have a profile and now we don"t
-		else if ((!newSession || !newSession["profile"]) && (this.session && this.session["profile"])) {
-			$(this).triggerHandler("logout", [ this.session["profile"] ]);
-			this.profile = null;
-		}
-
-		// Trigger the "profile" event if we have a profile
-		if (newSession && newSession["profile"]) {
-			if (!this.__same(newSession['profile'], currProfile)) {
-				this.profile = newSession['profile'];
-				$(this).triggerHandler("profile", [ newSession["profile"] ]);
-			}
-		}
-
-		// If we have a crypto-key, update it
-		if (newSession && newSession['cryptokey'])
-			this.__cryptokey = newSession['cryptokey'];
+	CreditPiggy.__applySessionChanges = function( newSession, userAction, initAction ) {
+		var currProfile = this.profile,
+			currSession = this.session,
+			userAction = !!userAction;
 
 		// Update session
 		this.session = newSession;
+
+		// Split actions in functions
+		var f_checkForLogin = (function() {
+
+			// Trigger "login" if we didn"t have a profile before
+			if ((!currSession || !currSession["profile"]) && newSession && newSession["profile"]) {
+				this.profile = newSession['profile'];
+				
+				// Reusable login callback
+				var triggerLogin = (function() {
+					$(this).triggerHandler("login", [ newSession["profile"], userAction ]);
+					f_continueChecks();
+				}).bind(this);
+
+				// If that's an init action, give a chance to thaw the session first, before caling
+				// the 'login' event. This way there is only one 'login' event fired, with the 
+				// appropriate credentials.
+				if (initAction) {
+					this.__thawFirst( triggerLogin );
+				} else {
+					triggerLogin();
+				}
+
+			} 
+
+			}).bind(this),
+			f_continueChecks = (function() {
+
+			// Trigger "logout" if we did have a profile and now we don"t
+			if ((!newSession || !newSession["profile"]) && (currSession && currSession["profile"])) {
+				$(this).triggerHandler("logout", [ currSession["profile"], userAction ]);
+				this.profile = null;
+			}
+
+			// Trigger the "profile" event if we have a profile
+			if (newSession && newSession["profile"]) {
+				if (!this.__same(newSession['profile'], currProfile)) {
+					this.profile = newSession['profile'];
+					$(this).triggerHandler("profile", [ newSession["profile"] ]);
+				}
+			}
+
+			// Check if we have a new freeze information
+			if (!currSession && !newSession) {
+				// No changed
+			} else if (currSession && !newSession) {
+				// Went offline
+				$(this).triggerHandler("token", [ null, userAction ]);
+			} else if ((!currSession && newSession) || (currSession['auth_token'] != newSession['auth_token'])) {
+				// Changed
+				$(this).triggerHandler("token", [ newSession['auth_token'], userAction ]);
+			}
+
+			// If we have a crypto-key, update it
+			if (newSession && newSession['cryptokey'])
+				this.__cryptokey = newSession['cryptokey'];
+
+			}).bind(this);
+
+		// Start function stack
+		f_checkForLogin();
 
 	}
 
 	/**
 	 * Request as session update
 	 */
-	CreditPiggy.__updateSession = function() {		
+	CreditPiggy.__updateSession = function( initAction ) {		
 
 		// Update Session Information
 		this.__api("lib/session", {
@@ -212,7 +282,7 @@
 			}
 
 			// Update session details
-			this.__applySessionChanges( data );
+			this.__applySessionChanges( data, false, initAction );
 
 		}).bind(this));
 	}
@@ -226,7 +296,7 @@
 		if (this.__initialised) return;
 
 		// Request initial session update
-		this.__updateSession();
+		this.__updateSession( true );
 		// We are now initialised
 		this.__initialised = true;
 	}
@@ -267,7 +337,7 @@
 		if (!this.__initialised) {
 			this.__initialize();
 		} else {
-			this.__updateSession();
+			this.__updateSession( true );
 		}
 
 	}
@@ -414,36 +484,40 @@
 
 		// Forward the release request
 		this.__api("lib/thaw", { 'token': token }, (function(data) {
-			if (!callback) return;
 			// According to the response, fire callback
 			if (!data) {
-				callback(false, "Unable to handle your request");
+
+				// Inform local thaw status callback listeners first
+				if (this.__thawStatusCallback) {
+					this.__thawStatusCallback( false );
+					this.__thawStatusCallback = null;
+				}
+				// Then user callback
+				if (callback)
+					callback(false, "Unable to handle your request");
+
 			} else {
+
+				// Inform local thaw status callback listeners first
+				if (this.__thawStatusCallback) {
+					this.__thawStatusCallback( (data['result'] != 'ok') );
+					this.__thawStatusCallback = null;
+				}
+
+				// Handle result
 				if (data['result'] != 'ok') {
-					callback(false, data['error'])
+					if (callback) callback(false, data['error'])
 				} else {
 					// Handle session information
 					this.__applySessionChanges( data );
 					// Callback the new authentication token
-					callback(data['auth_token']);
+					if (callback) callback(data['auth_token']);
 				}
+
 			}
 		}).bind(this));
 
 	}
-
-	/**
-	 * Thaw session information and return a payload
-	 * that can be passed to reheatSession in order to resume it
-	 */
-	CreditPiggy.freezeSession = function() {
-		if (!this.session) {
-			return "";
-		} else {		
-			return this.session['auth_token'];
-		}
-	}
-
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Initiators
@@ -487,10 +561,10 @@
 		// Handle actions:
 		if (data["action"] == "session") {
 			// [session] - Handle a session update
-			this.__applySessionChanges( data["session"] );
+			this.__applySessionChanges( data["session"], true );
 		} else if (data["action"] == "logout") {
 			// [logout] - The user was disconnected
-			this.__applySessionChanges( null );
+			this.__applySessionChanges( null, true );
 		}
 
 	}).bind(CreditPiggy));

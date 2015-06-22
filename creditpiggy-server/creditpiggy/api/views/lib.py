@@ -89,7 +89,7 @@ def thaw(request, api="json"):
 		try:
 			token = SingleAuthLoginToken.objects.get( token=request.GET['token'] )
 		except SingleAuthLoginToken.DoesNotExist:
-			raise APIError("No such token was found", code=404)
+			raise APIError("No such token was found", code=203)
 	else:
 		raise APIError("Missing 'token' argument")
 
