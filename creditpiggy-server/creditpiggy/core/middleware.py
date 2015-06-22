@@ -93,14 +93,14 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 		# Initialize superclass
 		super(SessionWithAPIMiddleware, self).__init__()
 
-
 	def process_request(self, request):
 		"""
 		Check for 'appid' presence
 		"""
 
 		# Check for social URLs
-		self.fromSocial = (request.path.startswith("/complete/")) or (request.path.startswith("/login/"))
+		self.fromSocial =   request.path.startswith("/complete/") or \
+						  ( request.path.startswith("/login/") and (len(request.path) > 7) )
 
 		# Check for API ID in : GET, POST, Headers or Cookie
 		self.webidFromSocial = False

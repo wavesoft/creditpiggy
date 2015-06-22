@@ -426,11 +426,27 @@ if [ ! -f "${DEPLOY_DIR}/conf/httpd-creditpiggy.conf" ]; then
 	cat <<EOF > ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 
 # Static files
-Alias /static/frontend/ ${PROJECT_DIR}/creditpiggy/frontend/static/frontend/
+Alias /static/frontend/ ${PROJECT_DIR}/creditpiggy-server/frontend/static/frontend/
+Alias /static/lib/ ${PROJECT_DIR}/creditpiggy-server/static/lib/
 Alias /static/admin/ ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/django/contrib/admin/static/admin/
+Alias /static/django_tinymce/ ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/tinymce/static/django_tinymce/
 
 # Static file permissions
-<Directory ${PROJECT_DIR}/creditpiggy/frontend/static/frontend>
+<Directory ${PROJECT_DIR}/creditpiggy-server/frontend/static/frontend>
+EOF
+
+	# Version-specific configuration
+	if [ $APACHE_240 -eq 1 ]; then
+		echo "Require all granted" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	else
+		echo "Order deny,allow" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+		echo "Allow from all" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	fi
+
+	# Continue configuration
+	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+</Directory>
+<Directory ${PROJECT_DIR}/creditpiggy-server/static/lib>
 EOF
 
 	# Version-specific configuration
@@ -445,6 +461,20 @@ EOF
 	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 </Directory>
 <Directory ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/django/contrib/admin/static/admin>
+EOF
+
+	# Version-specific configuration
+	if [ $APACHE_240 -eq 1 ]; then
+		echo "Require all granted" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	else
+		echo "Order deny,allow" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+		echo "Allow from all" >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+	fi
+
+	# Continue configuration
+	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
+</Directory>
+<Directory ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/tinymce/static/django_tinymce>
 EOF
 
 	# Version-specific configuration
@@ -549,14 +579,27 @@ else
 	echo "ok"
 fi
 
-# Grant apache SELinux policy to access memcached
-echo -n " - Checking SELinux policy for memcached port..."
-if [ $(semanage port -l | egrep '(^http_port_t|11211)' | grep -c 11211) -eq 0 ]; then
-	semanage port -a -t http_port_t -p tcp 11211
+# Grant apache SELinux policy to access MySQL
+echo -n " - Checking SELinux policy for MySQL port..."
+if [ $(semanage port -l | egrep '(^http_port_t|3306)' | grep -c 3306) -eq 0 ]; then
+	semanage port -a -t http_port_t -p tcp 3306
 	echo "fixed"
 else
 	echo "ok"
 fi
+
+# Grant apache ability to access the network
+setsebool -P httpd_can_network_connect 1
+
+
+# Grant apache SELinux policy to access memcached
+# echo -n " - Checking SELinux policy for memcached port..."
+# if [ $(semanage port -l | egrep '(^http_port_t|11211)' | grep -c 11211) -eq 0 ]; then
+# 	semanage port -a -t http_port_t -p tcp 11211
+# 	echo "fixed"
+# else
+# 	echo "ok"
+# fi
 
 # ===================================
 # 5) Symlink to apache configuration
