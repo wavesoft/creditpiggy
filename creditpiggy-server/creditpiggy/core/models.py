@@ -110,7 +110,6 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		"""
 		Compile and return the relevant information for the user's profile
 		"""
-
 		return {
 			"id": self.uuid,
 			"display_name": self.display_name.strip(),
