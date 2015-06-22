@@ -23,11 +23,11 @@ def url_suffix(request):
 	"""
 	ans = ""
 
-	# Forward 'apiid'
-	if hasattr(request, 'apiid'):
-		ans += "apiid=%s" % request.apiid
-	elif 'apiid' in request.GET:
-		ans += "apiid=%s" % request.GET['apiid']
+	# Forward 'webid'
+	if hasattr(request, 'webid'):
+		ans += "webid=%s" % request.webid
+	elif 'webid' in request.GET:
+		ans += "webid=%s" % request.GET['webid']
 
 	# Return url suffix
 	return ans
@@ -36,14 +36,15 @@ def context(request, **extra):
 	"""
 	Common context generator for all templates below
 	"""
-	# Check for apiid
-	apiid = ""
-	if hasattr(request, 'apiid'):
-		apiid = request.apiid
+	
+	# Check for webid
+	webid = ""
+	if hasattr(request, 'webid'):
+		webid = request.webid
 
 	# Return dict
 	return dict({
 		'url_suffix': url_suffix(request),
-		'apiid': apiid
+		'webid': webid
 	}, **extra)
 

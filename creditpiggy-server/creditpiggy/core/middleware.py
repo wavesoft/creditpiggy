@@ -54,19 +54,19 @@ class URLSuffixMiddleware(object):
 
 	def process_response(self, request, response):
 
-		# Include '?apiid' if specified on redirect responses
-		if hasattr(request, 'apiid'):
+		# Include '?webid' if specified on redirect responses
+		if hasattr(request, 'webid'):
 			if isinstance(response, HttpResponseRedirect):
 
 				# Calculate new URL
 				url = response.url
 				if '?' in response.url:
 					if '&' in response.url:
-						url += "&apiid=%s" % request.apiid
+						url += "&webid=%s" % request.webid
 					else:
-						url += "apiid=%s" % request.apiid
+						url += "webid=%s" % request.webid
 				else:
-					url += "?apiid=%s" % request.apiid
+					url += "?webid=%s" % request.webid
 
 				# Create a new object (because 'url' is read-only),
 				# but copy all other attributes
@@ -86,8 +86,8 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 		Initialize SessionWithAPIMiddleware
 		"""
 		# Initialize local properties
-		self.apiid = None
-		self.apiidFromSocial = False
+		self.webid = None
+		self.webidFromSocial = False
 		self.fromSocial = False
 		self.cookieName = ""
 		# Initialize superclass
@@ -103,27 +103,27 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 		self.fromSocial = (request.path.startswith("/complete/")) or (request.path.startswith("/login/"))
 
 		# Check for API ID in : GET, POST, Headers or Cookie
-		self.apiidFromSocial = False
-		self.apiid = request.GET.get("apiid", None)
-		if not self.apiid:
-			self.apiid = request.POST.get("apiid", None)
-		if not self.apiid and 'HTTP_X_API_ID' in request.META:
-			self.apiid = request.META['HTTP_X_API_ID']
-		if not self.apiid and self.fromSocial:
+		self.webidFromSocial = False
+		self.webid = request.GET.get("webid", None)
+		if not self.webid:
+			self.webid = request.POST.get("webid", None)
+		if not self.webid and 'HTTP_X_WEB_ID' in request.META:
+			self.webid = request.META['HTTP_X_WEB_ID']
+		if not self.webid and self.fromSocial:
 			try:
-				self.apiid = request.get_signed_cookie(settings.APIID_COOKIE_NAME, salt=settings.APIID_COOKIE_SALT)
-				self.apiidFromSocial = True
+				self.webid = request.get_signed_cookie(settings.WEBID_COOKIE_NAME, salt=settings.WEBID_COOKIE_SALT)
+				self.webidFromSocial = True
 			except KeyError:
-				self.apiid = None
+				self.webid = None
 			except BadSignature:
-				self.apiid = None
+				self.webid = None
 
 		# If there is no API ID, don't override cookie name
 		_tmp_name = settings.SESSION_COOKIE_NAME
-		if self.apiid:
-			self.cookieName = settings.SESSION_COOKIE_NAME = "%s_%s" % (settings.SESSION_COOKIE_NAME_API, self.apiid)
+		if self.webid:
+			self.cookieName = settings.SESSION_COOKIE_NAME = "%s_%s" % (settings.SESSION_COOKIE_NAME_API, self.webid)
 			# Also store api id in request
-			request.apiid = self.apiid
+			request.webid = self.webid
 
 		# Call super class
 		ret = super(SessionWithAPIMiddleware, self).process_request(request)
@@ -139,7 +139,7 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 
 		# If there is no API ID, don't override cookie name
 		_tmp_name = settings.SESSION_COOKIE_NAME
-		if self.apiid:
+		if self.webid:
 			settings.SESSION_COOKIE_NAME = self.cookieName
 
 		# Call super class
@@ -150,19 +150,19 @@ class SessionWithAPIMiddleware(SessionMiddleware):
 
 		# Set cryptographic cookie which is used for passing the 'appid' 
 		# argument through the log-in mechanism.
-		if self.apiid and self.fromSocial and not self.apiidFromSocial:
+		if self.webid and self.fromSocial and not self.webidFromSocial:
 			# Set APP ID Cookie
-			response.set_signed_cookie(settings.APIID_COOKIE_NAME,
-					self.apiid, 
-					salt=settings.APIID_COOKIE_SALT,
+			response.set_signed_cookie(settings.WEBID_COOKIE_NAME,
+					self.webid, 
+					salt=settings.WEBID_COOKIE_SALT,
 					max_age=60, 
 					domain=settings.SESSION_COOKIE_DOMAIN,
 					path=settings.SESSION_COOKIE_PATH
 					)
 
-		elif self.apiidFromSocial:
+		elif self.webidFromSocial:
 			# Delete APP ID Cookie
-			response.delete_cookie(settings.APIID_COOKIE_NAME,
+			response.delete_cookie(settings.WEBID_COOKIE_NAME,
 					domain=settings.SESSION_COOKIE_DOMAIN,
 					path=settings.SESSION_COOKIE_PATH
 					)

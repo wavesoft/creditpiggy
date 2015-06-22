@@ -29,13 +29,13 @@ cpjs.getCookie = function(name) {
 /**
  * Initialize the javascript API
  */
-cpjs.initialize = function( apiid ) {
+cpjs.initialize = function( webid ) {
 
 	// Return TRUE if a method is safe for non-CSRF requests
 	function csrfSafeMethod(method) { return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method)); }
 
 	// Set suffix
-	cpjs.apiid = apiid;
+	cpjs.webid = webid;
 
 	// Setup CSRF protection
 	$.ajaxSetup({
@@ -43,8 +43,8 @@ cpjs.initialize = function( apiid ) {
 			if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
 				xhr.setRequestHeader("X-CSRFToken", cpjs.getCookie('csrftoken'));
 			}
-			if (cpjs.apiid) {
-				xhr.setRequestHeader("X-API-ID", cpjs.apiid);
+			if (cpjs.webid) {
+				xhr.setRequestHeader("X-Web-ID", cpjs.webid);
 			}
 		}
 	});
