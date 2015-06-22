@@ -60,15 +60,21 @@ LOGGING =  _CONFIG_.LOGGING
 
 # Caches
 CACHES = {
-	'default': _CONFIG_.DEFAULT_CACHE
+	'default': {
+		"BACKEND": "django_redis.cache.RedisCache",
+		"LOCATION": "redis://%s:%i/%i" % (_CONFIG_.REDIS_HOST, _CONFIG_.REDIS_PORT, _CONFIG_.REDIS_DB),
+		"OPTIONS": {
+			"CLIENT_CLASS": "django_redis.client.DefaultClient",
+		}
+	},
 }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 # API Session
 SESSION_COOKIE_NAME_API = "sessionfor"
-APIID_COOKIE_NAME = "_cpapiid"
-APIID_COOKIE_SALT = "xbo37ga86v31"
+WEBID_COOKIE_NAME = "_cpwebid"
+WEBID_COOKIE_SALT = "xbo37ga86v31"
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -138,9 +144,6 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'locale': 'en_US'}
 SOCIAL_AUTH_LIVE_KEY = _CONFIG_.SOCIAL_AUTH_LIVE_KEY
 SOCIAL_AUTH_LIVE_SECRET = _CONFIG_.SOCIAL_AUTH_LIVE_SECRET
 
-# Use custom auth strategy
-SOCIAL_AUTH_STRATEGY = 'creditpiggy.core.social.strategy.DjangoStrategyWithAPIID'
-
 # Social login redirection URLs
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/profile/'
@@ -169,7 +172,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 # Storing additional fields in session, used for
 # identifying linking requests
-FIELDS_STORED_IN_SESSION = [ 'mode', 'a', 'apiid' ]
+FIELDS_STORED_IN_SESSION = [ 'mode', 'a' ]
 
 # -----------------
 

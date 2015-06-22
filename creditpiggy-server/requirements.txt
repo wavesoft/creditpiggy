@@ -1,6 +1,7 @@
 requests>=2.5.0
-redis>=2.9.0
+redis>=2.10.0
 python-social-auth>=0.2.9
 Django>=1.8.0
 django-tinymce>=1.5.3
 python-memcached>=1.54
+django-redis>=4.1.0
