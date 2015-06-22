@@ -69,6 +69,7 @@ CACHES = {
 	},
 }
 
+# Session engine: Use Cache
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 # API Session
