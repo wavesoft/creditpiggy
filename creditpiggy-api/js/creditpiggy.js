@@ -27,7 +27,7 @@
 		/**
 		 * The API Endpoint
 		 */
-		"baseURL": "//creditpiggy.cern.ch",
+		"baseURL":  "//creditpiggy.cern.ch",
 
 		/**
 		 * Session data
@@ -205,37 +205,25 @@
 		// Split actions in functions
 		var f_checkForLogin = (function() {
 
-			// Trigger "login" if we didn"t have a profile before
-			if ((!currSession || !currSession["profile"]) && newSession && newSession["profile"]) {
-				this.profile = newSession['profile'];
-				
-				// Reusable login callback
-				var triggerLogin = (function() {
-					$(this).triggerHandler("login", [ newSession["profile"], userAction ]);
-					f_continueChecks();
-				}).bind(this);
-
-				// If that's an init action, give a chance to thaw the session first, before caling
-				// the 'login' event. This way there is only one 'login' event fired, with the 
-				// appropriate credentials.
-				if (initAction) {
-					this.__thawFirst( triggerLogin );
-				} else {
-					triggerLogin();
-				}
-
+			// If that's an init action, give a chance to thaw the session first, before caling
+			// the 'login' event. This way there is only one 'login' event fired, with the 
+			// appropriate credentials.
+			if (initAction) {
+				this.__thawFirst( f_continueChecks );
 			} else {
-
-				// Otherwise continue right away
 				f_continueChecks();
-
 			}
 
 			}).bind(this),
 			f_continueChecks = (function() {
 
+			// Trigger "login" if we didn"t have a profile before
+			if ((!currSession || !currSession["profile"]) && newSession && newSession["profile"]) {
+				this.profile = newSession['profile'];
+				$(this).triggerHandler("login", [ newSession["profile"], userAction ]);
+
 			// Trigger "logout" if we did have a profile and now we don"t
-			if ((!newSession || !newSession["profile"]) && (currSession && currSession["profile"])) {
+			} else if ((!newSession || !newSession["profile"]) && (currSession && currSession["profile"])) {
 				$(this).triggerHandler("logout", [ currSession["profile"], userAction ]);
 				this.profile = null;
 			}
