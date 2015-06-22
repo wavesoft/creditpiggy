@@ -22,12 +22,12 @@
 		/**
 		 * The version of the javascript library
 		 */
-		"version": 	"0.1",
+		"version": 	"0.2",
 
 		/**
 		 * The API Endpoint
 		 */
-		"baseURL":  "//creditpiggy.cern.ch",
+		"baseURL": "//creditpiggy.cern.ch",
 
 		/**
 		 * Session data
@@ -38,11 +38,6 @@
 		 * The user profile
 		 */
 		"profile": null,
-
-		/**
-		 * List of named callbacks
-		 */
-		"__callbacks": { },
 
 		/**
 		 * Indicator that the page is loaded
@@ -64,11 +59,6 @@
 		 */
 		"__webid": null,
 
-		/**
-		 * Thaw status callback
-		 */
-		"__thawStatusCallback": null,
-
 	};
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -78,7 +68,7 @@
 	/**
 	 * Check if two object properties are the same
 	 */
-	CreditPiggy.__same = function( a, b ) {
+	var __same = function( a, b ) {
 
 		// Check for undefined match
 		if ((a == undefined) && (b == undefined)) return true;
@@ -93,7 +83,7 @@
 					if (typeof(a[k]) != typeof(b[k])) return false;
 					// If properties are objects, perform nested __same call
 					if (typeof(a[k]) == 'object')
-						if (!this.__same(a[k], b[k])) return false;
+						if (!__same(a[k], b[k])) return false;
 					// Otherwise if values are not the same, return false
 					if (a[k] != b[k]) return false;
 				} else {
@@ -117,6 +107,7 @@
 	/**
 	 * Trigger 'thaw' handlers and callbak
 	 */
+	var __thawStatusCallback = null;
 	CreditPiggy.__thawFirst = function( callback ) {
 		var thawListeners = jQuery._data(this,"events")['thaw'];
 
@@ -127,15 +118,24 @@
 		}
 
 		// Register a thaw callback
-		this.__thawStatusCallback = (function(success) {
+		__thawStatusCallback = (function(success) {
 			// If successful, 'login' will be fired.
 			// Otherwise we will need to do the current log-in.
-			if (!success) callback();
+			if (!success) {
+				callback();
+			} else {
+				this.session = null;				
+			}
 		}).bind(this);
 
 		// Fire the thaw handler and expect a
 		// thaw event to be fired within scope
-		$(this).triggerHandler("thaw", [ this.session['auth_token'] ]);
+		var cToken = null;
+		if (this.session && this.session['auth_token'])
+			cToken = this.session['this.session'];
+
+		// Trigger thaw
+		$(this).triggerHandler("thaw", [ cToken ]);
 
 	}
 
@@ -224,7 +224,12 @@
 					triggerLogin();
 				}
 
-			} 
+			} else {
+
+				// Otherwise continue right away
+				f_continueChecks();
+
+			}
 
 			}).bind(this),
 			f_continueChecks = (function() {
@@ -237,7 +242,7 @@
 
 			// Trigger the "profile" event if we have a profile
 			if (newSession && newSession["profile"]) {
-				if (!this.__same(newSession['profile'], currProfile)) {
+				if (!__same(newSession['profile'], currProfile)) {
 					this.profile = newSession['profile'];
 					$(this).triggerHandler("profile", [ newSession["profile"] ]);
 				}
@@ -249,9 +254,9 @@
 			} else if (currSession && !newSession) {
 				// Went offline
 				$(this).triggerHandler("token", [ null, userAction ]);
-			} else if ((!currSession && newSession) || (currSession['auth_token'] != newSession['auth_token'])) {
+			} else if ( ((!currSession && newSession) || (currSession['auth_token'] != newSession['auth_token'])) && newSession['auth_token'] ) {
 				// Changed
-				$(this).triggerHandler("token", [ newSession['auth_token'], userAction ]);
+				$(this).triggerHandler("token", [ newSession['auth_token'] || null, userAction ]);
 			}
 
 			// If we have a crypto-key, update it
@@ -480,7 +485,14 @@
 	CreditPiggy.thawSession = function( token, callback ) {
 
 		// If token is wrong, exit
-		if (!token) return;
+		if (!token) {
+			// Inform local thaw status callback listeners first
+			if (__thawStatusCallback) {
+				__thawStatusCallback( false );
+				__thawStatusCallback = null;
+			}
+			return;
+		}
 
 		// Forward the release request
 		this.__api("lib/thaw", { 'token': token }, (function(data) {
@@ -488,9 +500,9 @@
 			if (!data) {
 
 				// Inform local thaw status callback listeners first
-				if (this.__thawStatusCallback) {
-					this.__thawStatusCallback( false );
-					this.__thawStatusCallback = null;
+				if (__thawStatusCallback) {
+					__thawStatusCallback( false );
+					__thawStatusCallback = null;
 				}
 				// Then user callback
 				if (callback)
@@ -499,9 +511,9 @@
 			} else {
 
 				// Inform local thaw status callback listeners first
-				if (this.__thawStatusCallback) {
-					this.__thawStatusCallback( (data['result'] != 'ok') );
-					this.__thawStatusCallback = null;
+				if (__thawStatusCallback) {
+					__thawStatusCallback( (data['result'] == 'ok') );
+					__thawStatusCallback = null;
 				}
 
 				// Handle result
