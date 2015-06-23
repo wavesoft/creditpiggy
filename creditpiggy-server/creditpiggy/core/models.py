@@ -103,6 +103,10 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	#: How the user will be visible to the public
 	display_name = models.CharField(max_length=200, default="")
 
+	#: Profile picture
+	profile_image = models.CharField(max_length=1024, default="/static/lib/img/anonymous.png",
+		help_text="User's profile image")
+
 	#: The user's timezone
 	timezone = models.CharField(max_length=255, default="UTC", choices=TIMEZONES)
 
@@ -111,9 +115,11 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		Compile and return the relevant information for the user's profile
 		"""
 		return {
-			"id": self.uuid,
-			"display_name": self.display_name.strip(),
-			"counters": self.metrics().counters()
+			"id" 			: self.uuid,
+			"display_name" 	: self.display_name.strip(),
+			"counters" 		: self.metrics().counters(),
+			"picture_image" : self.picture_image,
+			"profile_url" 	: "javascript:;",
 		}
 
 

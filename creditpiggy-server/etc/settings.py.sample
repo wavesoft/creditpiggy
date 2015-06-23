@@ -52,10 +52,16 @@ LOGGING = {
 		'console': {
 			'class': 'logging.StreamHandler',
 			'stream': sys.stdout,
+		},
+		'logfile': {
+			'class': 'logging.handlers.RotatingFileHandler',
+			'filename': '/var/www/creditpiggy/logs/creditpiggy.log',
+			'maxBytes': 50000,
+			'backupCount': 2			
 		}
 	},
 	'root': {
-		'handlers': ['console'],
+		'handlers': ['console', 'logfile'],
 		'level': 'INFO'
 	}
 }

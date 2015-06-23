@@ -17,7 +17,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 
@@ -27,14 +26,40 @@ from social.apps.django_app.default.models import UserSocialAuth
 from creditpiggy.api.auth import sso_update, website_from_request
 from creditpiggy.api.models import WebsiteCredentials
 
-def social_update_displayname(backend, user=None, *args, **kwargs):
+def social_update_displayname(backend, social, response={}, user=None, *args, **kwargs):
 	"""
 	Update user's display name
 	"""
 
+	print "------------------"
+	print repr(response)
+	print "------------------"
+
+	# Locate icon
+	profile_picture = "/static/lib/img/anonymous.png"
+	if social and social.extra_data:
+		if social.provider == "twitter":
+			profile_picture = response['profile_image_url']
+		elif social.provider == "facebook":
+			profile_picture = 'http://graph.facebook.com/{0}/picture'.format(response['id'])
+		elif social.provider == "google-oauth2":
+			profile_picture = response['image'].get('url')
+		elif social.provider == "live":
+			profile_picture = 'https://apis.live.net/v5.0/{0}/picture'.format(response['id'])
+
 	# If we don't have display name, create one
+	dirty = False
 	if not user.display_name:
 		user.display_name = "%s %s" % (user.first_name, user.last_name)
+		dirty = True
+
+	# Update icon
+	if user.profile_image != profile_picture:
+		user.profile_image = profile_picture
+		dirty = True
+
+	# Flush dirty
+	if dirty:
 		user.save()
 
 def social_update_sso(strategy, backend, uid, response, user=None, *args, **kwargs):
