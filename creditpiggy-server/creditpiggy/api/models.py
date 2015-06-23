@@ -27,19 +27,6 @@ from creditpiggy.core.models import gen_token_key, new_uuid, new_token, PiggyUse
 # Authentication Models
 ###################################################################
 
-class SingleAuthLoginToken(models.Model):
-	"""
-	A token that can be used for token-only authentication.
-	Such tokens expire after use and have to be re-issued. 
-	"""
-
-	#: Authentication token
-	token = models.CharField(max_length=32, default=new_token, unique=True, db_index=True, 
-		help_text="Single-use log-in token")
-
-	#: The user
-	user = models.ForeignKey( PiggyUser )
-
 class ProjectCredentials(models.Model):
 	"""
 	Credentials for each project

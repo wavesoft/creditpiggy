@@ -168,6 +168,8 @@ SOCIAL_AUTH_PIPELINE = (
 	'social.pipeline.user.user_details',
 
 	'creditpiggy.core.social.pipeline.social_update_displayname',
+	'creditpiggy.core.social.pipeline.social_update_sso',
+
 )
 
 
@@ -206,8 +208,8 @@ MIDDLEWARE_CLASSES = (
 	'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	
 	'creditpiggy.core.middleware.TimezoneMiddleware',
-
 	'creditpiggy.core.middleware.URLSuffixMiddleware',
 
 	# - Social Auth ---

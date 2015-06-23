@@ -27,7 +27,7 @@
 		/**
 		 * The API Endpoint
 		 */
-		"baseURL":  "//creditpiggy.cern.ch",
+		"baseURL":  "http://127.0.0.1:8000", // "//creditpiggy.cern.ch",
 
 		/**
 		 * Session data
@@ -58,6 +58,11 @@
 		 * The ID of the VM
 		 */
 		"__webid": null,
+
+		/**
+		 * One-time initialization
+		 */
+		"__oneTimeInitEnabled": false,
 
 	};
 
@@ -261,7 +266,7 @@
 	/**
 	 * Request as session update
 	 */
-	CreditPiggy.__updateSession = function( initAction ) {		
+	CreditPiggy.__updateSession = function( fromInit ) {		
 
 		// Update Session Information
 		this.__api("lib/session", {
@@ -274,8 +279,15 @@
 				return;
 			}
 
+			// If we are from thaw and no user was defined, perform
+			// one-time initial action.
+			if (!fromInit && (!this.session || !this.session["profile"])) {
+				fromInit = this.__oneTimeInitEnabled;
+				this.__oneTimeInitEnabled = false;
+			}
+
 			// Update session details
-			this.__applySessionChanges( data, false, initAction );
+			this.__applySessionChanges( data, false, fromInit );
 
 		}).bind(this));
 	}
@@ -535,7 +547,11 @@
 
 	// Refresh profile on focus
 	$(window).on("focus", (function(ev) {
-		this.__updateSession();
+		this.__updateSession( false );
+	}).bind(CreditPiggy));
+	$(window).on("blur", (function(ev) {
+		// Enable one time-init when we get focused
+		this.__oneTimeInitEnabled = true;
 	}).bind(CreditPiggy));
 
 	// Receive HTML5 messages

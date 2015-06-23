@@ -20,8 +20,12 @@
 
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
+
 from social.pipeline.social_auth import social_user
 from social.apps.django_app.default.models import UserSocialAuth
+
+from creditpiggy.api.auth import sso_update, website_from_request
+from creditpiggy.api.models import WebsiteCredentials
 
 def social_update_displayname(backend, user=None, *args, **kwargs):
 	"""
@@ -33,7 +37,22 @@ def social_update_displayname(backend, user=None, *args, **kwargs):
 		user.display_name = "%s %s" % (user.first_name, user.last_name)
 		user.save()
 
-def social_user_withlink(backend, uid, request, user=None, *args, **kwargs):
+def social_update_sso(strategy, backend, uid, response, user=None, *args, **kwargs):
+	"""
+	Update single-sign-on token for the specified user
+	"""
+
+	# If we have a user, try to get an SSO token
+	if not user is None:
+
+		# Lookup website from webid
+		website = website_from_request( strategy.request, whitelistPath=True )
+		if website:
+			
+			# Update user's SSO for this website
+			sso_update( website, user, issue=True )
+
+def social_user_withlink(backend, uid, response, user=None, *args, **kwargs):
 	"""
 	Simmilar function to 'social.pipeline.social_auth.social_user'
 	but does not throw AuthAlreadyAssociated if the account that tries to be

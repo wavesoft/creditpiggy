@@ -88,7 +88,7 @@ cpjs.dyn_blur_update = function( hostDOM ) {
 	var field_value = hostDOM.val();
 
 	// Perform AJAX Post
-	hostDOM.blur((function() {
+	hostDOM.blur(function() {
 		var elm = $(this),
 			url = elm.data('url'),
 			name = elm.attr('name'),
@@ -115,7 +115,7 @@ cpjs.dyn_blur_update = function( hostDOM ) {
 		.fail(function() {
 			console.error("AJAX: Could not perform "+url+"/"+name+" = ",value);
 		});
-	}).bind(this));
+	});
 
 }
 

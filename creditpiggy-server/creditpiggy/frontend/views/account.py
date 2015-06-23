@@ -31,23 +31,31 @@ from creditpiggy.frontend.views import context, url_suffix
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
+from creditpiggy.api.auth import sso_logout, website_from_request
 from creditpiggy.api import information
 
 @render_to("logout.html")
 def logout(request):
-    """
-    Log the user out of any social profile
-    """
-    # Logout the user
-    auth_logout(request)
-    # Render the logout page
-    return context(request)
+	"""
+	Log the user out of any social profile
+	"""
+
+	# Delete sso tokens
+	website = website_from_request( request, whitelistPath=True )
+	if website:
+		sso_logout( request.user, website )
+
+	# Logout the user
+	auth_logout(request)
+
+	# Render the logout page
+	return context(request)
 
 def link(request, provider):
-    """
-    Link currently registered profile with another provider
-    """
-    return redirect( "/login/%s/?mode=link" % provider )
+	"""
+	Link currently registered profile with another provider
+	"""
+	return redirect( "/login/%s/?mode=link" % provider )
 
 def home(request):
 	"""

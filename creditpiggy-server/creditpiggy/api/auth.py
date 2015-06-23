@@ -18,13 +18,22 @@
 ################################################################
 
 import hashlib
+import re
 
-from django.http import HttpResponse
-
-from creditpiggy.api.protocol import APIError
-from creditpiggy.api.models import ProjectCredentials, WebsiteCredentials
 from functools import wraps
 from urlparse import urlparse
+
+from django.http import HttpResponse
+from django.conf import settings
+
+from creditpiggy.core.redis import share_redis_connection
+from creditpiggy.api.protocol import APIError
+from creditpiggy.api.models import ProjectCredentials, WebsiteCredentials, new_token
+from creditpiggy.core.models import Website, PiggyUser
+
+###############################################################
+# Private methods
+###############################################################
 
 def _validate_project_auth( payload, auth ):
 	"""
@@ -66,6 +75,193 @@ def _validate_project_auth( payload, auth ):
 	else:
 		return None
 
+###############################################################
+# Utility functions
+###############################################################
+
+def website_from_request(request, whitelistPath=[]):
+	"""
+	Locate the website from the specified request
+	"""
+
+	# If it's already cached, fetch it directly
+	if hasattr(request, 'website'):
+		return request.website
+
+	# If we are from a project website, get the web ID
+	if hasattr(request, 'webid'):
+
+		# Lookup website from webid
+		try:
+			cred = WebsiteCredentials.objects.get( token=request.webid )
+		except WebsiteCredentials.DoesNotExist:
+			return None
+
+		# Check if we are in a whitelist path
+		skipCheck = False
+		if whitelistPath == True:
+			skipCheck = True
+		else:
+			for wl in whitelistPath:
+				if re.match( wl, request.path ):
+					skipCheck = True
+					break
+
+		# If we should not skip checks, check domain
+		if not skipCheck:
+
+			# Parse referer header
+			referer = request.META.get('HTTP_REFERER', None)
+			if not referer:
+				return None
+
+			# Skip internal domain(s)
+			if not referer in settings.ALLOWED_HOSTS:
+
+				# Validate external domain
+				url = urlparse(referer)
+				if not cred.hasDomain( url.netloc ):
+					return None
+
+		# Return website
+		return cred.website
+
+def sso_update(website, user, issue=False):
+	"""
+	Update the singe-sign-on token for the specified user
+	for the specified website.
+	"""
+
+	# Open a redis connection
+	redis = share_redis_connection()
+	# Update SSO token for this user
+	key = "%sssotoken" % settings.REDIS_KEYS_PREFIX
+
+	# New unique ID of token
+	token = new_token()
+
+	# Token to user (token -> user)
+	tu_key = "%i:t:%s" % (website.id, token)
+	# User to token (user -> token)
+	ut_key = "%i:u:%i" % (website.id, user.id)
+	# Logout flag
+	lo_key = "%i:%i:logout" % (website.id, user.id)
+
+	# Delete user's previous token-to-user key
+	tok = redis.hget( key, ut_key )
+	if tok:
+		redis.hdel( key, tok )
+	else:
+		# There was no previous token, so if we were
+		# not told to issue a new one, return None
+		if not issue:
+			return None
+
+	# Update current token
+	keys = {}
+	keys[ut_key] = tu_key	# User -> to Token key
+	keys[tu_key] = user.id 	# Token -> to User
+	redis.hmset( key, keys )
+
+	# Delete logout flag
+	redis.hdel( key, lo_key )	
+
+	# Return token
+	return token
+
+def sso_logout_flag( website, user ):
+	"""
+	Check if user logged out from the specified sso session.
+	"""
+
+	# Open a redis connection
+	redis = share_redis_connection()
+	# Update SSO token for this user
+	key = "%sssotoken" % settings.REDIS_KEYS_PREFIX
+
+	# Check for logout key
+	lo_key = "%i:%i:logout" % (website.id, user.id)
+	tok = redis.hget( key, lo_key )
+	return bool(tok)
+
+def sso_logout(user, website=None):
+	"""
+	Log-out from the specified singe-sign-on context.
+	If website is not specified, the user is logged out from all websites
+	"""
+
+	# Open a redis connection
+	redis = share_redis_connection()
+	# Update SSO token for this user
+	key = "%sssotoken" % settings.REDIS_KEYS_PREFIX
+
+	# Convert 'website' to an interable array
+	if website is None:
+		website = Website.objects.all()
+	elif not isinstance(website, list) and not isinstance(website, tuple):
+		website = [ website ]
+
+	# Loop over websites and expire tokens
+	for w in website:
+
+		# Delete user's previous token-to-user & user-to-token keys
+		ut_key = "%i:u:%i" % (w.id, user.id)
+		tok = redis.hget( key, ut_key )
+		if tok:
+			redis.hdel( key, tok )
+			redis.hdel( key, ut_key )
+
+		# Create logout token
+		lo_key = "%i:%i:logout" % (w.id, user.id)
+		redis.hset( key, lo_key, 1 )	
+
+def sso_get(website, user):
+	"""
+	Return the current SSO token for the specified website/user combination.
+	"""
+
+	# Open a redis connection
+	redis = share_redis_connection()
+	# Update SSO token for this user
+	key = "%sssotoken" % settings.REDIS_KEYS_PREFIX
+
+	# Locate the user-to-token key in order to 
+	# extract the SSO token
+	ut_key = "%i:u:%i" % (website.id, user.id)
+	tok = redis.hget( key, ut_key )
+	if tok:
+
+		# Return the token part of the key
+		parts = tok.split(":")
+		return parts[2]
+
+	# Otherwise, return None
+	return None
+
+def sso_user(website, token):
+	"""
+	Return the user that owns the specified token
+	"""
+
+	# Open a redis connection
+	redis = share_redis_connection()
+	# Update SSO token for this user
+	key = "%sssotoken" % settings.REDIS_KEYS_PREFIX
+
+	# Locate the token-to-user key and fetch it's contents
+	tu_key = "%i:t:%s" % (website.id, token)
+	usr = redis.hget( key, tu_key )
+	if usr:
+		# Return the user
+		return PiggyUser.objects.get(id=int(usr))
+
+	# Otherwise, return None
+	return None
+
+###############################################################
+# Decorators
+###############################################################
+
 def throttle(rate=None, span=None):
 	"""
 	Throttle the incoming requests to the specified [rate] per [span] seconds
@@ -75,6 +271,8 @@ def throttle(rate=None, span=None):
 def allow_cors( origin="*", headers="*" ):
 	"""
 	Add the cross-origin request header in the response.
+
+	@decorator
 	"""
 	def decorator(func):
 		@wraps(func)
@@ -106,6 +304,8 @@ def allow_cors( origin="*", headers="*" ):
 def require_valid_user():
 	"""
 	Demand a valid user before continuing with the wrapped function.
+
+	@decorator
 	"""
 	def decorator(func):
 		@wraps(func)
@@ -125,6 +325,8 @@ def require_website_auth():
 	"""
 	Demand a valid website authentication credentials to be present
 	in the request parameters.
+
+	@decorator
 	"""
 	def decorator(func):
 		@wraps(func)
@@ -167,6 +369,8 @@ def require_project_auth():
 
 	This function does not require a protocol wrapper since it 
 	operates purely on HTTP level.
+
+	@decorator
 	"""
 	def decorator(func):
 		@wraps(func)

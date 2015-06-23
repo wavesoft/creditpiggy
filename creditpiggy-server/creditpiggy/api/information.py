@@ -20,7 +20,7 @@
 import random
 
 from django.core.urlresolvers import reverse
-from creditpiggy.api.models import SingleAuthLoginToken
+from creditpiggy.api.auth import sso_get, website_from_request
 
 def gen_crypto_key():
 	"""
@@ -34,7 +34,7 @@ def gen_crypto_key():
 	# Return a unique key
 	return key
 
-def compile_session(request):
+def compile_session(request, auth_token=None):
 	"""
 	Compile session information
 	"""
@@ -66,18 +66,19 @@ def compile_session(request):
 
 	# If user is authenticated, return profile
 	if user.is_authenticated():
+		# Insert user profile
+		session['profile'] = user.profile()
 
-		# Lookup or create relevant single-auth token
-		(token, created) = SingleAuthLoginToken.objects.get_or_create(user=user)
-
-		# Insert user details
-		session.update({
-			"profile": user.profile(),
-			"auth_token": token.token
-		})
-		return session
-
-	# If not, return blank array
+	# If don't have an auth_token specified, try to locate
+	if auth_token is None:
+		if user.is_authenticated():
+			# If we have a website, include sso token
+			website = website_from_request( request )
+			if website:
+				session['auth_token'] = sso_get( website, user )
 	else:
-		return session
+		session['auth_token'] = auth_token
+
+	# Return session
+	return session
 

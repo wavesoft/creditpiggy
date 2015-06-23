@@ -25,11 +25,6 @@ from django.core.exceptions import ValidationError
 
 from creditpiggy.api.models import *
 
-class SingleAuthLoginTokenAdmin(admin.ModelAdmin):
-	list_display = ('user', 'token')
-
-admin.site.register(SingleAuthLoginToken, SingleAuthLoginTokenAdmin)
-
 class ProjectCredentialsAdmin(admin.ModelAdmin):
 	list_display = ('project', 'token')
 

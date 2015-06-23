@@ -23,12 +23,12 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 
-from creditpiggy.core.models import CreditSlot, ComputingUnit
-from creditpiggy.api.models import SingleAuthLoginToken, new_token
+from creditpiggy.core.models import CreditSlot, ComputingUnit, new_token
 
 from creditpiggy.api.protocol import render_with_api, APIError
-from creditpiggy.api.auth import allow_cors, require_valid_user, require_website_auth
+from creditpiggy.api.auth import allow_cors, require_valid_user, require_website_auth, sso_update, sso_user, sso_logout_flag
 from creditpiggy.api import information
 
 ##########################################
@@ -43,6 +43,10 @@ def claim(request, api="json"):
 	"""
 	Claim (link) a working unit by the current user
 	"""
+	# Logout user if the sso sesssion is expired
+	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
+		auth_logout( request )
+
 	return { }
 
 @render_with_api(context="js.release")
@@ -53,15 +57,10 @@ def release(request, api="json"):
 	"""
 	Release (unlink) a working unit by the current user
 	"""
-	return { }
+	# Logout user if the sso sesssion is expired
+	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
+		auth_logout( request )
 
-@render_with_api(context="js.handshake")
-@allow_cors()
-@require_website_auth()
-def handshake(request, api="json"):
-	"""
-	Initial handshake between the javascript library and the server
-	"""
 	return { }
 
 @render_with_api(context="js.session")
@@ -71,7 +70,11 @@ def session(request, api="json"):
 	"""
 	Return the current session information
 	"""
-	
+
+	# Logout user if the sso sesssion is expired
+	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
+		auth_logout( request )
+
 	# Return session details
 	return information.compile_session(request)
 
@@ -86,42 +89,21 @@ def thaw(request, api="json"):
 	# Fetch login token
 	token = None
 	if 'token' in request.GET:
-		try:
-			token = SingleAuthLoginToken.objects.get( token=request.GET['token'] )
-		except SingleAuthLoginToken.DoesNotExist:
+
+		# Try to get a user
+		user = sso_user( request.website, request.GET['token'] )
+		if not user:
 			raise APIError("No such token was found", code=203)
+
 	else:
-		raise APIError("Missing 'token' argument")
+		raise APIError("Missing 'token' argument", code=400)
 
 	# Log-in such user
-	token.user.backend = "django.contrib.auth.backends.ModelBackend"
-	auth_login( request, token.user )
+	user.backend = "django.contrib.auth.backends.ModelBackend"
+	auth_login( request, user )
 
-	# Consume
-	token.delete()
+	# Re-issue SSO token
+	sso_update( request.website, user )
 	
 	# Return session details
 	return information.compile_session(request)
-
-@render_with_api(context="js.poll")
-@allow_cors()
-@require_website_auth()
-@cache_page(30)
-def poll(request, api="json"):
-	"""
-	Respond polling information that might be pending for the 
-	current user.
-	"""
-
-	# Prepare polling information
-	info = { }
-
-	# Allocate slot or raise APIErrors
-	if request.user.is_authenticated():
-		info = { }
-
-	# Define interval for polling
-	info['interval'] = 30
-
-	# Return message
-	return info
