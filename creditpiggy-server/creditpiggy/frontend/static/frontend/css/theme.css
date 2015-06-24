@@ -22,7 +22,7 @@ h2 {
   margin: 10px 0 13px;
   font-weight: 300;
   line-height: 1.4;
-  font-size: 19.2px;
+  font-size: 24px;
 }
 .inactive {
   -webkit-filter: grayscale(100%);
@@ -78,12 +78,16 @@ h2 {
 div.plot div.plot-graph {
   height: 200px;
 }
-div.panel-account {
+a.panel-account {
+  display: block;
   text-align: center;
   background-color: #9C27B0;
   color: #FFF;
 }
-div.panel-account img {
+a.panel-account:hover {
+  background-color: #A448B7;
+}
+a.panel-account img {
   background-color: #FFF;
   width: 58px;
   max-height: 58px;
@@ -91,20 +95,20 @@ div.panel-account img {
   border: solid 4px #CC99CC;
   margin: 10px auto;
 }
-div.panel-account div.account-name {
+a.panel-account div.account-name {
   height: 75px;
   line-height: 75px;
 }
-div.panel-account div.account-name > div {
+a.panel-account div.account-name > div {
   vertical-align: middle;
   line-height: 16px;
   display: inline-block;
 }
 @media (min-width: 768px) {
-  div.panel-account {
+  a.panel-account {
     height: 150px;
   }
-  div.panel-account div.account-name > div {
+  a.panel-account div.account-name > div {
     vertical-align: middle;
   }
 }
@@ -162,7 +166,7 @@ div.panel-page-header div.panel-project div.panel-project-title div.title-conten
   font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.4;
-  font-size: 25px;
+  font-size: 28px;
   margin: 2px 0;
 }
 div.panel-page-header div.panel-project div.panel-project-title div.title-content p {

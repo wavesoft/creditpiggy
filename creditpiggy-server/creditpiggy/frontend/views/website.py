@@ -64,31 +64,72 @@ def status(request, urlid=""):
 				message="Could not find the website specified!"
 			))
 
+	# Get all the observable metrics
+	vmetric = { }
+	for m in website.visual_metrics.all():
+		# Keep metric
+		vmetric[m.name] = to_dict( m )
+		# Reset value
+
+		vmetric[m.name]['value'] = None
+		vmetric[m.name]['samples'] = 0
+
+	# Aggregate information from all projects
+	projects = []
+	achievements = []
+	for p in website.projects.all():
+
+		# Get project metrics
+		pm = p.metrics()
+
+		# Get project record
+		projects.append( to_dict(p) )
+
+		# Get project achievements
+		achievements += p.achievementStatus(request.user)
+
+		# Accumulate the counters of interesting metrics
+		for k, m in vmetric.iteritems():
+
+			# Get counter value
+			counter = pm.counter(k, "")
+			if not counter:
+				counter = 0
+			elif '.' in str(counter):
+				counter = float(counter)
+			else:
+				counter = int(counter)
+
+			# Increment samples
+			m['samples'] += 1
+
+			# Apply summarization method
+			if m['value'] is None:
+				m['value'] = counter
+			else:
+				if (m['sum_method'] == VisualMetric.ADD) or (m['sum_method'] == VisualMetric.AVERAGE):
+					m['value'] += counter
+				elif m['sum_method'] == VisualMetric.MINIMUM:
+					if counter < m['value']:
+						m['value'] = counter
+				elif m['sum_method'] == VisualMetric.MAXIMUM:
+					if counter > m['value']:
+						m['value'] = counter
+
+	# Apply average on metrics
+	for k, m in vmetric.iteritems():
+		if (m['sum_method'] == VisualMetric.AVERAGE):
+			m['value'] /= m['samples']
+
 	# Return context
 	return context(request,
 			website=website,
+			about_body=website.desc,
 			header_background=website.header_background,
 			header_foreground=website.header_foreground,
 			header_image=website.header_image,
-			metrics=[
-				{
-					'display_name': 'First test',
-					'icon': 'fa fa-clock-o',
-					'value': 123142,
-					'units': 'min',
-				},
-				{
-					'display_name': 'First test',
-					'icon': 'fa fa-clock-o',
-					'value': 123142,
-					'units': 'min',
-				},
-				{
-					'display_name': 'First test',
-					'icon': 'fa fa-clock-o',
-					'value': 123142,
-					'units': 'min',
-				}
-			]
+			metrics=vmetric.values(),
+			projects=projects,
+			achievements=achievements,
 		)
 

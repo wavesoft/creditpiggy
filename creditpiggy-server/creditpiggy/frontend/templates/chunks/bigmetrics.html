@@ -2,6 +2,7 @@
 <div class="big-metrics">
 	<div class="row">
 		<div class="col-sm-4">
+			{% if metrics.0 %}
 			<div class="row">
 				<div class="col-xs-6 col-sm-12">
 					<i class="{{ metrics.0.icon }}"></i>
@@ -12,8 +13,16 @@
 					{{ metrics.0.display_name }}
 				</div>
 			</div>
+			{% else %}
+			<div class="row">
+				<div class="col-sm-12 subtitle">
+					(No metric available)
+				</div>
+			</div>
+			{% endif %}
 		</div>
 		<div class="col-sm-4">
+			{% if metrics.1 %}
 			<div class="row">
 				<div class="col-xs-6 col-sm-12">
 					<i class="{{ metrics.1.icon }}"></i>
@@ -24,8 +33,16 @@
 					{{ metrics.1.display_name }}
 				</div>
 			</div>
+			{% else %}
+			<div class="row">
+				<div class="col-sm-12 subtitle">
+					(No metric available)
+				</div>
+			</div>
+			{% endif %}
 		</div>
 		<div class="col-sm-4">
+			{% if metrics.2 %}
 			<div class="row">
 				<div class="col-xs-6 col-sm-12">
 					<i class="{{ metrics.2.icon }}"></i>
@@ -36,6 +53,13 @@
 					{{ metrics.2.display_name }}
 				</div>
 			</div>
+			{% else %}
+			<div class="row">
+				<div class="col-sm-12 subtitle">
+					(No metric available)
+				</div>
+			</div>
+			{% endif %}
 		</div>
 	</div>
 </div>

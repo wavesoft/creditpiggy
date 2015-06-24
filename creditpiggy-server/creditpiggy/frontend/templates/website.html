@@ -15,6 +15,45 @@
 	{% include "chunks/achievements.html" %}
 	<hr />
 
-	<h2>Projects</h2>
+	<h2>About this website</h2>
 
+	<div class="collapsible">
+		<input id="about_body" type="checkbox" checked="checked" />
+		<div>
+			{{ about_body | safe }}
+		</div>
+		<label for="about_body"><span></span></label>
+	</div>
+	<br />
+	<hr />
+
+	<h2>Hosted projects</h2>
+	<div class="project-list">
+		{% for p in projects %}
+		<div class="media">
+			<div class="media-left">
+				<a href="/project/{{ p.urlid }}?{{url_suffix}}">
+				<img class="media-object" style="width: 80px" src="{{ p.profile_image }}" alt="{{ p.display_name }} logo">
+				</a>
+			</div>
+			<div class="media-body">
+				<strong class="media-heading">{{ p.display_name }}</strong>
+				<div class="collapsible">
+					<input id="col_{{ id }}" type="checkbox" checked="checked" />
+					<div>
+						{{ p.desc | safe }}
+					</div>
+					<label for="col_{{ id }}"><span></span></label>
+				</div>
+			  <p>
+				<a href="/project/{{ p.urlid }}/?{{url_suffix}}" class="btn btn-sm btn-primary">More details</a>
+				{% if p.project_url %}
+				<a href="{{ p.project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
+				{% endif %}
+			  </p>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	
 {% endblock %}

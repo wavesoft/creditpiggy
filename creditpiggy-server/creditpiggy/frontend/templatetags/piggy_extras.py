@@ -40,9 +40,18 @@ def thousands(value): # Add ',' on thousands
 	Divide thousand triplets
 	"""
 
+	# Get value
+	try:
+		if '.' in str(value):
+			v = float(value)
+		else:
+			v = int(value)
+	except ValueError:
+		v = 0
+
 	# Format value
 	locale.setlocale(locale.LC_ALL, 'en_US')
-	return str(locale.format("%d", int(value), grouping=True))
+	return str(locale.format("%d", v, grouping=True))
 
 @register.filter(name='timestamp')
 def timestamp(value): # Only one argument.

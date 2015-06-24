@@ -46,7 +46,7 @@ h2 {
     margin: 10px 0 13px;
     font-weight: 300;
     line-height: 1.4;
-    font-size: 19.2px;
+    font-size: 24px;
 }
 
 .inactive {
@@ -132,10 +132,15 @@ div.plot {
 
 // Account panel
 // ---------------------------------
-div.panel-account {
+a.panel-account {
+	display: block;
 	text-align: center;
 	background-color: #9C27B0;
 	color: #FFF;
+
+	&:hover {
+		background-color: #A448B7;
+	}
 
 	img {
 		background-color: #FFF;
@@ -159,7 +164,7 @@ div.panel-account {
 
 }
 @media (min-width: 768px) {
-	div.panel-account {
+	a.panel-account {
 		height: 150px;
 
 		div.account-name {
@@ -239,7 +244,7 @@ div.panel-page-header {
 					font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
 				    font-weight: 300;
 				    line-height: 1.4;
-				    font-size: 25px;
+				    font-size: 28px;
 				    margin: 2px 0;
 				}
 				p {

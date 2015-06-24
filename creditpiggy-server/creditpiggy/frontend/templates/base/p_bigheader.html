@@ -14,7 +14,7 @@
 				</div>
 			</div>
 			{% if user.is_authenticated %}
-			<div class="col-sm-2 panel-account">
+			<a class="col-sm-2 panel-account" href="/profile/?{{ url_suffix }}">
 				<div class="row">
 					<div class="col-xs-6 col-sm-12">
 						<img src="{{ user.profile_image }}" />
@@ -24,11 +24,12 @@
 						<div>{{ user.display_name }}</div>
 					</div>
 				</div>
-			</div>
+			</a>
 			{% endif %}
 		</div>
 
 		<!-- Content -->
 		{% block content %}{% endblock %}
 	</div>
+	<p>&nbsp;</p>
 {% endblock %}

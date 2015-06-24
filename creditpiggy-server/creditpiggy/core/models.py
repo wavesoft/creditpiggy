@@ -139,6 +139,22 @@ class VisualMetric(models.Model):
 	A metric that can be shown to the user
 	"""
 
+	# Roles
+	FIRST = 0
+	ADD = 1
+	AVERAGE = 2
+	MINIMUM = 3
+	MAXIMUM = 4
+
+	# Choices
+	SUM_METHOD = (
+		(FIRST,   'Pick First'),
+		(ADD, 	  'Add'),
+		(AVERAGE, 'Average'),
+		(MINIMUM, 'Minimum'),
+		(MAXIMUM, 'Maximum'),
+	)
+
 	#: The name of the metric
 	name = models.CharField(max_length=200, default="",
 		help_text="The code name of the metric")
@@ -154,6 +170,12 @@ class VisualMetric(models.Model):
 	#: The units for this metric
 	units = models.CharField(max_length=200, default="",
 		help_text="Metric units")
+
+	#: Summarization method
+	sum_method = models.IntegerField( choices=SUM_METHOD, default=ADD )
+
+	def __unicode__(self):
+		return "%s (%s)" % (self.name, self.display_name)
 
 class Achievement(models.Model):
 	"""
@@ -224,7 +246,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	uuid = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
 		help_text="A unique ID identifying the specified project")
 
-	#: URL ID, derrived from display-name
+	#: URL ID, derrived from display_name
 	urlid = models.CharField(max_length=200, default="", db_index=True, editable=False,
 		help_text="An indexing keyword, useful for human-readable URLs")
 
@@ -284,7 +306,8 @@ class PiggyProject(MetricsModelMixin, models.Model):
 				# Just count how many instances we have
 				ans.append({
 						"achievement": a,
-						"instances": AchievementInstance.objects.filter(project=self, achievement=a).count()
+						"instances": AchievementInstance.objects.filter(project=self, achievement=a).count(),
+						"project": self,
 					})
 
 				# Sort by instances
@@ -301,7 +324,8 @@ class PiggyProject(MetricsModelMixin, models.Model):
 				# Include additional meta
 				ans.append({
 						"achievement": a,
-						"achieved": achoeved
+						"achieved": achoeved,
+						"project": self,
 					})
 
 				# Achieved first
@@ -319,7 +343,7 @@ class Website(MetricsModelMixin, models.Model):
 	name = models.CharField(max_length=200, default="",
 		help_text="Name of the website")
 
-	#: URL ID, derrived from display-name
+	#: URL ID, derrived from display_name
 	urlid = models.CharField(max_length=200, default="", db_index=True, editable=False,
 		help_text="An indexing keyword, useful for human-readable URLs")
 
