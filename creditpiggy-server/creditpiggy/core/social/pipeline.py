@@ -31,21 +31,17 @@ def social_update_displayname(backend, social, response={}, user=None, *args, **
 	Update user's display name
 	"""
 
-	print "------------------"
-	print repr(response)
-	print "------------------"
-
 	# Locate icon
-	profile_picture = "/static/lib/img/anonymous.png"
-	if social and social.extra_data:
+	profile_image = "/static/lib/img/anonymous.png"
+	if social:
 		if social.provider == "twitter":
-			profile_picture = response['profile_image_url']
+			profile_image = response['profile_image_url']
 		elif social.provider == "facebook":
-			profile_picture = 'http://graph.facebook.com/{0}/picture'.format(response['id'])
+			profile_image = 'http://graph.facebook.com/{0}/picture'.format(response['id'])
 		elif social.provider == "google-oauth2":
-			profile_picture = response['image'].get('url')
+			profile_image = response['image'].get('url')
 		elif social.provider == "live":
-			profile_picture = 'https://apis.live.net/v5.0/{0}/picture'.format(response['id'])
+			profile_image = 'https://apis.live.net/v5.0/{0}/picture'.format(response['id'])
 
 	# If we don't have display name, create one
 	dirty = False
@@ -54,8 +50,8 @@ def social_update_displayname(backend, social, response={}, user=None, *args, **
 		dirty = True
 
 	# Update icon
-	if user.profile_image != profile_picture:
-		user.profile_image = profile_picture
+	if user.profile_image != profile_image:
+		user.profile_image = profile_image
 		dirty = True
 
 	# Flush dirty

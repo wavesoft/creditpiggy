@@ -1,0 +1,20 @@
+{% extends "base/p_bigheader.html" %}
+
+{% block header_content %}
+	<h1>{{ website.name }}</h1>
+	<p>{{ website.short }}</p>
+{% endblock %}
+
+{% block content %}
+
+	<h2>In a glimpse</h2>
+	{% include "chunks/bigmetrics.html" %}
+	<hr />
+
+	<h2>Achievements</h2>
+	{% include "chunks/achievements.html" %}
+	<hr />
+
+	<h2>Projects</h2>
+
+{% endblock %}

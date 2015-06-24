@@ -16,6 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import locale
 import time
 import pytz
 
@@ -32,6 +33,16 @@ def get_metrics(value):
 	Get the achievement metric
 	"""
 	return value.getMetrics().iteritems()
+
+@register.filter(name='thousands')
+def thousands(value): # Add ',' on thousands
+	"""
+	Divide thousand triplets
+	"""
+
+	# Format value
+	locale.setlocale(locale.LC_ALL, 'en_US')
+	return str(locale.format("%d", int(value), grouping=True))
 
 @register.filter(name='timestamp')
 def timestamp(value): # Only one argument.

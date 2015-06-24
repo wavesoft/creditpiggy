@@ -23,6 +23,9 @@ SOCIAL_AUTH_FACEBOOK_SECRET = ""
 SOCIAL_AUTH_LIVE_KEY = ""
 SOCIAL_AUTH_LIVE_SECRET = ""
 
+# Anonymous
+CREDITPIGGY_ANONYMOUS_PROFILE = "/static/lib/img/anonymous.png"
+
 # REDIS Database Configuration
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379

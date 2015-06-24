@@ -29,55 +29,66 @@ from creditpiggy.frontend.views import context
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
+from creditpiggy.api.auth import website_from_request
 
-@login_required()
-@render_to("projects.html")
-def list(request):
+def auto(request):
 	"""
-	List projects page
+	Automatically redirect to website or website listing
 	"""
 
-	# Return context
-	return context(request)
+	# Check for website, detected by ?webid=xxx
+	website = website_from_request(request, whitelistPath=True)
 
-@login_required()
-@render_to("project.html")
-def details(request, urlid=""):
+	# Redirect accordingly
+	if not website:
+		return redirect(reverse("frontend.profile") )
+	else:
+		return redirect(reverse("frontend.website.status", kwargs={'urlid': website.urlid} ))
+
+@render_to("website.html")
+def status(request, urlid=""):
 	"""
-	Display project details
-	"""	
+	Website status page
+	"""
 
-	# Lookup project based on urlid
+	# Lookup website based on urlid
 	try:
 		if (urlid.isdigit()):
-			project = PiggyProject.objects.get(id=int(urlid))
+			website = Website.objects.get(id=int(urlid))
 		else:
-			project = PiggyProject.objects.get(urlid=urlid)
-	except PiggyProject.DoesNotExist:
+			website = Website.objects.get(urlid=urlid)
+	except Website.DoesNotExist:
 
 		# Render error page
 		return render_to_response("error.html", context(
-				message="Could not find the project specified!"
+				message="Could not find the website specified!"
 			))
 
-	# Get project achievements
-	achievements = project.achievementStatus(request.user)
-
 	# Return context
 	return context(request,
-		project=project,
-		achievements=achievements,
-		counters=project.metrics().counters()
+			website=website,
+			header_background=website.header_background,
+			header_foreground=website.header_foreground,
+			header_image=website.header_image,
+			metrics=[
+				{
+					'display_name': 'First test',
+					'icon': 'fa fa-clock-o',
+					'value': 123142,
+					'units': 'min',
+				},
+				{
+					'display_name': 'First test',
+					'icon': 'fa fa-clock-o',
+					'value': 123142,
+					'units': 'min',
+				},
+				{
+					'display_name': 'First test',
+					'icon': 'fa fa-clock-o',
+					'value': 123142,
+					'units': 'min',
+				}
+			]
 		)
 
-@login_required()
-@render_to("dashboard.html")
-def dashboard(request, page):
-	"""
-	Display project dashboard
-	"""
-
-	# Return context
-	return context(request,
-		page=page
-		)

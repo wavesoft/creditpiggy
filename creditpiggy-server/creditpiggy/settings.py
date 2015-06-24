@@ -92,6 +92,9 @@ REDIS_KEYS_PREFIX = _CONFIG_.REDIS_KEYS_PREFIX
 # Creditpiggy timeseries ring size
 TS_VALUE_COUNT = _CONFIG_.TS_VALUE_COUNT
 
+# Creditpiggy anonymous user
+CREDITPIGGY_ANONYMOUS_PROFILE = _CONFIG_.CREDITPIGGY_ANONYMOUS_PROFILE
+
 # CreditPiggy API Protocols
 CREDITPIGGY_API_PROTOCOLS = (
 	'creditpiggy.api.protocols.json.JSONProtocol',

@@ -24,10 +24,15 @@ import random
 import pytz
 import datetime
 
+from string import maketrans
+
+from django.conf import settings
 from django.db import models, transaction
 from django.contrib.auth.models import AbstractUser
+
 from creditpiggy.core.metrics import MetricsModelMixin
 from creditpiggy.core.housekeeping import HousekeepingTask, periodical
+from creditpiggy.core.image import image_colors
 
 from tinymce.models import HTMLField
 
@@ -104,7 +109,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	display_name = models.CharField(max_length=200, default="")
 
 	#: Profile picture
-	profile_image = models.CharField(max_length=1024, default="/static/lib/img/anonymous.png",
+	profile_image = models.CharField(max_length=1024, default="",
 		help_text="User's profile image")
 
 	#: The user's timezone
@@ -114,14 +119,41 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		"""
 		Compile and return the relevant information for the user's profile
 		"""
+
+		# Get profile picture
+		profile_img = self.profile_image
+		if not profile_img:
+			profile_img = settings.CREDITPIGGY_ANONYMOUS_PROFILE
+
+		# Return profile
 		return {
 			"id" 			: self.uuid,
 			"display_name" 	: self.display_name.strip(),
 			"counters" 		: self.metrics().counters(),
-			"picture_image" : self.picture_image,
+			"profile_image" : profile_img,
 			"profile_url" 	: "javascript:;",
 		}
 
+class VisualMetric(models.Model):
+	"""
+	A metric that can be shown to the user
+	"""
+
+	#: The name of the metric
+	name = models.CharField(max_length=200, default="",
+		help_text="The code name of the metric")
+
+	#: The display name of the metric
+	display_name = models.CharField(max_length=200, default="",
+		help_text="How it's displayed to the user")
+
+	#: The icon for the metric
+	icon = models.CharField(max_length=200, default="",
+		help_text="Metric icon (from fontawesome)")
+
+	#: The units for this metric
+	units = models.CharField(max_length=200, default="",
+		help_text="Metric units")
 
 class Achievement(models.Model):
 	"""
@@ -192,6 +224,10 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	uuid = models.CharField(max_length=32, default=new_uuid, unique=True, db_index=True, 
 		help_text="A unique ID identifying the specified project")
 
+	#: URL ID, derrived from display-name
+	urlid = models.CharField(max_length=200, default="", db_index=True, editable=False,
+		help_text="An indexing keyword, useful for human-readable URLs")
+
 	#: The visual name of the project
 	display_name = models.CharField(max_length=1024, 
 		help_text="Project's full name")
@@ -209,9 +245,30 @@ class PiggyProject(MetricsModelMixin, models.Model):
 
 	#: Achievements related to this project
 	achievements = models.ManyToManyField( Achievement, blank=True )
+	
+	#: Metrics to visualize	
+	visual_metrics = models.ManyToManyField( VisualMetric, blank=True )
 
 	def __unicode__(self):
 		return u"%s" % self.display_name
+
+	def save(self, *args, **kwargs):
+		"""
+		Save model
+		"""
+
+		# Generate a URL-ID
+		urlid = str(self.display_name.lower())
+		urlid = urlid.translate(maketrans(
+				u" `~!@#$%^&*()_-+={[}]:;\"'<,>.?/\\|",
+				u"---------------------------------"
+			))
+
+		# Include project ID to increase entropy
+		self.urlid = "%i-%s" % (self.id, urlid)
+
+		# Call super class
+		return super(PiggyProject, self).save( *args, **kwargs )
 
 	def achievementStatus(self, user=None):
 		"""
@@ -262,6 +319,10 @@ class Website(MetricsModelMixin, models.Model):
 	name = models.CharField(max_length=200, default="",
 		help_text="Name of the website")
 
+	#: URL ID, derrived from display-name
+	urlid = models.CharField(max_length=200, default="", db_index=True, editable=False,
+		help_text="An indexing keyword, useful for human-readable URLs")
+
 	#: A short description for the website
 	desc = HTMLField(
 		help_text="Short description")
@@ -272,8 +333,43 @@ class Website(MetricsModelMixin, models.Model):
 	#: Visual details: Icon of the login splash
 	icon = models.CharField(max_length=200, default="")
 
+	#: Visual details: Header image for the project
+	header_image = models.CharField(max_length=200, default="")
+
+	#: Visual details: Background color
+	header_background = models.CharField(max_length=24, default="#660099")
+
+	#: Visual details: Foreground color
+	header_foreground = models.CharField(max_length=24, default="#fff")
+
 	#: The projects this website host
 	projects = models.ManyToManyField( PiggyProject )
+
+	#: Metrics to visualize	
+	visual_metrics = models.ManyToManyField( VisualMetric, blank=True )
+
+	def save(self, *args, **kwargs):
+		"""
+		Save model
+		"""
+
+		# Generate a URL-ID
+		urlid = str(self.name.lower())
+		urlid = urlid.translate(maketrans(
+				u" `~!@#$%^&*()_-+={[}]:;\"'<,>.?/\\|",
+				u"---------------------------------"
+			))
+
+		# Include project ID to increase entropy
+		self.urlid = "%i-%s" % (self.id, urlid)
+
+		# Process image colors from project header
+		if self.header_image:
+			(self.header_background, self.header_foreground) = \
+				image_colors( self.header_image, default=None )
+
+		# Call super class
+		return super(Website, self).save( *args, **kwargs )
 
 	def __unicode__(self):
 		return self.name
@@ -484,7 +580,7 @@ class ModelHousekeeping(HousekeepingTask):
 		with transaction.atomic():
 
 			# Expire all slots with timestamp bigger than the current
-			for slot in CreditSlot.objects.filter( credits__gt = int(time.time()) ):
+			for slot in CreditSlot.objects.filter( expireTime__ne=0,  expireTime__gt = int(time.time()) ):
 
 				# Discard slot
 				credits.discard_slot( slot, 'expired' )

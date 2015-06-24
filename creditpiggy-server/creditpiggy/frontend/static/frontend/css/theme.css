@@ -9,9 +9,17 @@ body {
   min-height: 100%;
   font-size: 16px;
 }
+div.container.solid {
+  background-color: #f9f9f9;
+}
+@media (min-width: 768px) {
+  div.container.solid {
+    margin-top: 25px;
+  }
+}
 h2 {
   font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  margin: 0 0 23px;
+  margin: 10px 0 13px;
   font-weight: 300;
   line-height: 1.4;
   font-size: 19.2px;
@@ -69,6 +77,114 @@ h2 {
 }
 div.plot div.plot-graph {
   height: 200px;
+}
+div.panel-account {
+  text-align: center;
+  background-color: #9C27B0;
+  color: #FFF;
+}
+div.panel-account img {
+  background-color: #FFF;
+  width: 58px;
+  max-height: 58px;
+  border-radius: 100px;
+  border: solid 4px #CC99CC;
+  margin: 10px auto;
+}
+div.panel-account div.account-name {
+  height: 75px;
+  line-height: 75px;
+}
+div.panel-account div.account-name > div {
+  vertical-align: middle;
+  line-height: 16px;
+  display: inline-block;
+}
+@media (min-width: 768px) {
+  div.panel-account {
+    height: 150px;
+  }
+  div.panel-account div.account-name > div {
+    vertical-align: middle;
+  }
+}
+div.big-metrics {
+  margin: 10px 5px;
+  text-align: right;
+}
+div.big-metrics > div {
+  font-size: 20px;
+}
+div.big-metrics > div i {
+  color: #999;
+}
+div.big-metrics > div .subtitle {
+  text-align: left;
+  font-size: 14px;
+  padding-top: 8px;
+}
+@media (min-width: 768px) {
+  div.big-metrics {
+    text-align: center;
+  }
+  div.big-metrics > div .subtitle {
+    text-align: center;
+    padding-top: 0;
+  }
+  div.big-metrics > div > div {
+    border-right: solid 1px #666;
+  }
+  div.big-metrics > div > div:last-child {
+    border-right: none !important;
+  }
+}
+div.panel-page-header div.panel-project {
+  height: 150px;
+  position: relative;
+  background-image: url(http://test4theory.cern.ch/about/img/behind.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  background-position: 0 0;
+}
+div.panel-page-header div.panel-project div.panel-project-title {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 100%;
+  padding: 4px 5px 4px 20px;
+}
+div.panel-page-header div.panel-project div.panel-project-title div.title-content {
+  position: relative;
+}
+div.panel-page-header div.panel-project div.panel-project-title div.title-content h1 {
+  color: inherit;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  line-height: 1.4;
+  font-size: 25px;
+  margin: 2px 0;
+}
+div.panel-page-header div.panel-project div.panel-project-title div.title-content p {
+  opacity: 0.6;
+  color: inherit;
+  font-size: 14px;
+  margin: 2px 0;
+}
+div.panel-page-header div.panel-project div.panel-project-title div.title-back {
+  height: 100%;
+  left: 0px;
+  right: 0px;
+  position: absolute;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 0 -12px;
+  -webkit-filter: blur(20px);
+  -moz-filter: blur(20px);
+  -o-filter: blur(20px);
+  -ms-filter: blur(20px);
+  filter: blur(20px);
+  opacity: 0.8;
 }
 .btn-social i {
   float: left;

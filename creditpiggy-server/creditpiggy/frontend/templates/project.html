@@ -17,10 +17,11 @@
 	        </div>
 	      <p>
 	      	{% if project.project_url %}
-	        <a href="{{ project.project_url }}?{{url_suffix}}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
+	        <a href="{{ project.project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
 	      	{% endif %}
 	      </p>
 
+		  <h2>Achievements</h2>
 		  {% include "chunks/achievements.html" %}
 
 		</div>

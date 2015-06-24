@@ -90,3 +90,8 @@ class WebsiteAdmin(admin.ModelAdmin):
 		return mark_safe('<img src="%s" style="width: 32px; vertical-align: absmiddle" />' % obj.icon)
 
 admin.site.register(Website, WebsiteAdmin)
+
+class VisualMetricAdmin(admin.ModelAdmin):
+	list_display = ('name', 'display_name', 'units', 'icon')
+
+admin.site.register(VisualMetric, VisualMetricAdmin)

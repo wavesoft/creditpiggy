@@ -1,0 +1,41 @@
+{% load piggy_extras %}
+<div class="big-metrics">
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="row">
+				<div class="col-xs-6 col-sm-12">
+					<i class="{{ metrics.0.icon }}"></i>
+					<span>{{ metrics.0.value | thousands }} <small>{{ metrics.0.units }}</small></span>
+				</div>
+				<div class="clearfix hidden-xs"></div>
+				<div class="col-xs-6 col-sm-12 subtitle">
+					{{ metrics.0.display_name }}
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="row">
+				<div class="col-xs-6 col-sm-12">
+					<i class="{{ metrics.1.icon }}"></i>
+					<span>{{ metrics.1.value | thousands }} <small>{{ metrics.1.units }}</small></span>
+				</div>
+				<div class="clearfix hidden-xs"></div>
+				<div class="col-xs-6 col-sm-12 subtitle">
+					{{ metrics.1.display_name }}
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="row">
+				<div class="col-xs-6 col-sm-12">
+					<i class="{{ metrics.2.icon }}"></i>
+					<span>{{ metrics.2.value | thousands }} <small>{{ metrics.2.units }}</small></span>
+				</div>
+				<div class="clearfix hidden-xs"></div>
+				<div class="col-xs-6 col-sm-12 subtitle">
+					{{ metrics.2.display_name }}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

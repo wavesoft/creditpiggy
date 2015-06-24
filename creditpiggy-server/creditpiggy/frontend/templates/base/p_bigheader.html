@@ -1,0 +1,34 @@
+{% extends "base/html.html" %}
+{% load staticfiles %}
+
+{% block body %}
+	<div class="container solid">
+		<!-- Header -->
+		<div class="row panel-page-header">
+			<div class="{% if user.is_authenticated %}col-sm-10{% else %}col-sm-12{% endif %} panel-project" style="background-image: url({{ header_image }})">
+				<div class="panel-project-title" style="background-color: {{ header_background }}">
+					<div class="title-back" style="background-image: url({{ header_image }})"></div>
+					<div class="title-content" style="color: {{ header_foreground }}">
+						{% block header_content %}{% endblock %}
+					</div>
+				</div>
+			</div>
+			{% if user.is_authenticated %}
+			<div class="col-sm-2 panel-account">
+				<div class="row">
+					<div class="col-xs-6 col-sm-12">
+						<img src="{{ user.profile_image }}" />
+					</div>
+					<div class="clearfix hidden-xs"></div>
+					<div class="col-xs-6 col-sm-12 account-name">
+						<div>{{ user.display_name }}</div>
+					</div>
+				</div>
+			</div>
+			{% endif %}
+		</div>
+
+		<!-- Content -->
+		{% block content %}{% endblock %}
+	</div>
+{% endblock %}

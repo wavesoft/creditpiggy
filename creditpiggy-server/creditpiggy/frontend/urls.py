@@ -19,9 +19,7 @@
 
 from django.conf.urls import patterns, include, url
 
-from creditpiggy.frontend.views import account
-from creditpiggy.frontend.views import projects
-from creditpiggy.frontend.views import ajax
+from creditpiggy.frontend.views import account, projects, ajax, website
 
 urlpatterns = patterns('',
 	url(r'^$', 								account.home, 			name="frontend.home"),
@@ -35,7 +33,10 @@ urlpatterns = patterns('',
 
 	url(r'^dashboard/(?P<page>[^/]+)/$', 	projects.dashboard,		name="frontend.dashboard"),
 	url(r'^projects/$', 					projects.list,	 		name="frontend.projects"),
-	url(r'^project/(?P<uuid>[^/]+)/$', 		projects.details,	 	name="frontend.details"),
+	url(r'^project/(?P<urlid>[^/]+)/$', 	projects.details,	 	name="frontend.details"),
+
+	url(r'^website/$', 						website.auto,	 		name="frontend.website"),
+	url(r'^website/(?P<urlid>[^/]+)/$', 	website.status,	 		name="frontend.website.status"),
 
 	url(r'^ajax/profile\.(?P<cmd>[^/]+)/$',	ajax.profile,			name="frontend.ajax.profile"),
 	url(r'^ajax/fetch\.(?P<cmd>[^/]+)/$',	ajax.fetch,				name="frontend.ajax.fetch"),
