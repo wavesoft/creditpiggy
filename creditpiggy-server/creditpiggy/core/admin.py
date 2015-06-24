@@ -92,6 +92,6 @@ class WebsiteAdmin(admin.ModelAdmin):
 admin.site.register(Website, WebsiteAdmin)
 
 class VisualMetricAdmin(admin.ModelAdmin):
-	list_display = ('name', 'display_name', 'sum_method', 'units', 'icon')
+	list_display = ('name', 'display_name', 'priority', 'sum_method', 'units', 'icon')
 
 admin.site.register(VisualMetric, VisualMetricAdmin)

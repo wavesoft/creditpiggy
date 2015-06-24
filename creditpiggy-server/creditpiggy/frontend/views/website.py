@@ -26,10 +26,11 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from creditpiggy.frontend.views import context
+from creditpiggy.api.auth import website_from_request
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
-from creditpiggy.api.auth import website_from_request
+from creditpiggy.core.utils import VisualMetricsSum
 
 def auto(request):
 	"""
@@ -43,20 +44,20 @@ def auto(request):
 	if not website:
 		return redirect(reverse("frontend.profile") )
 	else:
-		return redirect(reverse("frontend.website.status", kwargs={'urlid': website.urlid} ))
+		return redirect(reverse("frontend.website.status", kwargs={'slug': website.slug} ))
 
 @render_to("website.html")
-def status(request, urlid=""):
+def status(request, slug=""):
 	"""
 	Website status page
 	"""
 
-	# Lookup website based on urlid
+	# Lookup website based on slug
 	try:
-		if (urlid.isdigit()):
-			website = Website.objects.get(id=int(urlid))
+		if (slug.isdigit()):
+			website = Website.objects.get(id=int(slug))
 		else:
-			website = Website.objects.get(urlid=urlid)
+			website = Website.objects.get(slug=slug)
 	except Website.DoesNotExist:
 
 		# Render error page
@@ -65,61 +66,49 @@ def status(request, urlid=""):
 			))
 
 	# Get all the observable metrics
-	vmetric = { }
-	for m in website.visual_metrics.all():
-		# Keep metric
-		vmetric[m.name] = to_dict( m )
-		# Reset value
-
-		vmetric[m.name]['value'] = None
-		vmetric[m.name]['samples'] = 0
+	visual_metrics = website.visual_metrics.all().order_by('-priority')
+	vmetric = VisualMetricsSum( visual_metrics )
+	umetric = VisualMetricsSum( visual_metrics )
 
 	# Aggregate information from all projects
 	projects = []
 	achievements = []
 	for p in website.projects.all():
 
-		# Get project metrics
-		pm = p.metrics()
-
 		# Get project record
-		projects.append( to_dict(p) )
+		project_info = to_dict(p)
 
 		# Get project achievements
-		achievements += p.achievementStatus(request.user)
+		if not request.user.is_authenticated():
+			achievements += p.achievementStatus(None)
+		else:
+
+			# Get user achievements
+			achievements += p.achievementStatus(request.user)
+
+			# Get user's role in this project
+			if request.user.is_authenticated():
+				try:
+
+					# Get user's role
+					user_role = ProjectUserRole.objects.get( user=request.user, project=p )
+					project_info['user_role'] = user_role
+
+					# Get user's metrics
+					umetric.merge( user_role.metrics() )
+
+				except ProjectUserRole.DoesNotExist:
+					pass
+
+		# Collect projects
+		projects.append( project_info )
 
 		# Accumulate the counters of interesting metrics
-		for k, m in vmetric.iteritems():
+		vmetric.merge( p.metrics() )
 
-			# Get counter value
-			counter = pm.counter(k, "")
-			if not counter:
-				counter = 0
-			elif '.' in str(counter):
-				counter = float(counter)
-			else:
-				counter = int(counter)
-
-			# Increment samples
-			m['samples'] += 1
-
-			# Apply summarization method
-			if m['value'] is None:
-				m['value'] = counter
-			else:
-				if (m['sum_method'] == VisualMetric.ADD) or (m['sum_method'] == VisualMetric.AVERAGE):
-					m['value'] += counter
-				elif m['sum_method'] == VisualMetric.MINIMUM:
-					if counter < m['value']:
-						m['value'] = counter
-				elif m['sum_method'] == VisualMetric.MAXIMUM:
-					if counter > m['value']:
-						m['value'] = counter
-
-	# Apply average on metrics
-	for k, m in vmetric.iteritems():
-		if (m['sum_method'] == VisualMetric.AVERAGE):
-			m['value'] /= m['samples']
+	# Finalize metrics summarizers
+	vmetric.finalize()
+	umetric.finalize()
 
 	# Return context
 	return context(request,
@@ -129,6 +118,7 @@ def status(request, urlid=""):
 			header_foreground=website.header_foreground,
 			header_image=website.header_image,
 			metrics=vmetric.values(),
+			usermetrics=umetric.values(),
 			projects=projects,
 			achievements=achievements,
 		)

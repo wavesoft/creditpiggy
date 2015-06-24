@@ -5,12 +5,6 @@
     -o-transition: @params;
        transition: @params; }
 
-.transform(@params) {
- -webkit-transform: @params;
-    -moz-transform: @params;
-    -o-transform: @params;
-       transform: @params; }
-
 // =================================
 //  GENERAL STRUCTURES
 // =================================
@@ -32,15 +26,6 @@ body {
 	font-size: 16px;
 }
 
-div.container.solid {
-	background-color: #f9f9f9;
-}
-@media (min-width: 768px) {
-	div.container.solid {
-		margin-top: 25px;	
-	}
-}
-
 h2 {
 	font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
     margin: 10px 0 13px;
@@ -55,6 +40,29 @@ h2 {
 	filter: gray;
 	filter: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' height='0'><filter id='greyscale'><feColorMatrix type='matrix' values='0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0' /></filter></svg>#greyscale");
 	opacity: 0.7;
+}
+
+// A div that can be used as full background
+// ---------------------------------
+div.back-splash {
+	position: fixed;
+	z-index: -1;
+	left: 0; right: 0;
+	width: 100%; height: 100%;
+
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+// Solid body container
+// ---------------------------------
+div.container.solid {
+	background-color: #f9f9f9;
+}
+@media (min-width: 768px) {
+	div.container.solid {
+		margin-top: 25px;	
+	}
 }
 
 // Horizontal piggy logo helper
@@ -80,6 +88,25 @@ h2 {
 .btn-achieved {
 	border: solid 1px #4caf50;
 	background-color: #E0F1E0;
+}
+
+// Image fixation for the log-in logo
+// ---------------------------------
+.login-logo {
+	padding: 10px;
+
+	img.slogan, img.logo {
+		width: 90%;
+		max-height: 100%;
+	}
+	.spaced-icon {
+		margin-top: 15%;
+	}
+}
+@media (min-width: 768px) {
+	.login-logo .spaced-icon {
+		margin-top: 10px;
+	}
 }
 
 // Composition for structuring login
@@ -113,7 +140,7 @@ h2 {
 	}
 
 	.header-spacer {
-		height: 75px;
+		height: 60px;
 	}
 
 	.spacer-5 {
@@ -181,14 +208,27 @@ a.panel-account {
 div.big-metrics {
 	margin: 10px 5px;
 	text-align: right;
-	
+
+	.own {
+		background-color: #9C27B0;
+		color: #FFF;
+		text-align: left;
+		font-size: 16px;
+		&.own-label {
+			font-size: 16px;
+			text-align: right;
+			color: #B163C1;
+		    font-style: italic;
+		}
+	}
+
 	> div {
 		font-size: 20px;
 		i {
 			color: #999;
 		}
 		.subtitle {
-			text-align: left;
+			text-align: center;
 			font-size: 14px;
 			padding-top: 8px;
 		}
@@ -199,16 +239,21 @@ div.big-metrics {
 @media (min-width: 768px) {
 	div.big-metrics {
 		text-align: center;
+		.own {
+			text-align: center;
+		}
 
 		> div {
 			.subtitle {
-				text-align: center;
 				padding-top: 0;
 			}
-			> div {
+			> div > div > div {
 				border-right: solid 1px #666;
+				&.own {
+					border-right: solid 1px #fff;
+				}
 			}
-			> div:last-child {
+			> div:last-child > div > div {
 				border-right: none !important;
 			}
 		}
@@ -286,6 +331,17 @@ div.panel-page-header {
 //  ELEMENT HELPERS
 // =================================
 
+// A blurred element
+// ---------------------------------
+.blur {
+	-webkit-filter: blur(10px);
+	-moz-filter: blur(10px);
+	-o-filter: blur(10px);
+	-ms-filter: blur(10px);
+	filter: blur(10px);
+}
+
+
 // Pull-left icons of social buttons
 // ---------------------------------
 .btn-social {
@@ -339,12 +395,14 @@ div.achievements {
 			background-size: contain;
 			background-repeat: no-repeat;
 
-			.edge-badge {
+			.badge {
+				display: block;
 				position: absolute;
 				right: -2px;
 				bottom: -2px;
-				color: #000;
-				font-size: 20px;
+				height: 18px;
+				// color: #000;
+				// font-size: 20px;
 			}
 		}
 

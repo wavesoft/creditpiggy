@@ -97,9 +97,6 @@ def claim_slot( slot, machine ):
 		m_pu = pu_credits.metrics()
 		m_pu.cincr( machine_counters )				# Squash all macine counters to project-user link
 
-		# Check and grant user achievements on the project
-		check_achievements( pu_credits )
-
 		# Contribute to active campaigns
 		for campaign in campaigns:
 
@@ -114,7 +111,10 @@ def claim_slot( slot, machine ):
 
 			# Update project-credits metrics
 			m_cu = cu_credits.metrics()
-			m_cu.cincr( machine_counters )				# Squash all macine counters to project-user link
+			m_cu.cincr( machine_counters )			# Squash all macine counters to project-campaign link
+
+		# Check and grant user achievements on the project
+		check_achievements( pu_credits )
 
 def discard_slot( slot, reason ):
 	"""

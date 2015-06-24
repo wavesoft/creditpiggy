@@ -25,7 +25,8 @@ from django.shortcuts import redirect
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 from creditpiggy.frontend.views import context, url_suffix
 
@@ -72,13 +73,8 @@ def login(request):
 	Login page
 	"""
 
-	# Check if this is a project login page
-	project = None
-	if 'project' in request.GET:
-		try:
-			project = PiggyProject.objects.get( uuid=request.GET['project'] )
-		except PiggyProject.DoesNotExist:
-			project = None
+	# Check if this is a website login page
+	website = website_from_request( request, whitelistPath=True )
 
 	# If already authenticated, redirect
 	if request.user.is_authenticated():
@@ -89,7 +85,7 @@ def login(request):
 
 	# Return context
 	return context(request,
-			project=project
+			website=website
 		)
 
 @ensure_csrf_cookie
@@ -141,13 +137,29 @@ def credits(request):
 		slots=slots
 		)
 
+@render_to("email/achievement.html")
 @login_required()
 def test(request):
 	"""
 	Testing endpoint
 	"""
 
-	mail = EmailMessage( body="Testing", subject="Tosting", to=("johnys2@gmail.com",) )
+	a = Achievement.objects.all()[0]
+	p = PiggyProject.objects.all()[0]
+
+	ctx = context(request,
+		achievement=a, 
+		project=p,
+		base_url=settings.BASE_URL,
+		)
+
+	html = render_to_string("email/achievement.html", context=ctx)
+	text = render_to_string("email/achievement.txt", context=ctx)
+
+	mail = EmailMultiAlternatives( body=text, subject="Achievement Unlocked", to=("johnys2@gmail.com",) )
+	mail.attach_alternative(html, "text/html")
 	mail.send()
+
+	return ctx
 
 	return redirect(reverse("frontend.profile"))

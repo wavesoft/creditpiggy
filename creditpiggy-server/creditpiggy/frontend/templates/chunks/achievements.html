@@ -2,10 +2,13 @@
 {% load tz %}
 <div class="achievements">
 	{% for a in achievements %}
-		<div class="btn {% if a.achieved %}btn-default{% endif %}" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}" data-popup-id="#achievement-payload-{{ forloop.counter }}">
-			<div class="icon {% if not a.achieved %}inactive{% endif %}" style="background-image: url( {{ a.achievement.icon }} )">
+		<div class="btn {% if a.achieved or a.instances %}btn-default{% endif %}" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}" data-popup-id="#achievement-payload-{{ forloop.counter }}">
+			<div class="icon {% if not a.achieved and not a.instances %}inactive{% endif %}" style="background-image: url( {{ a.achievement.icon }} )">
 				{% if a.achieved %}
-				<i class="fa fa-check-circle edge-badge"></i>
+				<span class="badge"><i class="fa fa-check-circle"></i></span>
+				{% endif %}
+				{% if a.instances %}
+				<span class="badge">{{ a.instances }}</span>
 				{% endif %}
 			</div>
 		</div>
@@ -34,6 +37,13 @@
 							<p class="text-success">
 								{% localtime on %}
 								Achieved on <strong>{{ a.achieved.date }}</strong>
+								{% endlocaltime %}
+							</p>
+						{% endif %}
+						{% if a.instances %}
+							<p class="text-success">
+								{% localtime on %}
+								Achieved by <strong>{{ a.instances }}</strong> user{{ a.instances|pluralize }}
 								{% endlocaltime %}
 							</p>
 						{% endif %}

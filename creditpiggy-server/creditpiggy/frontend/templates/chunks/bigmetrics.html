@@ -1,6 +1,8 @@
 {% load piggy_extras %}
 <div class="big-metrics">
 	<div class="row">
+
+		<!-- First Panel -->
 		<div class="col-sm-4">
 			{% if metrics.0 %}
 			<div class="row">
@@ -12,6 +14,15 @@
 				<div class="col-xs-6 col-sm-12 subtitle">
 					{{ metrics.0.display_name }}
 				</div>
+				{% if show_own %}
+				<div class="clearfix visible-xs"></div>
+				<div class="col-xs-6 visible-xs-block own own-label">
+					I contributed 
+				</div>
+				<div class="col-xs-6 col-sm-12 own">
+					<span>{{ own.0.value | thousands }} <small>{{ metrics.0.units }}</small></span>
+				</div>
+				{% endif %}
 			</div>
 			{% else %}
 			<div class="row">
@@ -21,6 +32,8 @@
 			</div>
 			{% endif %}
 		</div>
+
+		<!-- Second Panel -->
 		<div class="col-sm-4">
 			{% if metrics.1 %}
 			<div class="row">
@@ -32,6 +45,15 @@
 				<div class="col-xs-6 col-sm-12 subtitle">
 					{{ metrics.1.display_name }}
 				</div>
+				{% if show_own %}
+				<div class="clearfix visible-xs"></div>
+				<div class="col-xs-6 visible-xs-block own own-label">
+					I contributed 
+				</div>
+				<div class="col-xs-6 col-sm-12 own">
+					<span>{{ own.1.value | thousands }} <small>{{ metrics.1.units }}</small></span>
+				</div>
+				{% endif %}
 			</div>
 			{% else %}
 			<div class="row">
@@ -41,6 +63,8 @@
 			</div>
 			{% endif %}
 		</div>
+
+		<!-- Third Panel -->
 		<div class="col-sm-4">
 			{% if metrics.2 %}
 			<div class="row">
@@ -52,6 +76,15 @@
 				<div class="col-xs-6 col-sm-12 subtitle">
 					{{ metrics.2.display_name }}
 				</div>
+				{% if show_own %}
+				<div class="clearfix visible-xs"></div>
+				<div class="col-xs-6 visible-xs-block own own-label">
+					I contributed 
+				</div>
+				<div class="col-xs-6 col-sm-12 own">
+					<span>{{ own.2.value | thousands }} <small>{{ metrics.2.units }}</small></span>
+				</div>
+				{% endif %}
 			</div>
 			{% else %}
 			<div class="row">
@@ -61,5 +94,6 @@
 			</div>
 			{% endif %}
 		</div>
+		
 	</div>
 </div>

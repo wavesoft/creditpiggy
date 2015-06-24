@@ -41,13 +41,16 @@ def thousands(value): # Add ',' on thousands
 	"""
 
 	# Get value
-	try:
-		if '.' in str(value):
-			v = float(value)
-		else:
-			v = int(value)
-	except ValueError:
+	if value is None:
 		v = 0
+	else:
+		try:
+			if '.' in str(value):
+				v = float(value)
+			else:
+				v = int(value)
+		except ValueError:
+			v = 0
 
 	# Format value
 	locale.setlocale(locale.LC_ALL, 'en_US')

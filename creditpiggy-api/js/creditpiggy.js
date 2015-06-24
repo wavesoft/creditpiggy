@@ -411,6 +411,22 @@
 	}
 
 	/**
+	 * Show user's status
+	 * 
+	 * This function returns 'false' if the user is not logged in
+	 * or 'true' if the window was openned.
+	 */
+	CreditPiggy.showWebsiteStatus = function( ) {
+
+		// Open pop-up
+		this.__popup( this.baseURL + "/website/?webid=" + escape(this.__webid) );
+
+		// Register the callback for the "login" event, once
+		return true;
+
+	}
+
+	/**
 	 * Claim a working unit
 	 */
 	CreditPiggy.claimWorker = function( vmid, callback ) {

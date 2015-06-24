@@ -174,6 +174,9 @@ class VisualMetric(models.Model):
 	#: Summarization method
 	sum_method = models.IntegerField( choices=SUM_METHOD, default=ADD )
 
+	#: Prority
+	priority = models.IntegerField(default=0)
+
 	def __unicode__(self):
 		return "%s (%s)" % (self.name, self.display_name)
 
@@ -247,7 +250,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 		help_text="A unique ID identifying the specified project")
 
 	#: URL ID, derrived from display_name
-	urlid = models.CharField(max_length=200, default="", db_index=True, editable=False,
+	slug = models.CharField(max_length=200, default="", db_index=True, editable=False,
 		help_text="An indexing keyword, useful for human-readable URLs")
 
 	#: The visual name of the project
@@ -280,14 +283,14 @@ class PiggyProject(MetricsModelMixin, models.Model):
 		"""
 
 		# Generate a URL-ID
-		urlid = str(self.display_name.lower())
-		urlid = urlid.translate(maketrans(
+		slug = str(self.display_name.lower())
+		slug = slug.translate(maketrans(
 				u" `~!@#$%^&*()_-+={[}]:;\"'<,>.?/\\|",
 				u"---------------------------------"
 			))
 
 		# Include project ID to increase entropy
-		self.urlid = "%i-%s" % (self.id, urlid)
+		self.slug = "%i-%s" % (self.id, slug)
 
 		# Call super class
 		return super(PiggyProject, self).save( *args, **kwargs )
@@ -303,10 +306,13 @@ class PiggyProject(MetricsModelMixin, models.Model):
 			# Count achievement instances
 			if user is None:
 
+				# Count instances
+				inst = AchievementInstance.objects.filter(project=self, achievement=a).count()
+
 				# Just count how many instances we have
 				ans.append({
 						"achievement": a,
-						"instances": AchievementInstance.objects.filter(project=self, achievement=a).count(),
+						"instances": inst,
 						"project": self,
 					})
 
@@ -317,14 +323,14 @@ class PiggyProject(MetricsModelMixin, models.Model):
 
 				# Check if the user has it
 				try:
-					achoeved = AchievementInstance.objects.get(project=self, achievement=a, user=user)
+					achieved = AchievementInstance.objects.get(project=self, achievement=a, user=user)
 				except AchievementInstance.DoesNotExist:
-					achoeved = None
+					achieved = None
 
 				# Include additional meta
 				ans.append({
 						"achievement": a,
-						"achieved": achoeved,
+						"achieved": achieved,
 						"project": self,
 					})
 
@@ -344,7 +350,7 @@ class Website(MetricsModelMixin, models.Model):
 		help_text="Name of the website")
 
 	#: URL ID, derrived from display_name
-	urlid = models.CharField(max_length=200, default="", db_index=True, editable=False,
+	slug = models.CharField(max_length=200, default="", db_index=True, editable=False,
 		help_text="An indexing keyword, useful for human-readable URLs")
 
 	#: A short description for the website
@@ -378,14 +384,14 @@ class Website(MetricsModelMixin, models.Model):
 		"""
 
 		# Generate a URL-ID
-		urlid = str(self.name.lower())
-		urlid = urlid.translate(maketrans(
+		slug = str(self.name.lower())
+		slug = slug.translate(maketrans(
 				u" `~!@#$%^&*()_-+={[}]:;\"'<,>.?/\\|",
 				u"---------------------------------"
 			))
 
 		# Include project ID to increase entropy
-		self.urlid = "%i-%s" % (self.id, urlid)
+		self.slug = "%i-%s" % (self.id, slug)
 
 		# Process image colors from project header
 		if self.header_image:

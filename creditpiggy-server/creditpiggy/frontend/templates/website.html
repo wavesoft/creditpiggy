@@ -8,15 +8,15 @@
 {% block content %}
 
 	<h2>In a glimpse</h2>
-	{% include "chunks/bigmetrics.html" %}
+	{% include "chunks/bigmetrics.html" with show_own=user.is_authenticated own=usermetrics %}
 	<hr />
+
 
 	<h2>Achievements</h2>
 	{% include "chunks/achievements.html" %}
 	<hr />
 
 	<h2>About this website</h2>
-
 	<div class="collapsible">
 		<input id="about_body" type="checkbox" checked="checked" />
 		<div>
@@ -32,21 +32,21 @@
 		{% for p in projects %}
 		<div class="media">
 			<div class="media-left">
-				<a href="/project/{{ p.urlid }}?{{url_suffix}}">
+				<a href="/project/{{ p.slug }}?{{url_suffix}}">
 				<img class="media-object" style="width: 80px" src="{{ p.profile_image }}" alt="{{ p.display_name }} logo">
 				</a>
 			</div>
 			<div class="media-body">
 				<strong class="media-heading">{{ p.display_name }}</strong>
 				<div class="collapsible">
-					<input id="col_{{ id }}" type="checkbox" checked="checked" />
+					<input id="col_{{ p.id }}" type="checkbox" checked="checked" />
 					<div>
 						{{ p.desc | safe }}
 					</div>
-					<label for="col_{{ id }}"><span></span></label>
+					<label for="col_{{ p.id }}"><span></span></label>
 				</div>
 			  <p>
-				<a href="/project/{{ p.urlid }}/?{{url_suffix}}" class="btn btn-sm btn-primary">More details</a>
+				<a href="/project/{{ p.slug }}/?{{url_suffix}}" class="btn btn-sm btn-primary">More details</a>
 				{% if p.project_url %}
 				<a href="{{ p.project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
 				{% endif %}

@@ -23,6 +23,9 @@ SOCIAL_AUTH_FACEBOOK_SECRET = ""
 SOCIAL_AUTH_LIVE_KEY = ""
 SOCIAL_AUTH_LIVE_SECRET = ""
 
+# Base URL from external sources
+BASE_URL = "https://creditpiggy.cern.ch"
+
 # Anonymous
 CREDITPIGGY_ANONYMOUS_PROFILE = "/static/lib/img/anonymous.png"
 

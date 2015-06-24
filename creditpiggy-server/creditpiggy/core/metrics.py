@@ -329,7 +329,6 @@ class MetricsModelMixin(object):
 		# Return an metrics class within the model's namespace
 		return self._metricsInstance
 
-
 class MetricFeaturesHousekeeping(HousekeepingTask):
 	"""
 	Housekeeping for the metric features
@@ -575,4 +574,3 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 
 			# Execute pipeline
 			pipeline.execute()
-

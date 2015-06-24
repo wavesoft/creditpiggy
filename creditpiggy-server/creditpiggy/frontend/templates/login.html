@@ -4,11 +4,26 @@
 {% block content %}
 	<div class="header-spacer"></div>
 	<div class="row">
-		<div class="col-sm-6 piggylogo-big">
-			<img class="flat" src="{% static "frontend/img/logo-flat.png" %}" alt="CreditPiggy Logo" />
-			<img class="big" src="{% static "frontend/img/logo-big.png" %}" alt="CreditPiggy Logo" />
+		<div class="col-sm-5 login-logo">
+			<div class="row">
+				<div class="col-xs-6 col-sm-12">
+					{% if website %}
+					<img class="logo" src="{{ website.icon }}" alt="CreditPiggy" />
+					{% else %}
+					<img class="logo" src="{% static "frontend/img/logo.png" %}" alt="CreditPiggy" />
+					{% endif %}
+				</div>
+				<div class="clearfix hidden-xs"></div>
+				<div class="col-xs-6 col-sm-12 {% if not website %}spaced-icon{% endif %}">
+					{% if website %}
+					<h4>{{ website.name }}</h4>
+					{% else %}
+					<img class="slogan" src="{% static "frontend/img/logo-slogan.png" %}" alt="Your virtual contribution credit bank" />
+					{% endif %}
+				</div>
+			</div>
 		</div>
-		<div class="col-sm-6">
+		<div class="col-sm-7">
 
 			<div class="panel panel-default">
 		  		<div class="panel-heading">Login with social profile</div>

@@ -6,12 +6,14 @@
 		<!-- Header -->
 		<div class="row panel-page-header">
 			<div class="{% if user.is_authenticated %}col-sm-10{% else %}col-sm-12{% endif %} panel-project" style="background-image: url({{ header_image }})">
+				{% block header %}
 				<div class="panel-project-title" style="background-color: {{ header_background }}">
 					<div class="title-back" style="background-image: url({{ header_image }})"></div>
 					<div class="title-content" style="color: {{ header_foreground }}">
 						{% block header_content %}{% endblock %}
 					</div>
 				</div>
+				{% endblock %}
 			</div>
 			{% if user.is_authenticated %}
 			<a class="col-sm-2 panel-account" href="/profile/?{{ url_suffix }}">
@@ -32,4 +34,10 @@
 		{% block content %}{% endblock %}
 	</div>
 	<p>&nbsp;</p>
+{% endblock %}
+
+{% block footer %}
+    <p class="text-center">
+        <img src="{% static 'frontend/img/powered-by.png' %}" alt="Powered by CreditPiggy" />
+    </p>
 {% endblock %}

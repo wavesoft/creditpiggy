@@ -12,5 +12,11 @@
 	    <div class="well">
 	    	{% block content %}{% endblock %}
 	    </div>
+
     </div>
+{% endblock %}
+{% block footer %}
+    <p class="text-center">
+        <img src="{% static 'frontend/img/powered-by.png' %}" alt="Powered by CreditPiggy" />
+    </p>
 {% endblock %}

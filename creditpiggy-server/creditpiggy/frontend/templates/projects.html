@@ -5,7 +5,7 @@
 <script type="x-tmpl-mustache" id="tpl-project">
 <div class="media">
 	<div class="media-left">
-		<a href="/project/{{ id }}{% endverbatim %}?{{url_suffix}}{% verbatim %}">
+		<a href="/project/{{ slug }}{% endverbatim %}?{{url_suffix}}{% verbatim %}">
       	<img class="media-object" style="width: 80px" src="{{ profile_image }}" alt="{{ display_name }} logo">
 		</a>
 	</div>
@@ -19,7 +19,7 @@
         <label for="col_{{ id }}"><span></span></label>
     	</div>
       <p>
-        <a href="/project/{{ urlid }}/{% endverbatim %}?{{url_suffix}}{% verbatim %}" class="btn btn-sm btn-primary">More details</a>
+        <a href="/project/{{ slug }}/{% endverbatim %}?{{url_suffix}}{% verbatim %}" class="btn btn-sm btn-primary">More details</a>
         {{#project_url}}
         <a href="{{ project_url }}" class="btn btn-sm btn-default" target="_blank">Project Website</a>
         {{/project_url}}

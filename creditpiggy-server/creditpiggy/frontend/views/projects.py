@@ -42,17 +42,17 @@ def list(request):
 
 @login_required()
 @render_to("project.html")
-def details(request, urlid=""):
+def details(request, slug=""):
 	"""
 	Display project details
 	"""	
 
-	# Lookup project based on urlid
+	# Lookup project based on slug
 	try:
-		if (urlid.isdigit()):
-			project = PiggyProject.objects.get(id=int(urlid))
+		if (slug.isdigit()):
+			project = PiggyProject.objects.get(id=int(slug))
 		else:
-			project = PiggyProject.objects.get(urlid=urlid)
+			project = PiggyProject.objects.get(slug=slug)
 	except PiggyProject.DoesNotExist:
 
 		# Render error page
