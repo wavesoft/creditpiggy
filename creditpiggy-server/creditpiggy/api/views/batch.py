@@ -43,9 +43,7 @@ def _alloc_slot(project, args):
 		raise APIError("Missing 'slot' argument")
 
 	# Create a credit slot
-	(slot, created) = CreditSlot.objects.get_or_create(
-			uuid=args['slot']
-		)
+	(slot, created) = CreditSlot.objects.get_or_create( uuid=args['slot'] )
 
 	# If this was not created, raise error
 	if not created:
@@ -119,15 +117,13 @@ def _claim_slot(project, args):
 		raise APIError("Missing 'machine' argument")
 
 	# Lookup slot
-	slots = CreditSlot.objects.filter(uuid = args['slot'], project = project)
-	if len(slots) == 0:
+	try:
+		slot = CreditSlot.objects.get( uuid=args['slot'], project=project )
+	except CreditSlot.DoesNotExist:
 		raise APIError("Claiming non-existing slot: '%s' for project: '%s'" % (args['slot'], str(project)))
 
-	# Get first slot
-	slot = slots[0]
-
 	# Lookup or create relevant machine
-	(machine, created) = ComputingUnit.objects.get_or_create(uuid = args['machine'])
+	(machine, created) = ComputingUnit.objects.get_or_create( uuid=args['machine'] )
 
 	# If slot does not have credits, but we do have
 	# credits specified in the arguments, apply them now
