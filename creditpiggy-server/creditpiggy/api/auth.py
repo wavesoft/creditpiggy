@@ -253,7 +253,10 @@ def sso_user(website, token):
 	usr = redis.hget( key, tu_key )
 	if usr:
 		# Return the user
-		return PiggyUser.objects.get(id=int(usr))
+		try:
+			return PiggyUser.objects.get(id=int(usr))
+		except PiggyUser.DoesNotExist:
+			return None
 
 	# Otherwise, return None
 	return None
