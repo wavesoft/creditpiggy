@@ -469,23 +469,26 @@ class CreditSlot(MetricsModelMixin, models.Model):
 		(DISCARDED, 'Discarded'),
 	)
 
-	# The slot unique ID
+	#: The slot unique ID
 	uuid = models.CharField(max_length=255, unique=False, db_index=True, 
 		help_text="The globally unique slot ID as specified by the project owner")
 
-	# The UNIX timestamp after which the slot is considered 'expired'
+	#: The machine claimed this slot
+	machine = models.ForeignKey( ComputingUnit, null=True, default=None, blank=True )
+
+	#: The UNIX timestamp after which the slot is considered 'expired'
 	expireTime = models.IntegerField(default=0)
 
-	# The project associated with this credits slot
+	#: The project associated with this credits slot
 	project = models.ForeignKey( PiggyProject )
 
-	# The credits associated to this slot
+	#: The credits associated to this slot
 	credits = models.IntegerField(null=True, default=None, blank=True)
 
-	# The minimum boundary of credits associated to this slot
+	#: The minimum boundary of credits associated to this slot
 	minBound = models.IntegerField(null=True, default=None, blank=True)
 
-	# The maximum boundary of credits associated to this slot
+	#: The maximum boundary of credits associated to this slot
 	maxBound = models.IntegerField(null=True, default=None, blank=True)
 
 	#: The status of the slot

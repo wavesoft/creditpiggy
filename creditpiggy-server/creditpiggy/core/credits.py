@@ -18,7 +18,7 @@
 ################################################################
 
 from creditpiggy.core.achievements import check_achievements
-from creditpiggy.core.models import ProjectUserRole, Campaign
+from creditpiggy.core.models import ProjectUserRole, Campaign, CreditSlot
 
 def alloc_slot( slot ):
 	"""
@@ -36,6 +36,80 @@ def alloc_slot( slot ):
 		# Update campaign metrics
 		m_campaign = campaign.metrics()
 		m_project.cincr("slots/allocated", 1)		# Update allocated slot counter
+
+def flush_machine( machine, slots=None, campaigns=None ):
+	"""
+	Flush machine credits to it's owner
+	"""
+
+	# Update machine owner
+	if not machine.owner:
+		return
+
+	# Get and reset machine counters
+	m_machine = machine.metrics()
+	machine_counters = m_machine.counters()
+	m_machine.creset()
+
+	# Getch machine metrics
+	m_owner = machine.owner.metrics()
+	m_owner.cincr( machine_counters )			# Squash all macine counters to the owner
+
+	# Collect campaigns if missing
+	handledProjects = []
+	collectCampaigns = False
+	if campaigns is None:
+		campaigns = []
+		collectCampaigns = True
+
+	# Get all the slots claimed by this machine
+	if slots is None:
+		slots = CreditSlot.objects.filter( machine=machine )
+
+	# Process slots
+	for slot in slots:
+
+		# Find the project/owner link
+		(pu_credits, created) = ProjectUserRole.objects.get_or_create(
+				user=machine.owner, project=slot.project, defaults=dict(
+					role=ProjectUserRole.MEMBER
+				)
+			)
+
+		# Stack machine credits
+		pu_credits.credits += int(machine_counters["credits"])
+		pu_credits.save()
+
+		# Update project-credits metrics
+		m_pu = pu_credits.metrics()
+		m_pu.cincr( machine_counters )				# Squash all macine counters to project-user link
+
+		# Get campaigns if we have
+		if collectCampaigns and not slot.project in handledProjects:
+			handledProjects.append( slot.project )
+			campaigns += Campaign.ofProject( slot.project )
+
+		# Check and grant user achievements on the project
+		check_achievements( pu_credits )
+
+		# The slot can now be deleted
+		slot.delete()
+
+	# Contribute to active campaigns
+	for campaign in campaigns:
+
+		# Update the project/owner link
+		(cu_credits, created) = CampaignUserCredit.objects.get_or_create(
+				user=machine.owner, campaign=campaign
+			)
+
+		# Stack machine credits
+		cu_credits.credits += int(machine_counters["credits"])
+		cu_credits.save()
+
+		# Update project-credits metrics
+		m_cu = cu_credits.metrics()
+		m_cu.cincr( machine_counters )			# Squash all macine counters to project-campaign link
 
 def claim_slot( slot, machine ):
 	"""
@@ -74,49 +148,20 @@ def claim_slot( slot, machine ):
 		m_campaign.cincr("slots/completed", 1)	# Update completed slot counter
 
 	# Check if there is a user associated with this machine
-	if not machine.owner is None:
+	if machine.owner is None:
 
-		# Get and reset machine counters
-		machine_counters = m_machine.counters()
-		m_machine.creset()
+		# If the machine is not associated to a user, tag this 
+		# machine to the slot
+		slot.machine = machine
 
-		# Getch machine metrics
-		m_owner = machine.owner.metrics()
-		m_owner.cincr( machine_counters )			# Squash all macine counters to the owner
+		# Mark slot as claimed
+		slot.status = CreditSlot.CLAIMED
+		slot.save()
 
-		# Find the project/owner link
-		(pu_credits, created) = ProjectUserRole.objects.get_or_create(
-				user=machine.owner, project=slot.project, defaults=dict(
-					role=ProjectUserRole.MEMBER
-				)
-			)
+	else:
 
-		# Stack machine credits
-		pu_credits.credits += int(machine_counters["credits"])
-		pu_credits.save()
-
-		# Update project-credits metrics
-		m_pu = pu_credits.metrics()
-		m_pu.cincr( machine_counters )				# Squash all macine counters to project-user link
-
-		# Contribute to active campaigns
-		for campaign in campaigns:
-
-			# Update the project/owner link
-			(cu_credits, created) = CampaignUserCredit.objects.get_or_create(
-					user=machine.owner, campaign=campaign
-				)
-
-			# Stack machine credits
-			cu_credits.credits += int(machine_counters["credits"])
-			cu_credits.save()
-
-			# Update project-credits metrics
-			m_cu = cu_credits.metrics()
-			m_cu.cincr( machine_counters )			# Squash all macine counters to project-campaign link
-
-		# Check and grant user achievements on the project
-		check_achievements( pu_credits )
+		# Flush machine credits to the user 
+		flush_machine( machine, machine.owner, slots=[slot], campaigns=campaigns )
 
 def discard_slot( slot, reason ):
 	"""

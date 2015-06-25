@@ -143,10 +143,6 @@ def _claim_slot(project, args):
 	# Claim this slot by the specified machine
 	credits.claim_slot( slot, machine )
 
-	# Delete slot upon claiming
-	#slot.status = CreditSlot.CLAIMED
-	slot.delete()
-
 def _counters_slot(project, args):
 	"""
 	Update counters of the specified credit slot
