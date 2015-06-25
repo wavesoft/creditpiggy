@@ -134,12 +134,10 @@ def thaw(request, api="json"):
 	# Fetch login token
 	token = None
 	if 'token' in request.GET:
-
 		# Try to get a user
 		user = sso_user( request.website, request.GET['token'] )
 		if not user:
 			raise APIError("No such token was found", code=203)
-
 	else:
 		raise APIError("Missing 'token' argument", code=400)
 

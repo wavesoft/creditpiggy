@@ -28,6 +28,8 @@ from string import maketrans
 
 from django.conf import settings
 from django.db import models, transaction
+from django.db.models import Q
+
 from django.contrib.auth.models import AbstractUser
 
 from creditpiggy.core.metrics import MetricsModelMixin
@@ -619,7 +621,7 @@ class ModelHousekeeping(HousekeepingTask):
 		with transaction.atomic():
 
 			# Expire all slots with timestamp bigger than the current
-			for slot in CreditSlot.objects.filter( expireTime__ne=0,  expireTime__gt = int(time.time()) ):
+			for slot in CreditSlot.objects.filter( ~Q(expireTime=0),  expireTime__gt = int(time.time()) ):
 
 				# Discard slot
 				credits.discard_slot( slot, 'expired' )
