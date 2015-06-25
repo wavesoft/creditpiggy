@@ -19,6 +19,7 @@
 ################################################################
 
 DAEMON_ENDPOINT="/var/run/creditapi.socket"
+COMMAND_LOG=""
 
 # Get parameters from command-line
 JOB_FILE=$1
@@ -27,5 +28,14 @@ JOB_ID=$2
 [ -z "$JOB_FILE" ] && echo "ERROR: Missing job file (usage: $0 [job file] [uuid])" && exit 1
 [ -z "$JOB_ID" ] && echo "ERROR: Missing job UUID (usage: $0 [job file] [uuid])" && exit 1
 
+# Execute command
+function doit {
+	if [ -z "$COMMAND_LOG" ]; then
+		cat | nc -U ${DAEMON_ENDPOINT}
+	else
+		cat | tee -a "${COMMAND_LOG}" | nc -U ${DAEMON_ENDPOINT}
+	fi
+}
+
 # Forward command to daemon
-echo "alloc,slot=${JOB_ID}" | nc -U ${DAEMON_ENDPOINT}
+echo "alloc,slot=${JOB_ID}" | doit

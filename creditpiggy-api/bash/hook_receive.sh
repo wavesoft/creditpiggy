@@ -19,6 +19,7 @@
 ################################################################
 
 DAEMON_ENDPOINT="/var/run/creditapi.socket"
+COMMAND_LOG=""
 
 # Get parameters from command-line
 JOB_FILE=$1
@@ -26,6 +27,15 @@ JOB_ID=$2
 
 [ -z "$JOB_FILE" ] && echo "ERROR: Missing job file (usage: $0 [job file] [uuid])" && exit 1
 [ -z "$JOB_ID" ] && echo "ERROR: Missing job UUID (usage: $0 [job file] [uuid])" && exit 1
+
+# Execute command
+function doit {
+	if [ -z "$COMMAND_LOG" ]; then
+		cat | nc -U ${DAEMON_ENDPOINT}
+	else
+		cat | tee -a "${COMMAND_LOG}" | nc -U ${DAEMON_ENDPOINT}
+	fi
+}
 
 # Extract job ID
 DIR=$(mktemp -d)
@@ -43,16 +53,16 @@ DIR=$(mktemp -d)
 
 		# Update job counters
 		if [ "$KEY" == "cpuusage" ]; then
-			echo "counters,slot=${JOB_ID},job/cpuusage=${VAL}" | nc -U ${DAEMON_ENDPOINT}
+			echo "counters,slot=${JOB_ID},job/cpuusage=${VAL}" | doit
 		elif [ "$KEY" == "diskusage" ]; then
-			echo "counters,slot=${JOB_ID},job/diskusage=${VAL}" | nc -U ${DAEMON_ENDPOINT}
+			echo "counters,slot=${JOB_ID},job/diskusage=${VAL}" | doit
 		elif [ "$KEY" == "events" ]; then
-			echo "counters,slot=${JOB_ID},job/events=${VAL}" | nc -U ${DAEMON_ENDPOINT}
+			echo "counters,slot=${JOB_ID},job/events=${VAL}" | doit
 		elif [ "$KEY" == "exitcode" ]; then
 			if [ "${VAL}" == "0" ]; then
-				echo "counters,slot=${JOB_ID},job/success=1" | nc -U ${DAEMON_ENDPOINT}
+				echo "counters,slot=${JOB_ID},job/success=1" | doit
 			else 
-				echo "counters,slot=${JOB_ID},job/failure=1" | nc -U ${DAEMON_ENDPOINT}
+				echo "counters,slot=${JOB_ID},job/failure=1" | doit
 			fi
 		elif [ "$KEY" == "DUMBQ_VMID" ]; then
 			VMID="${VAL}"
@@ -62,9 +72,9 @@ DIR=$(mktemp -d)
 
 	# Claim or discard slot 
 	if [ ! -z "$VMID" ]; then
-		echo "claim,slot=${JOB_ID},machine=${VMID},credits=1" | nc -U ${DAEMON_ENDPOINT}
+		echo "claim,slot=${JOB_ID},machine=${VMID},credits=1" | doit
 	else
-		echo "discard,slot=${JOB_ID},reason=unknown-vmid" | nc -U ${DAEMON_ENDPOINT}
+		echo "discard,slot=${JOB_ID},reason=unknown-vmid" | doit
 	fi
 
 )
