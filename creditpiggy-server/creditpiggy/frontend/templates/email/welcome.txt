@@ -1,0 +1,24 @@
+
+Welcome {{ user.display_name }}
+==========================================
+
+Welcome to the on-line piggy-bank for your contributions! 
+CreditPiggy helps you keep all your small and bigger contributions in various volunteering computing or thinking projects. 
+
+Check your status: {{ base_url }}/profile
+
+How to use CreditPiggy
+----------------------
+
+Actually, you only have to log-in! By logging in to CreditPiggy while helping in a project you are automatically attributed for your contribution. Keep an eye in your inbox, because you will be notified when you reach a milestone.
+
+There are many interesting projects looking for your help. Will you give them a hand?
+
+Explore the projects: {{ base_url }}/projects
+
+Look out for achievements
+-------------------------
+
+Many projects set some goals and they reward you with achievement badges! If you stay long enough, and if you help them with new, unexplored areas of their research, you might be one of the few getting the most rare badges.
+
+~~ By Credit Piggy

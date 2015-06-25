@@ -25,6 +25,7 @@ from social.apps.django_app.default.models import UserSocialAuth
 
 from creditpiggy.api.auth import sso_update, website_from_request
 from creditpiggy.api.models import WebsiteCredentials
+from creditpiggy.core.email import send_welcome_email
 
 def social_update_displayname(backend, social, response={}, user=None, *args, **kwargs):
 	"""
@@ -57,6 +58,15 @@ def social_update_displayname(backend, social, response={}, user=None, *args, **
 	# Flush dirty
 	if dirty:
 		user.save()
+
+def social_greet_user(user=None, is_new=False, *args, **kwargs):
+	"""
+	Greet new user
+	"""
+
+	# Welcome new users
+	if is_new and not user is None:
+		send_welcome_email( user )
 
 def social_update_sso(strategy, backend, uid, response, user=None, *args, **kwargs):
 	"""

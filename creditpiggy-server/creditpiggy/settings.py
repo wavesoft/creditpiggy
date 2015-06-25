@@ -175,6 +175,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 	'creditpiggy.core.social.pipeline.social_update_displayname',
 	'creditpiggy.core.social.pipeline.social_update_sso',
+	'creditpiggy.core.social.pipeline.social_greet_user',
 
 )
 

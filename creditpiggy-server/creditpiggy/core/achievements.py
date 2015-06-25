@@ -21,11 +21,7 @@ import time
 
 from django.db.models import Q
 from creditpiggy.core.models import Achievement, AchievementInstance
-
-from django.conf import settings
-from django.template import Context
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
+from creditpiggy.core.email import send_achievement_email
 
 def metrics_achieved( counters, achievement_metrics ):
 	"""
@@ -75,18 +71,6 @@ def check_achievements( project_user_link, campaigns=[] ):
 				)
 			ac.save()
 
-			# Prepare e-mail body
-			ctx = Context({
-					'achievement': a,
-					'project': project_user_link.project,
-					'user': project_user_link.user,
-					'base_url': settings.BASE_URL,
-				})
-			html = render_to_string("email/achievement.html", context=ctx)
-			text = render_to_string("email/achievement.txt", context=ctx)
-
 			# Send e-mail
-			mail = EmailMultiAlternatives( body=text, subject="Achievement Unlocked: %s" % achievement.name, to=("johnys2@gmail.com",) )
-			mail.attach_alternative(html, "text/html")
-			mail.send()
+			send_achievement_email( project_user_link.user, project_user_link.project, a )
 

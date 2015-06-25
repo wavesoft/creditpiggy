@@ -137,7 +137,7 @@ def credits(request):
 		slots=slots
 		)
 
-@render_to("email/achievement.html")
+@render_to("email/welcome.html")
 @login_required()
 def test(request):
 	"""
@@ -152,13 +152,6 @@ def test(request):
 		project=p,
 		base_url=settings.BASE_URL,
 		)
-
-	html = render_to_string("email/achievement.html", context=ctx)
-	text = render_to_string("email/achievement.txt", context=ctx)
-
-	mail = EmailMultiAlternatives( body=text, subject="Achievement Unlocked", to=("johnys2@gmail.com",) )
-	mail.attach_alternative(html, "text/html")
-	mail.send()
 
 	return ctx
 
