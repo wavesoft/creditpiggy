@@ -43,10 +43,14 @@ def _alloc_slot(project, args):
 		raise APIError("Missing 'slot' argument")
 
 	# Create a credit slot
-	slot = CreditSlot(
+	(slot, created) = CreditSlot.objects.get_or_create(
 		uuid=args['slot'],
 		project=project
 		)
+
+	# If this was not created, raise error
+	if not created:
+		raise APIError("An slot with this key already exists!")
 
 	# Check for credits or min/max
 	if 'credits' in args:
@@ -65,11 +69,11 @@ def _alloc_slot(project, args):
 	# Set the slot expire time
 	slot.expireTime = int(time.time()) + expire_time * 60
 
-	# The slot was allocated
-	credits.alloc_slot( slot )
-
 	# Save slot
 	slot.save()
+
+	# The slot was allocated
+	credits.alloc_slot( slot )
 
 def _discard_slot(project, args):
 	"""
