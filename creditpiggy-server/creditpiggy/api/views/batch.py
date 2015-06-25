@@ -44,13 +44,15 @@ def _alloc_slot(project, args):
 
 	# Create a credit slot
 	(slot, created) = CreditSlot.objects.get_or_create(
-		uuid=args['slot'],
-		project=project
+			uuid=args['slot']
 		)
 
 	# If this was not created, raise error
 	if not created:
 		raise APIError("An slot with this key already exists!")
+
+	# Set project
+	slot.project = project
 
 	# Check for credits or min/max
 	if 'credits' in args:
