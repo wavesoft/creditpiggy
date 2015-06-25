@@ -228,7 +228,7 @@ class ComputingUnit(MetricsModelMixin, models.Model):
 	"""
 
 	#: Computing unit UUID
-	uuid = models.CharField(max_length=32, default="", unique=True, db_index=True, 
+	uuid = models.CharField(max_length=255, default="", unique=True, db_index=True, 
 		help_text="A unique ID generated from within the computing unit and delivered to CP through the batch system")
 
 	#: Owner of this computing unit
@@ -470,7 +470,7 @@ class CreditSlot(MetricsModelMixin, models.Model):
 	)
 
 	# The slot unique ID
-	uuid = models.CharField(max_length=256, unique=False, db_index=True, 
+	uuid = models.CharField(max_length=255, unique=False, db_index=True, 
 		help_text="The globally unique slot ID as specified by the project owner")
 
 	# The UNIX timestamp after which the slot is considered 'expired'
