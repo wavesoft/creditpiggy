@@ -266,12 +266,18 @@ def bulk_commands(request, api):
 	# Get commands
 	commands = request.proto.getAll()
 
+	# Collect errors
+	errors = []
+
 	# Handle 'alloc' commands in priority #1
 	if 'alloc' in commands:
 
 		# Satisfy all requests
 		for args in commands['alloc']:
-			_alloc_slot( request.project, args )
+			try:
+				_alloc_slot( request.project, args )
+			except APIError as e:
+				errors.append(e)
 
 		# Delete alloc command
 		del commands['alloc']
@@ -281,7 +287,10 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['counters']:
-			_counters_slot( request.project, args )
+			try:
+				_counters_slot( request.project, args )
+			except APIError as e:
+				errors.append(e)
 
 		# Delete counters command
 		del commands['counters']
@@ -291,7 +300,10 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['meta']:
-			_meta_slot( request.project, args )
+			try:
+				_meta_slot( request.project, args )
+			except APIError as e:
+				errors.append(e)
 
 		# Delete meta command
 		del commands['meta']
@@ -301,7 +313,10 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['discard']:
-			_discard_slot( request.project, args )
+			try:
+				_discard_slot( request.project, args )
+			except APIError as e:
+				errors.append(e)
 
 		# Delete discard command
 		del commands['discard']
@@ -311,7 +326,10 @@ def bulk_commands(request, api):
 
 		# Satisfy all requests
 		for args in commands['claim']:
-			_claim_slot( request.project, args )
+			try:
+				_claim_slot( request.project, args )
+			except APIError as e:
+				errors.append(e)
 
 		# Delete claim command
 		del commands['claim']
@@ -319,5 +337,18 @@ def bulk_commands(request, api):
 	# Everything else is invalid command
 	if commands:
 		# Unknown
-		raise APIError("Unknown command '%s' in bulk set" % commands.keys()[0])
+		errors.append( APIError("Unknown command '%s' in bulk set" % commands.keys()[0]) )
+
+	# Check for errors
+	ans = { }
+	if errors:
+		ans['errors'] = []
+		for e in errors:
+			ans['errors'].append({
+					"message": e.message,
+					"code": e.code
+				})
+
+	# Return response
+	return ans
 
