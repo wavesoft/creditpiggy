@@ -60,9 +60,11 @@ DIR=$(mktemp -d)
 
 	done < jobdata
 
-	# Claim slot 
+	# Claim or discard slot 
 	if [ ! -z "$VMID" ]; then
 		echo "claim,slot=${JOB_ID},machine=${VMID},credits=1" | nc -U ${DAEMON_ENDPOINT}
+	else
+		echo "discard,slot=${JOB_ID},reason=unknown-vmid" | nc -U ${DAEMON_ENDPOINT}
 	fi
 
 )
