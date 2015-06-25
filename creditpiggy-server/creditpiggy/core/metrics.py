@@ -451,7 +451,7 @@ class MetricFeaturesHousekeeping(HousekeepingTask):
 			# Execute pipeline
 			pipeline.execute()
 
-	@periodical(seconds=30)
+	@periodical(hours=24)
 	def rotate_daily(self):
 		"""
 		Rotate daily data

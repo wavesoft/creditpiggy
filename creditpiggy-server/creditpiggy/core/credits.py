@@ -86,7 +86,9 @@ def claim_slot( slot, machine ):
 
 		# Find the project/owner link
 		(pu_credits, created) = ProjectUserRole.objects.get_or_create(
-				user=machine.owner, project=slot.project, role=ProjectUserRole.MEMBER
+				user=machine.owner, project=slot.project, defaults=dict(
+					role=ProjectUserRole.MEMBER
+				)
 			)
 
 		# Stack machine credits
