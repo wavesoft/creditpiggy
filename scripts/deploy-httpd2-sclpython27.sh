@@ -303,6 +303,19 @@ else
 	echo "installed"
 fi
 
+# We will need libjpeg-devel for building Pillow (Python Image Library)
+echo -n " - Checking for 'libjpeg-devel'..."
+if isinstalled "libjpeg-devel"; then
+	echo "ok"
+else
+	# Install now
+	yum -y install libjpeg-devel >$LOG_FILE 2>$LOG_FILE
+	[ $? -ne 0 ] && dump_errorlog
+
+	# We are good
+	echo "installed"
+fi
+
 # Install Virtualenv if missing
 VIRTUALENV_VER=$(${PYTHON_PIP} list | grep virtualenv | awk '{print $2}' | tr -d '()')
 echo -n " - Checking for virtualenv..."
