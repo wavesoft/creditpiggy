@@ -18,19 +18,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-function cpapi_alloc {
-	local JOB=$1
-	echo "alloc,slot=${JOB}" | nc 127.0.0.0 9999
-}
+DAEMON_ENDPOINT="/var/run/creditapi.socket"
 
-function cpapi_claim {
-	
-}
+# Get parameters from command-line
+JOB_FILE=$1
+JOB_ID=$2
 
-function cpapi_counters {
-	
-}
+[ -z "$JOB_FILE" ] && echo "ERROR: Missing job file (usage: $0 [job file] [uuid])" && exit 1
+[ -z "$JOB_ID" ] && echo "ERROR: Missing job UUID (usage: $0 [job file] [uuid])" && exit 1
 
-function cpapi_meta {
-	
-}
+# Forward command to daemon
+echo "alloc,slot=${JOB_ID}" | nc -U ${DAEMON_ENDPOINT}

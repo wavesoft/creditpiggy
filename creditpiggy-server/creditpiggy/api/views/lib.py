@@ -46,7 +46,34 @@ def claim(request, api="json"):
 	# Logout user if the sso sesssion is expired
 	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
 		auth_logout( request )
+		raise APIError("Your session has expired", code=203)
 
+	# Fetch machine to pair
+	if not 'vmid' in request.GET:
+		raise APIError("Missing 'vmid' argument", code=400)
+	vmid = request.GET['vmid']
+
+	# Create/get user/machine pair
+	(unit, created) = ComputingUnit.objects.get_or_create(
+			uuid=vmid
+		)
+
+	# Check for mismatch claims
+	if not created:
+
+		# Define empty unit
+		if not unit.owner:
+			unit.owner=request.user
+
+		# Check for wrong claims
+		elif unit.owner != request.user:
+			raise APIError("The specified worker unit is already claimed", code=203)
+
+	# Save or update record
+	unit.owner=request.user
+	unit.save()
+
+	# We are good
 	return { }
 
 @render_with_api(context="js.release")
@@ -60,7 +87,24 @@ def release(request, api="json"):
 	# Logout user if the sso sesssion is expired
 	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
 		auth_logout( request )
+		raise APIError("Your session has expired", code=203)
 
+	# Fetch machine to pair
+	if not 'vmid' in request.GET:
+		raise APIError("Missing 'vmid' argument", code=400)
+	vmid = request.GET['vmid']
+
+	# Create/get user/machine pair
+	try:
+		unit = ComputingUnit.objects.get( uuid=vmid, owner=request.user )
+	except ComputingUnit.DoesNotExist:
+		raise APIError("The specified worker unit does not exist or is not claimed", code=203)
+
+	# Remove owner
+	unit.owner = None
+	unit.save()
+
+	# We are good
 	return { }
 
 @render_with_api(context="js.session")
@@ -74,6 +118,7 @@ def session(request, api="json"):
 	# Logout user if the sso sesssion is expired
 	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
 		auth_logout( request )
+		raise APIError("Your session has expired", code=203)
 
 	# Return session details
 	return information.compile_session(request)

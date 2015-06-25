@@ -26,11 +26,16 @@ from django.utils.safestring import mark_safe
 
 # Register your models here.
 admin.site.register(PiggyUser)
-admin.site.register(ComputingUnit)
 
 admin.site.register(Campaign)
 admin.site.register(CampaignUserCredit)
 admin.site.register(CampaignProject)
+
+class ComputingUnitAdmin(admin.ModelAdmin):
+	list_display = ('uuid', 'owner', 'firstAction', 'lastAction')
+	list_filter = ('owner',)
+
+admin.site.register(ComputingUnit, ComputingUnitAdmin)
 
 class PiggyProjectAdmin(admin.ModelAdmin):
 	list_display = ('display_name', 'uuid', 'image', 'project_url')

@@ -232,6 +232,15 @@ class ComputingUnit(MetricsModelMixin, models.Model):
 	#: Owner of this computing unit
 	owner = models.ForeignKey( PiggyUser, default=None, null=True )
 
+	#: First action (timestamp)
+	firstAction = models.DateTimeField(auto_now_add=True)
+
+	#: Last action (timestamp)
+	lastAction = models.DateTimeField(auto_now=True)
+
+	def __unicode__(self):
+		return self.uuid
+
 class PiggyProject(MetricsModelMixin, models.Model):
 	"""
 	THe project ID
