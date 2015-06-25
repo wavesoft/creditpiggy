@@ -254,10 +254,13 @@ ROOT_URLCONF = 'creditpiggy.urls'
 WSGI_APPLICATION = 'creditpiggy.wsgi.application'
 
 # Email configuration
-
-DEFAULT_FROM_EMAIL = "CreditPiggy Robot <robot@creditpiggy.eu>"
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = "/Users/icharala/Develop/creditpiggy/data.local"
+DEFAULT_FROM_EMAIL = _CONFIG_.SMTP['FROM']
+EMAIL_HOST = _CONFIG_.SMTP['HOST']
+EMAIL_PORT = _CONFIG_.SMTP['PORT']
+EMAIL_HOST_USER = _CONFIG_.SMTP['USER']
+EMAIL_HOST_PASSWORD = _CONFIG_.SMTP['PASSWORD']
+EMAIL_USE_TLS = _CONFIG_.SMTP['TLS']
+EMAIL_USE_SSL = _CONFIG_.SMTP['SSL']
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/

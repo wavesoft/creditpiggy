@@ -291,7 +291,7 @@ class CPLocalRequestHandler(SocketServer.BaseRequestHandler):
 					raise ValueError("Missing 'machine' argument")
 
 				# Forward the request to the remote server
-				self.server.queue_message("claim", k_args )
+				self.server.queue_message("discard", k_args )
 
 				# Send 'OK'
 				self.request.sendall("OK")

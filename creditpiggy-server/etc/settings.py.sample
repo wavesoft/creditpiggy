@@ -51,6 +51,17 @@ DEFAULT_CACHE = {
 	'LOCATION': '127.0.0.1:11211',
 }
 
+# Default e-mail configuration
+SMTP = {
+	'FROM' 		: 'CreditPiggy Robot <robot@creditpiggy.cern.ch>',
+	'HOST'		: '',
+	'PORT'		: 25,
+	'USER'		: '',
+	'PASSWORD'	: '',
+	'TLS'		: True,
+	'SSL'		: False,
+}
+
 # Logging set-up
 LOGGING = {
 	'version': 1,
