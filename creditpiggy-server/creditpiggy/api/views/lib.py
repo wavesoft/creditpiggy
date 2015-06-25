@@ -54,9 +54,7 @@ def claim(request, api="json"):
 	vmid = request.GET['vmid']
 
 	# Create/get user/machine pair
-	(unit, created) = ComputingUnit.objects.get_or_create(
-			uuid=vmid
-		)
+	(unit, created) = ComputingUnit.objects.get_or_create( uuid=vmid )
 
 	# Check for mismatch claims
 	if not created:
