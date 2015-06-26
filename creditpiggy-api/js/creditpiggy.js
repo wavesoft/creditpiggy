@@ -27,7 +27,7 @@
 		/**
 		 * The API Endpoint
 		 */
-		"baseURL":  "http://127.0.0.1:8000",// "//creditpiggy.cern.ch",
+		"baseURL":  "//creditpiggy.cern.ch",
 
 		/**
 		 * Session data
@@ -63,6 +63,11 @@
 		 * One-time initialization
 		 */
 		"__oneTimeInitEnabled": false,
+
+		/**
+		 * Periodic polling timer
+		 */
+		"__pollingTimer": null,
 
 	};
 
@@ -301,7 +306,8 @@
 		if (this.__initialised) return;
 
 		// Request initial session update
-		this.__updateSession( true );
+		this.__scheduleUpdate( true );		
+
 		// We are now initialised
 		this.__initialised = true;
 	}
@@ -321,6 +327,25 @@
 		}
 	}
  
+ 	/**
+	 * Schedule next periodical update
+	 */
+	CreditPiggy.__scheduleUpdate = function( polling ) {
+
+		// Clear a previous timeout
+		clearTimeout(CreditPiggy.__pollingTimer);
+
+		// Perform update
+		this.__updateSession( polling === true );
+
+		// Schedule next update in a minute
+		CreditPiggy.__pollingTimer = setTimeout(
+				CreditPiggy.__scheduleUpdate.bind(this),
+				60000
+			);
+
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 	// External API functions
 	//////////////////////////////////////////////////////////////////////////////
@@ -342,7 +367,7 @@
 		if (!this.__initialised) {
 			this.__initialize();
 		} else {
-			this.__updateSession( true );
+			this.__scheduleUpdate( true );
 		}
 
 	}
@@ -563,11 +588,14 @@
 
 	// Refresh profile on focus
 	$(window).on("focus", (function(ev) {
-		this.__updateSession( false );
+		// Update session and schedule periodical updates
+		this.__scheduleUpdate();
 	}).bind(CreditPiggy));
 	$(window).on("blur", (function(ev) {
 		// Enable one time-init when we get focused
 		this.__oneTimeInitEnabled = true;
+		// Clear polling timer
+		clearTimeout( this.__pollingTimer );
 	}).bind(CreditPiggy));
 
 	// Receive HTML5 messages
