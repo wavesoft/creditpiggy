@@ -74,10 +74,4 @@
       <a class="btn btn-primary" href="/logout/?{{url_suffix}}">Logout</a>
     </p>
 
-    <!-- Script callbacks -->
-    <script type="text/javascript">
-    var o = window.opener || window.parent;
-    o.postMessage(JSON.stringify({"action": "session", "session": {{ session|safe }}}), "*");
-    </script>
-
 {% endblock %}

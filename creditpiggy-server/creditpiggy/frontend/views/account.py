@@ -37,7 +37,7 @@ from creditpiggy.core.models import *
 from creditpiggy.api.auth import sso_logout, website_from_request
 from creditpiggy.api import information
 
-@render_to("logout.html")
+@render_to("done_logout.html")
 def logout(request):
 	"""
 	Log the user out of any social profile
@@ -53,6 +53,26 @@ def logout(request):
 
 	# Render the logout page
 	return context(request)
+
+@render_to("done_login.html")
+def login_ack(request):
+	"""
+	Login confirm, mainly used for callback to parent API
+	"""
+
+	# Check if this is a website login page
+	website = website_from_request( request, whitelistPath=True )
+
+	# If we are from a website, redirecto to website status, otherwuse to the user profile
+	next_url = reverse("frontend.login")
+	if website:
+		next_url = reverse("frontend.website.status", kwargs={ "slug": website.slug })
+
+	# Return context
+	return context(request,
+			session=json.dumps(information.compile_session(request)),
+			next=next_url
+		)
 
 def link(request, provider):
 	"""

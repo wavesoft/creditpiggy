@@ -157,7 +157,7 @@ SOCIAL_AUTH_LIVE_SECRET = _CONFIG_.SOCIAL_AUTH_LIVE_SECRET
 
 # Social login redirection URLs
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/profile/'
+LOGIN_REDIRECT_URL = '/login/done/'
 LOGIN_ERROR_URL = '/login/'
 
 # Customize authentication pipeline to enable account linking
