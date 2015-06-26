@@ -55,11 +55,6 @@ div.container.solid {
   position: absolute;
   right: 0;
 }
-.piggy-logo-header .logo.logo-framed {
-  border: solid #eee;
-  border-radius: 13px;
-  box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 3px;
-}
 .btn-achieved {
   border: solid 1px #4caf50;
   background-color: #E0F1E0;
@@ -80,6 +75,11 @@ div.container.solid {
 }
 .login-logo h4 {
   text-shadow: #fff 1px 1px;
+}
+.login-logo .logo-framed {
+  border: solid #eee;
+  border-radius: 13px;
+  box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 3px;
 }
 @media (min-width: 768px) {
   .login-logo .spaced-icon {
