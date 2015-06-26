@@ -119,6 +119,7 @@ def profile(request):
 	return context(request,
 			session=json.dumps(information.compile_session(request)),
 			social_links=social_links,
+			show_social=not any(social_links.values()),
 			website=website,
 		)
 
