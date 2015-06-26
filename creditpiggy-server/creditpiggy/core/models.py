@@ -66,6 +66,12 @@ def new_uuid():
 	"""
 	return uuid.uuid4().hex
 
+def new_expire_time():
+	"""
+	Calculate the timestamp for the expire time of a new slot
+	"""
+	return time.time() + settings.CREDITPIGGY_CREDIT_EXPIRE_TIME
+
 def to_dict(instance):
 	"""
 	Convert a model isinstance to dictionary
@@ -222,7 +228,7 @@ class Achievement(models.Model):
 		"""
 		return json.loads(self.metrics)
 
-class ComputingUnit(MetricsModelMixin, models.Model):
+class ComputingUnit(models.Model):
 	"""
 	A computing unit that can bring credits to a user.
 	"""
@@ -477,7 +483,7 @@ class CreditSlot(MetricsModelMixin, models.Model):
 	machine = models.ForeignKey( ComputingUnit, null=True, default=None, blank=True )
 
 	#: The UNIX timestamp after which the slot is considered 'expired'
-	expireTime = models.IntegerField(default=0)
+	expireTime = models.IntegerField(default=new_expire_time)
 
 	#: The project associated with this credits slot
 	project = models.ForeignKey( PiggyProject )
@@ -496,6 +502,7 @@ class CreditSlot(MetricsModelMixin, models.Model):
 
 	#: Discard reason
 	reason = models.CharField(max_length=32, null=True, default=None, blank=True) 
+
 
 class Campaign(MetricsModelMixin, models.Model):
 	"""

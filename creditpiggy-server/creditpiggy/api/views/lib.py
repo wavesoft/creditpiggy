@@ -26,7 +26,7 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 
 from creditpiggy.core.models import CreditSlot, ComputingUnit, new_token
-from creditpiggy.core.credits import flush_machine
+from creditpiggy.core.credits import import_machine_slots
 
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import allow_cors, require_valid_user, require_website_auth, sso_update, sso_user, sso_logout_flag
@@ -73,7 +73,7 @@ def claim(request, api="json"):
 	unit.save()
 
 	# Flush unit's credits to the user
-	flush_machine( unit )
+	import_machine_slots( unit )
 
 	# We are good
 	return { }

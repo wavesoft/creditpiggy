@@ -1,5 +1,9 @@
 {% extends "base/p_bigheader.html" %}
 
+{% block head %}
+	<meta http-equiv="refresh" content="60">
+{% endblock %}
+
 {% block header_content %}
 	<h1>{{ website.name }}</h1>
 	<p>{{ website.short }}</p>

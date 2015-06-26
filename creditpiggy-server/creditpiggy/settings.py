@@ -95,6 +95,10 @@ TS_VALUE_COUNT = _CONFIG_.TS_VALUE_COUNT
 # Base URL
 BASE_URL = _CONFIG_.BASE_URL
 
+# How long to keep a credit slot alive before expiring it (in seconds)
+# Defaults to 15 days
+CREDITPIGGY_CREDIT_EXPIRE_TIME = 1296000
+
 # Creditpiggy anonymous user
 CREDITPIGGY_ANONYMOUS_PROFILE = _CONFIG_.CREDITPIGGY_ANONYMOUS_PROFILE
 

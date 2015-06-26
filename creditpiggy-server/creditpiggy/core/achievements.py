@@ -35,14 +35,18 @@ def metrics_achieved( counters, achievement_metrics ):
 		if not k in counters:
 			return False
 		# If counters are not achieved, continue
-		if counters[k] < v:
+		try:
+			# Float comparison that covers also int cases
+			if float(counters[k]) < float(v):
+				return False
+		except ValueError:
 			return False
 
 	# Matched
 	return True
 
 
-def check_achievements( project_user_link, campaigns=[] ):
+def check_achievements( project_user_link ):
 	"""
 	Check the user achievements
 	"""
@@ -54,10 +58,10 @@ def check_achievements( project_user_link, campaigns=[] ):
 	# # Get user's achievements for this project
 	user_achievements = []
 	for a in AchievementInstance.objects.filter( user=project_user_link.user, project=project_user_link.project ):
-		user_achievements.append(a)
+		user_achievements.append(a.achievement.id)
 
 	# # Get non-achieved project achievements
-	for a in project_user_link.project.achievements.filter( ~Q(achievement__in=user_achievements) ):
+	for a in project_user_link.project.achievements.filter( ~Q(id__in=user_achievements) ):
 
 		# For each achievement, check if metrics are achieved
 		if metrics_achieved( m_counters, a.getMetrics() ):
