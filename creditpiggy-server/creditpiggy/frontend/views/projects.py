@@ -67,7 +67,22 @@ def details(request, slug=""):
 	# Get project's visual metrics
 	visual_metrics = project.visual_metrics.all().order_by('-priority')
 	vmetric = VisualMetricsSum( visual_metrics )
-	vmetric.merge( request.user.metrics() )
+	umetric = VisualMetricsSum( visual_metrics )
+
+	# Get project metrics
+	vmetric.merge( project.metrics() )
+
+	# Calculate user-project metrics
+	user_role = None
+	try:
+
+		# Get user contribution in this project
+		user_role = ProjectUserRole.objects.get( user=request.user, project=project )
+		# Calculate user metrics
+		umetric.merge( user_role.metrics() )
+
+	except ProjectUserRole.DoesNotExist:
+		pass
 
 	# Return context
 	return context(request,
@@ -75,6 +90,8 @@ def details(request, slug=""):
 		achievements=achievements,
 		counters=project.metrics().counters(),
 		metrics=vmetric.values(),
+		usermetrics=umetric.values(),
+		user_role=user_role,
 		)
 
 @login_required()
