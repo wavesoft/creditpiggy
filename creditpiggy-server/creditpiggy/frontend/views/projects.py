@@ -29,6 +29,7 @@ from creditpiggy.frontend.views import context
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
+from creditpiggy.core.utils import VisualMetricsSum
 
 @login_required()
 @render_to("projects.html")
@@ -63,11 +64,17 @@ def details(request, slug=""):
 	# Get project achievements
 	achievements = project.achievementStatus(request.user)
 
+	# Get project's visual metrics
+	visual_metrics = project.visual_metrics.all().order_by('-priority')
+	vmetric = VisualMetricsSum( visual_metrics )
+	vmetric.merge( request.user.metrics() )
+
 	# Return context
 	return context(request,
 		project=project,
 		achievements=achievements,
-		counters=project.metrics().counters()
+		counters=project.metrics().counters(),
+		visual_metrics=vmetric.values(),
 		)
 
 @login_required()
