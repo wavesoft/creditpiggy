@@ -51,7 +51,7 @@ def social_update_displayname(backend, social, response={}, user=None, *args, **
 		dirty = True
 
 	# Update icon
-	if user.profile_image != profile_image:
+	if not user.profile_image:
 		user.profile_image = profile_image
 		dirty = True
 

@@ -74,7 +74,7 @@ def details(request, slug=""):
 		project=project,
 		achievements=achievements,
 		counters=project.metrics().counters(),
-		visual_metrics=vmetric.values(),
+		metrics=vmetric.values(),
 		)
 
 @login_required()
