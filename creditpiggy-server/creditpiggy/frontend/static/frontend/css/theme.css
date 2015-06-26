@@ -78,6 +78,9 @@ div.container.solid {
 .login-logo .row > div {
   text-align: center;
 }
+.login-logo h4 {
+  text-shadow: #fff 1px 1px;
+}
 @media (min-width: 768px) {
   .login-logo .spaced-icon {
     margin-top: 10px;
