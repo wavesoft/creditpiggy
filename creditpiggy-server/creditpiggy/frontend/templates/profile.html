@@ -40,18 +40,35 @@
 
         <div class="panel panel-default">
           <div class="panel-body text-center">
-            <h4>Leaderboards</h4>
+            <h4>Link account</h4>
             <p>
-              See who is leading
-            </p>
-            <p><a class="btn btn-default" href="/logout/?{{url_suffix}}">Leaderboard</a></p>        
+              {% if social_links.google_oauth2 %}
+              <a class="btn btn-default btn-social btn-lg btn-block" href="/login/google-oauth2/?mode=link&amp;{{url_suffix}}"><i class="fa fa-google-plus-square"></i> Google</a>
+              {% endif %}
+              {% if social_links.twitter %}
+              <a class="btn btn-default btn-social btn-lg btn-block" href="/login/twitter/?mode=link&amp;{{url_suffix}}"><i class="fa fa-twitter-square"></i> Twitter</a>
+              {% endif %}
+              {% if social_links.facebook %}
+              <a class="btn btn-default btn-social btn-lg btn-block" href="/login/facebook/?mode=link&amp;{{url_suffix}}"><i class="fa fa-facebook-square"></i> Facebook</a>
+              {% endif %}
+              {% if social_links.live %}
+              <a class="btn btn-default btn-social btn-lg btn-block" href="/login/live/?mode=link&amp;{{url_suffix}}"><i class="fa fa-windows"></i> Live</a>
+              {% endif %}
+            </p>        
           </div>
         </div>
 
       </div>
     </div>
 
-    <p><a class="btn btn-primary" href="/logout/?{{url_suffix}}">Logout</a></p>
+    <p>
+      {% if website %}
+      <a class="btn btn-info pull-right" href="/website/{{ website.slug }}/?{{url_suffix}}">
+        Back to <strong>{{ website.name }}</strong> status
+      </a>
+      {% endif %}
+      <a class="btn btn-primary" href="/logout/?{{url_suffix}}">Logout</a>
+    </p>
 
     <!-- Script callbacks -->
     <script type="text/javascript">

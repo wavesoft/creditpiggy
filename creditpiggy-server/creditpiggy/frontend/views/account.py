@@ -19,6 +19,8 @@
 
 import json
 
+from social.apps.django_app.default.models import UserSocialAuth
+
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
@@ -98,9 +100,26 @@ def profile(request):
 	if not request.user.is_authenticated():
 		return redirect(reverse("frontend.login"))
 
+	# Lookup all the available profiles to mark
+	social_links = {
+		"twitter": True,
+		"facebook": True,
+		"google_oauth2": True,
+		"live": True
+	}
+
+	# Hide all the used providers
+	for p in UserSocialAuth.objects.filter( user=request.user ):
+		social_links[p.provider.replace("-","_")] = False
+
+	# Get website
+	website = website_from_request( request, whitelistPath=True )
+
 	# Return context
 	return context(request,
-			session=json.dumps(information.compile_session(request))
+			session=json.dumps(information.compile_session(request)),
+			social_links=social_links,
+			website=website,
 		)
 
 @render_to("status.html")
