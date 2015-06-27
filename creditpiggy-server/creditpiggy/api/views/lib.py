@@ -69,7 +69,8 @@ def claim(request, api="json"):
 			raise APIError("The specified worker unit is already claimed", code=203)
 
 	# Save or update record
-	unit.owner=request.user
+	unit.owner = request.user
+	unit.website = request.website
 	unit.save()
 
 	# Flush unit's credits to the user
@@ -104,6 +105,7 @@ def release(request, api="json"):
 
 	# Remove owner
 	unit.owner = None
+	unit.website = None
 	unit.save()
 
 	# We are good

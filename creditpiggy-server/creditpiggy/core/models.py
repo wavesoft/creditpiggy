@@ -228,27 +228,6 @@ class Achievement(models.Model):
 		"""
 		return json.loads(self.metrics)
 
-class ComputingUnit(models.Model):
-	"""
-	A computing unit that can bring credits to a user.
-	"""
-
-	#: Computing unit UUID
-	uuid = models.CharField(max_length=255, default="", unique=True, db_index=True, 
-		help_text="A unique ID generated from within the computing unit and delivered to CP through the batch system")
-
-	#: Owner of this computing unit
-	owner = models.ForeignKey( PiggyUser, default=None, null=True )
-
-	#: First action (timestamp)
-	firstAction = models.DateTimeField(auto_now_add=True)
-
-	#: Last action (timestamp)
-	lastAction = models.DateTimeField(auto_now=True)
-
-	def __unicode__(self):
-		return self.uuid
-
 class PiggyProject(MetricsModelMixin, models.Model):
 	"""
 	THe project ID
@@ -420,6 +399,30 @@ class Website(MetricsModelMixin, models.Model):
 
 	def __unicode__(self):
 		return self.name
+
+class ComputingUnit(models.Model):
+	"""
+	A computing unit that can bring credits to a user.
+	"""
+
+	#: Computing unit UUID
+	uuid = models.CharField(max_length=255, default="", unique=True, db_index=True, 
+		help_text="A unique ID generated from within the computing unit and delivered to CP through the batch system")
+
+	#: Owner of this computing unit
+	owner = models.ForeignKey( PiggyUser, default=None, null=True )
+
+	#: The website that triggered the claim
+	website = models.ForeignKey( Website, default=None, null=True )
+
+	#: First action (timestamp)
+	firstAction = models.DateTimeField(auto_now_add=True)
+
+	#: Last action (timestamp)
+	lastAction = models.DateTimeField(auto_now=True)
+
+	def __unicode__(self):
+		return self.uuid
 
 class ProjectUserRole(MetricsModelMixin, models.Model):
 	"""

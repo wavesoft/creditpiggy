@@ -27,7 +27,7 @@
 		/**
 		 * The API Endpoint
 		 */
-		"baseURL":  "//creditpiggy.cern.ch",
+		"baseURL":  "http://127.0.0.1:8000",// "//creditpiggy.cern.ch",
 
 		/**
 		 * Session data

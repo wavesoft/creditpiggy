@@ -23,7 +23,7 @@ from social.apps.django_app.default.models import UserSocialAuth
 
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
-from django.shortcuts import redirect
+from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -37,14 +37,75 @@ from creditpiggy.core.models import *
 from creditpiggy.api.auth import sso_logout, website_from_request
 from creditpiggy.api import information
 
+#######################################################
+# Utility functions
+#######################################################
+
+def releasable_workers( user, website ):
+	"""
+	Check if a logout action will release 
+	"""
+
+	# If we don't have website, say nothing
+	if website is None:
+		return None
+
+	# Fetch all machines that would be disposed
+	# upon logging out.
+	units = ComputingUnit.objects.filter(
+			owner=user, website=website
+		)
+
+	# Check if counter is bigger than 0
+	if units.count() == 0:
+		return None
+
+	# Return units otherwise
+	return units
+
+#######################################################
+# View functions
+#######################################################
+
 @render_to("done_logout.html")
 def logout(request):
 	"""
 	Log the user out of any social profile
 	"""
 
-	# Delete sso tokens
+	# Get website
 	website = website_from_request( request, whitelistPath=True )
+
+	# Check if we have confirm flag
+	confirm = False
+	if 'confirm' in request.GET:
+		confirm = bool(request.GET['confirm'])
+
+	# Confirm if there are workers to be released
+	if not (website is None):
+		workers = releasable_workers( request.user, website )
+		if not workers is None:
+			if not confirm:
+
+				# Pluralize
+				plural = ""
+				if workers.count() > 1:
+					plural = "s"
+
+				# Render message
+				return render_to_response("confirm.html", context(request,
+						body="<p>It looks that your account is linked with <strong>%i</strong> computing unit%s. By logging out you are going to release them and make them available for anyone to claim.</p>" % ( workers.count(), plural ) + \
+							 "<p>You will not loose your current credits, but you will no longer receive new credits from them.</p>" + \
+							 "<p>Just log-in at any time if you want to link them to your account again.</p>",
+						icon="/static/frontend/img/pc-warning.png",
+						link_ok=reverse("frontend.logout") + "?confirm=1",
+						link_cancel=reverse("frontend.profile"),
+					))
+			else:
+				# Release all workers
+				workers.update( owner=None, website=None )
+
+	# Delete sso tokens
 	if website:
 		sso_logout( request.user, website )
 

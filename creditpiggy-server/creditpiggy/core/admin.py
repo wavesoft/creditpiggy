@@ -32,7 +32,7 @@ admin.site.register(CampaignUserCredit)
 admin.site.register(CampaignProject)
 
 class ComputingUnitAdmin(admin.ModelAdmin):
-	list_display = ('uuid', 'owner', 'firstAction', 'lastAction')
+	list_display = ('uuid', 'owner', 'website', 'firstAction', 'lastAction')
 	list_filter = ('owner',)
 
 admin.site.register(ComputingUnit, ComputingUnitAdmin)

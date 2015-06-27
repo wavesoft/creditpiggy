@@ -24,7 +24,7 @@ from creditpiggy.frontend.views import account, projects, ajax, website
 urlpatterns = patterns('',
 	url(r'^$', 								account.home, 			name="frontend.home"),
 	url(r'^profile/$', 						account.profile, 		name="frontend.profile"),
-	url(r'^logout/$', 						account.logout, 		name="frontend.logout"),
+	url(r'^logout/$',				 		account.logout, 		name="frontend.logout"),
 	url(r'^login/$', 						account.login, 			name="frontend.login"),
 	url(r'^login/done/$',	 				account.login_ack, 		name="frontend.login.done"),
 	url(r'^status/$', 						account.status, 		name="frontend.status"),
