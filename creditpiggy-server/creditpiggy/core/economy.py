@@ -50,8 +50,7 @@ class ProjectNormalizer(HousekeepingTask):
 
 		# Get all users
 		for u in PiggyUser.objects.all():
-
-			# 
+			pass
 
 	@periodical(minutes=30)
 	def normalize_projects(self):
@@ -102,5 +101,5 @@ def update_user_ranking( user ):
 	"""
 	Re-calculate the user's ranking
 	"""
-
+	pass
 

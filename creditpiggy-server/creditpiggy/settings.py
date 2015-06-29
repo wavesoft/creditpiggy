@@ -113,7 +113,7 @@ CREDITPIGGY_API_PROTOCOLS = (
 CREDITPIGGY_HOUSEKEEPING_CLASSES = (
 	'creditpiggy.core.metrics.MetricFeaturesHousekeeping',
 	'creditpiggy.core.models.ModelHousekeeping',
-	'creditpiggy.core.economy.ProjectNormalizer',
+#	'creditpiggy.core.economy.ProjectNormalizer',
 )
 
 # Static files (CSS, JavaScript, Images)

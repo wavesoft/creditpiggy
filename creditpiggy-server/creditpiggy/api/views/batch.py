@@ -120,10 +120,12 @@ def _claim_slot(project, args):
 		raise APIError("Missing 'machine' argument")
 
 	# Lookup slot
-	try:
-		slot = CreditSlot.objects.get( uuid=args['slot'], project=project )
-	except CreditSlot.DoesNotExist:
+	slots = CreditSlot.objects.filter( uuid=args['slot'], project=project )
+	if len(slots) == 0:
 		raise APIError("Claiming non-existing slot: '%s' for project: '%s'" % (args['slot'], str(project)))
+
+	# Get first slot
+	slot = slots[0]
 
 	# Lookup or create relevant machine
 	(machine, created) = ComputingUnit.objects.get_or_create( uuid=args['machine'] )
@@ -157,7 +159,7 @@ def _counters_slot(project, args):
 		raise APIError("Missing 'slot' argument")
 
 	# Lookup slot
-	slots = CreditSlot.objects.filter(uuid = args['slot'], project = project)
+	slots = CreditSlot.objects.filter( uuid=args['slot'], project=project )
 	if len(slots) == 0:
 		raise APIError("Updating counters in a non-existing slot: '%s' for project: '%s'" % (args['slot'], str(project)))
 
