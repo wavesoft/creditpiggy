@@ -270,6 +270,9 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	#: Metrics to visualize	
 	visual_metrics = models.ManyToManyField( VisualMetric, blank=True )
 
+	#: Normalization factor
+	norm_factor = models.FloatField( default=1.0 )
+
 	def __unicode__(self):
 		return u"%s" % self.display_name
 

@@ -118,8 +118,6 @@ class Metrics:
 		p.lrange( "%s/ts/%s/val" % (self.namespace, seriesName), 0, -1 )
 		ans = p.execute()
 
-		print ">> Got lrange of: %s/ts/%s/ts" % (self.namespace, seriesName)
-
 		# If metric is 'none', return all metrics as dict
 		if metric is None:
 			# Return a tuple with ( [ timestamp, .. ], [ {key: value}, .. ] )
