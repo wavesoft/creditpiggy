@@ -18,6 +18,7 @@
 ################################################################
 
 import time
+import logging
 import creditpiggy.core.credits as credits
 
 from django.shortcuts import render
@@ -28,6 +29,9 @@ from django.views.decorators.csrf import csrf_exempt
 from creditpiggy.core.models import CreditSlot, ComputingUnit
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import require_project_auth
+
+# Get a logger
+logger = logging.getLogger( "api.batch" )
 
 ##########################################
 # Reusable functions that implement API
@@ -274,6 +278,7 @@ def bulk_commands(request, api):
 			try:
 				_alloc_slot( request.project, args )
 			except APIError as e:
+				logger.warn("Batch error during 'alloc': %s" % str(e))
 				errors.append(e)
 
 		# Delete alloc command
@@ -287,6 +292,7 @@ def bulk_commands(request, api):
 			try:
 				_counters_slot( request.project, args )
 			except APIError as e:
+				logger.warn("Batch error during 'counters': %s" % str(e))
 				errors.append(e)
 
 		# Delete counters command
@@ -300,6 +306,7 @@ def bulk_commands(request, api):
 			try:
 				_meta_slot( request.project, args )
 			except APIError as e:
+				logger.warn("Batch error during 'meta': %s" % str(e))
 				errors.append(e)
 
 		# Delete meta command
@@ -313,6 +320,7 @@ def bulk_commands(request, api):
 			try:
 				_discard_slot( request.project, args )
 			except APIError as e:
+				logger.warn("Batch error during 'discard': %s" % str(e))
 				errors.append(e)
 
 		# Delete discard command
@@ -326,6 +334,7 @@ def bulk_commands(request, api):
 			try:
 				_claim_slot( request.project, args )
 			except APIError as e:
+				logger.warn("Batch error during 'claim': %s" % str(e))
 				errors.append(e)
 
 		# Delete claim command
