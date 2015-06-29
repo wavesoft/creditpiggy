@@ -41,19 +41,27 @@ from creditpiggy.api import information
 # Utility functions
 #######################################################
 
-def releasable_workers( user, website ):
+def releasable_workers( request, user, website ):
 	"""
-	Check if a logout action will release 
+	Return a list of workers that will/should be released
+	upon logging out.
 	"""
 
 	# If we don't have website, say nothing
 	if website is None:
 		return None
 
+	# Fetch the linked list of workers from session
+	workers = []
+	if 'workers' in request.session:
+		workers = request.session['workers']
+	if not workers:
+		return None
+
 	# Fetch all machines that would be disposed
 	# upon logging out.
 	units = ComputingUnit.objects.filter(
-			owner=user, website=website
+			owner=user, id__in=workers
 		)
 
 	# Check if counter is bigger than 0
@@ -83,7 +91,7 @@ def logout(request):
 
 	# Confirm if there are workers to be released
 	if not (website is None):
-		workers = releasable_workers( request.user, website )
+		workers = releasable_workers( request, request.user, website )
 		if not workers is None:
 			if not confirm:
 

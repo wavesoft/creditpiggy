@@ -44,6 +44,7 @@ def claim(request, api="json"):
 	"""
 	Claim (link) a working unit by the current user
 	"""
+
 	# Logout user if the sso sesssion is expired
 	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
 		auth_logout( request )
@@ -72,6 +73,14 @@ def claim(request, api="json"):
 	unit.owner = request.user
 	unit.website = request.website
 	unit.save()
+
+	# Keep the unit ID in the list of workers for this session
+	workers = []
+	if 'workers' in request.session:
+		workers = request.session['workers']
+	if not unit.id in workers:
+		workers.append(unit.id)
+	request.session['workers'] = workers
 
 	# Flush unit's credits to the user
 	import_machine_slots( unit )
@@ -107,6 +116,15 @@ def release(request, api="json"):
 	unit.owner = None
 	unit.website = None
 	unit.save()
+
+	# Remove the unit ID in the list of workers for this session
+	workers = []
+	if 'workers' in request.session:
+		workers = request.session['workers']
+	if unit.id in workers:
+		i = workers.index( unit.id )
+		del workers[i]
+	request.session['workers'] = workers
 
 	# We are good
 	return { }
