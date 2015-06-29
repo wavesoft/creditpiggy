@@ -24,12 +24,6 @@ from creditpiggy.core.models import ProjectUserRole, Campaign, CreditSlot
 # Helper functions
 ############################################################
 
-def update_user_ranking( user ):
-	"""
-	Update user ranking
-	"""
-	pass
-
 def import_to_campaigns( slot, project ):
 	"""
 	Import specified metrics to relevant project campaigns
