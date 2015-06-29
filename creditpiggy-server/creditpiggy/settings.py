@@ -112,7 +112,7 @@ CREDITPIGGY_API_PROTOCOLS = (
 # Housekeeping clases 
 CREDITPIGGY_HOUSEKEEPING_CLASSES = (
 	'creditpiggy.core.metrics.MetricFeaturesHousekeeping',
-	'creditpiggy.core.models.ModelHousekeeping',
+#	'creditpiggy.core.models.ModelHousekeeping',
 #	'creditpiggy.core.economy.ProjectNormalizer',
 )
 
