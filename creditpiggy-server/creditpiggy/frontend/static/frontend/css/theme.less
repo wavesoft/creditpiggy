@@ -217,6 +217,32 @@ a.panel-account {
 
 // Big metrics panel
 // ---------------------------------
+div.metrics {
+	padding: 4px;
+
+	.head {
+		font-weight: bold;
+	}
+	.own {
+		color: #9C27B0;
+		text-align: left;
+		font-size: 16px;
+	}
+	.own-label {
+		font-size: 16px;
+		text-align: right;
+		color: #9C27B0;
+		opacity: 0.5;
+	}
+
+	> div {
+		font-size: 16px;
+		i {
+			font-size: 20px;
+			color: #999;
+		}
+	}
+}
 div.big-metrics {
 	margin: 10px 5px;
 	text-align: right;
@@ -224,14 +250,10 @@ div.big-metrics {
 	.own {
 		background-color: #9C27B0;
 		color: #FFF;
-		text-align: left;
-		font-size: 16px;
-		&.own-label {
-			font-size: 16px;
-			text-align: right;
-			color: #B163C1;
-		    font-style: italic;
-		}
+	}
+	.own-label {
+	    font-style: italic;
+		color: #B163C1;
 	}
 
 	> div {

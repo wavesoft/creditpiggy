@@ -58,6 +58,7 @@ django_example/
 creditpiggy-server/etc/__init__.py
 creditpiggy-server/etc/settings.py
 creditpiggy-daemon/creditpiggy.conf
+creditpiggy-daemon/cycle.sh
 
 *.pid
 *.~vsd

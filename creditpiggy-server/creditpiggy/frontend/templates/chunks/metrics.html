@@ -1,0 +1,24 @@
+{% load piggy_extras %}
+<div class="metrics small-metrics">
+	<div class="row">
+
+		<!-- First Panel -->
+		<div class="col-sm-9">
+		{% for metric in metrics %}
+			<div class="row">
+				<div class="col-xs-8 head">
+					<i class="{{ metric.icon }}"></i>&nbsp; {{ metric.display_name }}:
+				</div>
+				<div class="col-xs-4">
+					{{ metric.value | thousands }}
+					{% if show_own %}
+						<span class="own">/ {{ own.0.value | thousands }}</span>
+					{% endif %}
+					<small>{{ metric.units }}</small>
+				</div>
+			</div>
+		{% endfor %}
+		</div>
+
+	</div>
+</div>

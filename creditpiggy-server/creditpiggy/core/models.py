@@ -23,6 +23,7 @@ import json
 import random
 import pytz
 import datetime
+import logging
 
 from string import maketrans
 
@@ -88,6 +89,66 @@ def to_dict(instance):
 			data[f.name] = f.value_from_object(instance)
 	return data
 
+def merge_accounts(self, user):
+	"""
+	Merge user 'user' to self
+	"""
+
+	logger = logging.getLogger("models.merge_accounts")
+
+	# Log the link action
+	logger.info("------- Link report ---------------------------")
+	link = UserLinkLogs( user=self, link_uuid=user.uuid )
+	link.save()
+	logger.info(" - Created link log %s -> %s" % (user.uuid, self.uuid))
+
+	# Import user metrics
+	self.metrics().cincr( user.metrics().counters() )
+	logger.info(" - Imported metric counters")
+
+	# Find project-user correlations
+	for pu in ProjectUserRole.objects.filter( user=self ):
+		logger.info(" - Importing project/user role #%i" % pu.id)
+
+		# Find or create my correlation
+		mu = ProjectUserRole.objects.get_or_create( user=self, project=pu.project )
+		logger.info(" -- Find matching role #%i" % mu.id)
+
+		# Import credits & metrics
+		mu.credits += pu.credits
+		mu.metrics().cincr( pu.metrics().counters() )
+		mu.save()
+		logger.info(" -- Imported metric counters")
+
+		# Delete pu
+		pu.delete()
+
+	# Adapt computing units
+	for cu in ComputingUnit.objects.filter( owner=user ):
+		logger.info(" - Claiming computing unit #%i" % cu.id)
+
+		# Switch users
+		cu.user = self
+		cu.save()
+
+		logger.info(" -- Switched ownership")
+
+	# Adapt achievements
+	for a in AchievementInstance.objects.filter( user=user ):
+		logger.info(" - Claiming achievement #%i" % a.id)
+
+		# Skip if I don't have that achievement
+		if AchievementInstance.objects.filter( user=self, project=a.project, achievement=a.achievement ).exists():
+			logger.info(" -- Already have it")
+			continue
+
+		# Switch ownership of the achievement
+		a.user = self
+		a.save()
+		logger.info(" -- Switched ownership")
+
+	logger.info("-----------------------------------------------")
+
 ###################################################################
 # Database Models
 ###################################################################
@@ -141,6 +202,20 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			"profile_image" : profile_img,
 			"profile_url" 	: "javascript:;",
 		}
+
+class UserLinkLogs(models.Model):
+	"""
+	Log information regarding cross-user account linking 
+	"""
+
+	#: The current user ID
+	user = models.ForeignKey( PiggyUser )
+
+	#: The UUID of the link user
+	link_uuid = models.CharField(max_length=32, default="")
+
+	#: First action (timestamp)
+	linked = models.DateTimeField(auto_now_add=True)
 
 class VisualMetric(models.Model):
 	"""

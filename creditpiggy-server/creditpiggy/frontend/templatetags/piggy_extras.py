@@ -34,6 +34,46 @@ def get_metrics(value):
 	"""
 	return value.getMetrics().iteritems()
 
+@register.filter(name='even')
+def even(value):
+	"""
+	Get even elements of a list
+	"""
+
+	# Get list
+	l = value
+	if l is None:
+		return []
+
+	# Make sure it's a list
+	if isinstance(l, dict):
+		l = l.values()
+	elif not isinstance(l, list):
+		l = [l]
+
+	# Partition
+	return l[::2]
+
+@register.filter(name='odd')
+def odd(value):
+	"""
+	Get odd elements of a list
+	"""
+
+	# Get list
+	l = value
+	if l is None:
+		return []
+
+	# Make sure it's a list
+	if isinstance(l, dict):
+		l = l.values()
+	elif not isinstance(l, list):
+		l = [l]
+
+	# Partition
+	return l[1::2]
+
 @register.filter(name='thousands')
 def thousands(value): # Add ',' on thousands
 	"""

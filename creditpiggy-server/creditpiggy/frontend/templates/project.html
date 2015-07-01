@@ -25,11 +25,11 @@
 	      	{% endif %}
 	      </p>
 
+		  <h2>Status</h2>
+		  {% include "chunks/metrics.html" with show_own=user.is_authenticated own=usermetrics %}
+
 		  <h2>Achievements</h2>
 		  {% include "chunks/achievements.html" %}
-
-		  <h2>Status</h2>
-		  {% include "chunks/bigmetrics.html" with show_own=user.is_authenticated own=usermetrics %}
 	
 		</div>
 	</div>

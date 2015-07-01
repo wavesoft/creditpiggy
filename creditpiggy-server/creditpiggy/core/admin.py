@@ -31,6 +31,11 @@ admin.site.register(Campaign)
 admin.site.register(CampaignUserCredit)
 admin.site.register(CampaignProject)
 
+class UserLinkLogsAdmin(admin.ModelAdmin):
+	list_display = ('user', 'link_uuid', 'linked')
+
+admin.site.register(UserLinkLogs, UserLinkLogsAdmin)
+
 class ComputingUnitAdmin(admin.ModelAdmin):
 	list_display = ('uuid', 'owner', 'website', 'firstAction', 'lastAction')
 	list_filter = ('owner',)

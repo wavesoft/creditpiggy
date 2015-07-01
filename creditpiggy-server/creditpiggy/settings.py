@@ -169,8 +169,8 @@ SOCIAL_AUTH_PIPELINE = (
 
 	# Overrides 'social.pipeline.social_auth.social_user'
 	# in order to provide linking with p#reviously created profiles.
-	#'creditpiggy.core.social.pipeline.sial_user_withlink',
-	'social.pipeline.social_auth.social_user',
+	'creditpiggy.core.social.pipeline.social_user_withlink',
+	#'social.pipeline.social_auth.social_user',
 
 	'social.pipeline.user.get_username',
 	'social.pipeline.user.create_user',
