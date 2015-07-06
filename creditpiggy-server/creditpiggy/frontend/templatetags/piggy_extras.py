@@ -27,6 +27,20 @@ from datetime import datetime
 # Get registry
 register = template.Library()
 
+@register.filter(name='return_item')
+def return_item(l, i):
+    try:
+        return l[i]
+    except:
+        return None
+
+@register.filter(name='item_value')
+def item_value(l, i):
+    try:
+        return l[i]['value']
+    except:
+        return None
+
 @register.filter(name='get_metrics')
 def get_metrics(value):
 	"""

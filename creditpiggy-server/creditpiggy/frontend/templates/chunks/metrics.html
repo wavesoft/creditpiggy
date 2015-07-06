@@ -6,13 +6,13 @@
 		<div class="col-sm-9">
 		{% for metric in metrics %}
 			<div class="row">
-				<div class="col-xs-8 head">
+				<div class="col-xs-7 head">
 					<i class="{{ metric.icon }}"></i>&nbsp; {{ metric.display_name }}:
 				</div>
-				<div class="col-xs-4">
+				<div class="col-xs-5">
 					{{ metric.value | thousands }}
 					{% if show_own %}
-						<span class="own">/ {{ own.0.value | thousands }}</span>
+						<span class="own">/ {{ own | item_value:forloop.counter0 | thousands }}</span>
 					{% endif %}
 					<small>{{ metric.units }}</small>
 				</div>
