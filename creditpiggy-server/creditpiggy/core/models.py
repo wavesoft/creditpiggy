@@ -197,7 +197,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 
 		# Get user ranking
 		redis = share_redis_connection()
-		rank = redis.zrank(
+		rank = redis.zrevrank(
 			"%srank/users" % (settings.REDIS_KEYS_PREFIX,),
 			self.id
 			)
