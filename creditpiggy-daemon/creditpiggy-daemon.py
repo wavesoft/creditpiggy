@@ -287,8 +287,6 @@ class CPLocalRequestHandler(SocketServer.BaseRequestHandler):
 				# Validate request
 				if not 'slot' in k_args:
 					raise ValueError("Missing 'slot' argument")
-				if not 'machine' in k_args:
-					raise ValueError("Missing 'machine' argument")
 
 				# Forward the request to the remote server
 				self.server.queue_message("discard", k_args )
