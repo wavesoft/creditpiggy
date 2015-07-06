@@ -19,6 +19,7 @@
 
 import json
 import time
+import logging
 
 from django.db import models
 from django.conf import settings
@@ -26,6 +27,9 @@ from django.conf import settings
 from creditpiggy.core.redis import share_redis_connection
 from creditpiggy.core.housekeeping import HousekeepingTask, periodical
 from creditpiggy.core.models import *
+
+# Get housekeeping logger
+logger = logging.getLogger(__name__)
 
 ############################################################
 # Project-level normalization
@@ -40,17 +44,90 @@ class ProjectNormalizer(HousekeepingTask):
 	in the global scale.
 	"""
 
-	def normalize_users(self):
+	def __init__(self):
+		"""
+		Open a REDIS connection
+		"""
+
+		# Open a redis connection
+		self.redis = share_redis_connection()
+
+	def update_user_ranking(self):
+		"""
+		Update user ranking
+		"""
+
+		# Index of users
+		score_index = { }
+
+		# Get all users participating in this project
+		for u in ProjectUserRole.objects.all():
+
+			# Make sure we have a key
+			if not u.user.id in score_index:
+				score_index[ u.user.id ] = 0
+
+			# Collect normalization credits
+			score_index[ u.user.id ] += u.norm_credits
+
+		# Create a transaction for REDIS operations
+		pipe = self.redis.pipeline()
+
+		# Update user ranking
+		for u, score in score_index.iteritems():
+
+			logger.debug("Updated user #%i credits to: %i" % (u, score))
+
+			# Update user ranking
+			pipe.zadd(
+				"%srank/users" % (settings.REDIS_KEYS_PREFIX,),
+				score, u 
+				)
+
+		# Run pipeline
+		pipe.execute()
+
+	def normalize_project_users(self, project):
 		"""
 		Normalize the credits of all users
 		"""
 
-		# Get all projects to iterate upon
-		projects = PiggyProject.objects.all()[:]
+		# Create a transaction for REDIS operations
+		pipe = self.redis.pipeline()
 
-		# Get all users
-		for u in PiggyUser.objects.all():
-			pass
+		# Count project credits to update project ranking
+		project_credits = 0
+
+		# Get all users participating in this project
+		for u in ProjectUserRole.objects.filter(project=project):
+
+			# Calculate normalized project credits
+			norm_credits = u.credits / project.norm_factor
+
+			# Update user record
+			if norm_credits != u.norm_credits:
+				u.norm_credits = norm_credits
+				u.save()
+
+			# Calculate project credits
+			project_credits += norm_credits
+
+			# Store normalized credits
+			logger.debug("Updated user #%i contribution to project '%s': %i" % (u.user.id, str(u.project), norm_credits))
+			pipe.zadd(
+				"%srank/project/%i/users" % (settings.REDIS_KEYS_PREFIX, project.id), 
+				norm_credits, u.user.id
+			)
+
+		# Store normalized credits
+		logger.debug("Updated project '%s' credits to: %i" % (str(project), project_credits))
+		pipe.zadd(
+			"%srank/projects" % (settings.REDIS_KEYS_PREFIX,), 
+			project_credits, project.id
+		)
+
+		# Run pipeline
+		pipe.execute()
 
 	@periodical(minutes=30)
 	def normalize_projects(self):
@@ -65,11 +142,13 @@ class ProjectNormalizer(HousekeepingTask):
 		for p in PiggyProject.objects.all():
 
 			# Get distribution of credits
-			histo = p.histogram("credits")
+			histo = p.metrics().histogram("credits")
 
 			# If we don't have data, assume '1.0'
 			norm = 1.0
 			if histo:
+
+				logger.debug("Project '%s' distribution: %r" % ( str(p), histo ))
 
 				# Perform weighted summarization using the
 				# number of samples on the particular credit 
@@ -84,22 +163,15 @@ class ProjectNormalizer(HousekeepingTask):
 				if denom != 0:
 					norm = num / denom
 
+			logger.info("Project '%s' normalization factor: %f" % ( str(p), norm ))
+
 			# Apply project's normalization factor
 			if p.norm_factor != norm:
 				p.norm_factor = norm
 				p.save()
 
-		# Update user normalization
-		self.normalize_users()
+			# Update user normalization on this project
+			self.normalize_project_users( p )
 
-
-############################################################
-# User-level normalization
-############################################################
-
-def update_user_ranking( user ):
-	"""
-	Re-calculate the user's ranking
-	"""
-	pass
-
+		# Update user credits
+		self.update_user_ranking()

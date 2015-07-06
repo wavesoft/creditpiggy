@@ -36,6 +36,7 @@ from django.contrib.auth.models import AbstractUser
 from creditpiggy.core.metrics import MetricsModelMixin
 from creditpiggy.core.housekeeping import HousekeepingTask, periodical
 from creditpiggy.core.image import image_colors
+from creditpiggy.core.redis import share_redis_connection
 
 from tinymce.models import HTMLField
 
@@ -194,9 +195,17 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		if not profile_img:
 			profile_img = settings.CREDITPIGGY_ANONYMOUS_PROFILE
 
+		# Get user ranking
+		redis = share_redis_connection()
+		rank = redis.zrank(
+			"%srank/users" % (settings.REDIS_KEYS_PREFIX,),
+			self.id
+			)
+
 		# Return profile
 		return {
 			"id" 			: self.uuid,
+			"rank"			: rank,
 			"display_name" 	: self.display_name.strip(),
 			"counters" 		: self.metrics().counters(),
 			"profile_image" : profile_img,
@@ -538,6 +547,9 @@ class ProjectUserRole(MetricsModelMixin, models.Model):
 
 	#: The credits of the user in this model
 	credits = models.IntegerField(default=0)
+
+	#: The normalized of the user in this model
+	norm_credits = models.FloatField(default=0.0)
 
 class CreditSlot(MetricsModelMixin, models.Model):
 	"""

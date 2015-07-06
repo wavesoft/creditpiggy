@@ -163,13 +163,17 @@ def import_machine_slots( machine ):
 	"""
 
 	# Lookup relevant slots
+	print ">>> Importing credits of machine %s" % machine.uuid
 	for slot in CreditSlot.objects.filter( machine=machine ):
 
 		# Import slot details to the machine
+		print ">>> Import slot %s to it's machine" % slot.uuid
 		import_to_machine( slot )
 		# Import slot metrics to user/project
+		print ">>> Import slot %s to user %s" % (slot.uuid, str(machine.owner))
 		import_to_users_project( slot, machine.owner )
 		# The slot is now consumed
+		print ">>> Delete slot"
 		slot.delete()
 
 ############################################################

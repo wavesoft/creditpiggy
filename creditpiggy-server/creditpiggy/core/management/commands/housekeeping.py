@@ -47,7 +47,7 @@ class Command(BaseCommand):
 		while True:
 
 			# Run until there are no more dirty tasks
-			self.stdout.write("Executing housekeeping tasks")
+			logger.info("Executing housekeeping tasks")
 			while not hk.run():
 				pass
 

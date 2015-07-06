@@ -76,13 +76,13 @@ class AchievementAdmin(admin.ModelAdmin):
 admin.site.register(Achievement, AchievementAdmin)
 
 class ProjectUserRoleAdmin(admin.ModelAdmin):
-	list_display = ('user', 'project', 'role', 'firstAction' , 'lastAction')
+	list_display = ('user', 'project', 'role', 'credits', 'norm_credits', 'firstAction' , 'lastAction')
 	list_filter = ('role',)
 
 admin.site.register(ProjectUserRole, ProjectUserRoleAdmin)
 
 class CreditSlotAdmin(admin.ModelAdmin):
-	list_display = ('uuid', 'status', 'project', 'credits', 'minBound', 'maxBound')
+	list_display = ('uuid', 'machine', 'project', 'credits', 'minBound', 'maxBound')
 	list_filter = ('status',)
 
 admin.site.register(CreditSlot, CreditSlotAdmin)
