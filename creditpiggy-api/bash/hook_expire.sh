@@ -22,11 +22,9 @@ DAEMON_ENDPOINT="/var/run/creditapi.socket"
 COMMAND_LOG=""
 
 # Get parameters from command-line
-JOB_FILE=$1
 JOB_ID=$2
 
-[ -z "$JOB_FILE" ] && echo "ERROR: Missing job file (usage: $0 [job file] [uuid])" && exit 1
-[ -z "$JOB_ID" ] && echo "ERROR: Missing job UUID (usage: $0 [job file] [uuid])" && exit 1
+[ -z "$JOB_ID" ] && echo "ERROR: Missing job UUID (usage: $0 [uuid])" && exit 1
 
 # Execute command
 function doit {
@@ -37,48 +35,5 @@ function doit {
 	fi
 }
 
-# Extract job ID
-DIR=$(mktemp -d)
-(
-
-	# Extract job file
-	cd $DIR
-	tar -zxf ${JOB_FILE}
-
-	# Parse job data
-	VMID=""
-	while read LINE; do
-		KEY=$(echo "$LINE" | awk -F'=' '{print $1}')
-		VAL=$(echo "$LINE" | awk -F'=' '{print $2}')
-
-		# Update job counters
-		if [ "$KEY" == "cpuusage" ]; then
-			echo "counters,slot=${JOB_ID},job/cpuusage=${VAL}" | doit
-		elif [ "$KEY" == "diskusage" ]; then
-			echo "counters,slot=${JOB_ID},job/diskusage=${VAL}" | doit
-		elif [ "$KEY" == "events" ]; then
-			echo "counters,slot=${JOB_ID},job/events=${VAL}" | doit
-		elif [ "$KEY" == "exitcode" ]; then
-			if [ "${VAL}" == "0" ]; then
-				echo "counters,slot=${JOB_ID},job/success=1" | doit
-			else 
-				echo "counters,slot=${JOB_ID},job/failure=1" | doit
-			fi
-		elif [ "$KEY" == "DUMBQ_VMID" ]; then
-			VMID="${VAL}"
-		fi
-
-	done < jobdata
-
-	# Claim or discard slot 
-	if [ ! -z "$VMID" ]; then
-		echo "claim,slot=${JOB_ID},machine=${VMID},credits=1" | doit
-	else
-		echo "discard,slot=${JOB_ID},reason=unknown-vmid" | doit
-	fi
-
-)
-
-# Remove directory
-rm -rf "${DIR}"
-
+# Forward command to daemon
+echo "discard,slot=${JOB_ID},reason=expired" | doit

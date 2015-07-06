@@ -31,9 +31,9 @@ JOB_ID=$2
 # Execute command
 function doit {
 	if [ -z "$COMMAND_LOG" ]; then
-		cat | nc -U ${DAEMON_ENDPOINT}
+		cat | nc -U ${DAEMON_ENDPOINT} >/dev/null
 	else
-		cat | tee -a "${COMMAND_LOG}" | nc -U ${DAEMON_ENDPOINT}
+		cat | tee -a "${COMMAND_LOG}" | nc -U ${DAEMON_ENDPOINT} >/dev/null
 	fi
 }
 
