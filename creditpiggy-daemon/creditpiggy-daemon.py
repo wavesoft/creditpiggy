@@ -143,8 +143,8 @@ class CPRemoteAPIServer(threading.Thread):
 				# checking for a shutdown flag
 				pass
 
-			# Flush stacks periodically
-			if (flush_time > 0) and (time.time() > flush_time) and stacks:
+			# Flush stacks periodically or every 5,000 jobs
+			if ( ((flush_time > 0) and (time.time() > flush_time)) or (cmd_counter > 5000) ) and stacks:
 
 				# Send a bulk command
 				self.logger.info("Flushing %i commands on stack" % cmd_counter)
