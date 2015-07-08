@@ -232,6 +232,18 @@
 				this.profile = newSession['profile'];
 				$(this).triggerHandler("login", [ newSession["profile"], userAction ]);
 
+				// If we have a user log-in, it means that we now update referrer tracing information
+				var url = String(window.location);
+				if (url.indexOf("cpr=") >= 0) {
+					var p = url.split("cpr=")[1].substr(0, 8);
+					if (p[7] != '.') {
+						console.warn("Invalid referrer tracking information identified in the URL");
+					} else {
+						// Update referrer information
+						this.__api("lib/referrer", { 'ref': p.substr(0,7) });
+					}
+				}
+
 			// Trigger "logout" if we did have a profile and now we don"t
 			} else if ((!newSession || !newSession["profile"]) && (currSession && currSession["profile"])) {
 				$(this).triggerHandler("logout", [ currSession["profile"], userAction ]);
@@ -243,6 +255,18 @@
 				if (!__same(newSession['profile'], currProfile)) {
 					this.profile = newSession['profile'];
 					$(this).triggerHandler("profile", [ newSession["profile"] ]);
+
+					// Also trigger the 'referrer' event if we have
+					// a referrer tracking ID
+					if (this.profile.ref !== undefined) {
+
+						// Calculate referrer hash
+						var refHash = "cpr=" + this.profile.ref + ".";
+						// Trigger referrer event
+						$(this).triggerHandler("referrer", [ refHash, this.profile.ref ]);
+
+					}
+
 				}
 			}
 

@@ -95,6 +95,10 @@ TS_VALUE_COUNT = _CONFIG_.TS_VALUE_COUNT
 # Base URL
 BASE_URL = _CONFIG_.BASE_URL
 
+# A random number between 0 and 0xffffff that would be used
+# as a small chipher in order to obscure the user's tracking ID
+CREDITPIGGY_TRACKID_SECRET = 0xb71a63
+
 # How long to keep a credit slot alive before expiring it (in seconds)
 # Defaults to 15 days
 CREDITPIGGY_CREDIT_EXPIRE_TIME = 1296000

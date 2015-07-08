@@ -25,8 +25,9 @@ from django.views.decorators.cache import cache_page
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 
-from creditpiggy.core.models import CreditSlot, ComputingUnit, new_token
+from creditpiggy.core.models import CreditSlot, ComputingUnit, PiggyUser, Referral, new_token
 from creditpiggy.core.credits import import_machine_slots
+from creditpiggy.core.achievements import check_personal_achievements
 
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import allow_cors, require_valid_user, require_website_auth, sso_update, sso_user, sso_logout_flag
@@ -35,6 +36,53 @@ from creditpiggy.api import information
 ##########################################
 # Library API Calls
 ##########################################
+
+@render_with_api(context="js.referrer")
+@allow_cors()
+@require_website_auth()
+@require_valid_user()
+def referrer(request, api="json"):
+	"""
+	Update the referrer information for the current user
+	"""
+
+	# Logout user if the sso sesssion is expired
+	if request.user.is_authenticated() and sso_logout_flag( request.website, request.user ):
+		auth_logout( request )
+		raise APIError("Your session has expired", code=203)
+
+	# Get referral user
+	try:
+		refUser = PiggyUser.fromRef( request.proto.get('ref', required=True) )
+	except PiggyUser.DoesNotExist:
+		raise APIError("The specified referral user was not found", code=203)
+
+	# Debug
+	print ">>> %s user referred by %s" % (request.user, refUser)
+
+	# Skip obvious cases where the user refers himself
+	if request.user == refUser:
+		return { }
+
+	# Get the Referral
+	(ref, created) = Referral.objects.get_or_create( publisher=refUser, visitor=request.user )
+
+	# Create such link only once
+	if created:
+
+		# Update counters
+		refUser.metrics().cincr("ref/reached", 1)
+		request.user.metrics().cincr("ref/visited", 1)
+
+		# Check for personal achievements
+		check_personal_achievements( refUser )
+		check_personal_achievements( request.user )
+
+		# Save referal log
+		ref.save()
+
+	# We are good
+	return { }
 
 @render_with_api(context="js.claim")
 @allow_cors()
@@ -51,9 +99,7 @@ def claim(request, api="json"):
 		raise APIError("Your session has expired", code=203)
 
 	# Fetch machine to pair
-	if not 'vmid' in request.GET:
-		raise APIError("Missing 'vmid' argument", code=400)
-	vmid = request.GET['vmid']
+	vmid = request.proto.get('vmid', required=True)
 
 	# Create/get user/machine pair
 	(unit, created) = ComputingUnit.objects.get_or_create( uuid=vmid )
@@ -102,9 +148,7 @@ def release(request, api="json"):
 		raise APIError("Your session has expired", code=203)
 
 	# Fetch machine to pair
-	if not 'vmid' in request.GET:
-		raise APIError("Missing 'vmid' argument", code=400)
-	vmid = request.GET['vmid']
+	vmid = request.proto.get('vmid', required=True)
 
 	# Create/get user/machine pair
 	try:
@@ -154,14 +198,12 @@ def thaw(request, api="json"):
 	"""
 
 	# Fetch login token
-	token = None
-	if 'token' in request.GET:
-		# Try to get a user
-		user = sso_user( request.website, request.GET['token'] )
-		if not user:
-			raise APIError("No such token was found", code=203)
-	else:
-		raise APIError("Missing 'token' argument", code=400)
+	token = request.proto.get('token', required=True)
+
+	# Try to get a user
+	user = sso_user( request.website, token )
+	if not user:
+		raise APIError("No such token was found", code=203)
 
 	# Log-in such user
 	user.backend = "django.contrib.auth.backends.ModelBackend"

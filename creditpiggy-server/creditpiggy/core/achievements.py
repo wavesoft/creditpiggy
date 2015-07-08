@@ -20,8 +20,8 @@
 import time
 
 from django.db.models import Q
-from creditpiggy.core.models import Achievement, AchievementInstance
-from creditpiggy.core.email import send_achievement_email
+from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement
+from creditpiggy.core.email import send_achievement_email, send_personal_achievement_email
 
 def metrics_achieved( counters, achievement_metrics ):
 	"""
@@ -45,6 +45,35 @@ def metrics_achieved( counters, achievement_metrics ):
 	# Matched
 	return True
 
+def check_personal_achievements( user ):
+	"""
+	Check the user's personal achievements
+	"""
+
+	# Get user-achievement link metrics
+	metrics = user.metrics()
+	m_counters = metrics.counters()
+
+	# Get user's achievements for this project
+	user_achievements = []
+	for a in PersonalAchievement.objects.filter( user=user ):
+		user_achievements.append(a.achievement.id)
+
+	# Get non-achieved project achievements
+	for a in Achievement.objects.filter( Q(personal=True) & ~Q(id__in=user_achievements) ):
+
+		# For each achievement, check if metrics are achieved
+		if metrics_achieved( m_counters, a.getMetrics() ):
+
+			# Award the achievement to the user
+			ac = PersonalAchievement(
+					user=user,
+					achievement=a,
+				)
+			ac.save()
+
+			# Send e-mail
+			send_personal_achievement_email( user, a )
 
 def check_achievements( project_user_link ):
 	"""
@@ -55,12 +84,12 @@ def check_achievements( project_user_link ):
 	metrics = project_user_link.metrics()
 	m_counters = metrics.counters()
 
-	# # Get user's achievements for this project
+	# Get user's achievements for this project
 	user_achievements = []
 	for a in AchievementInstance.objects.filter( user=project_user_link.user, project=project_user_link.project ):
 		user_achievements.append(a.achievement.id)
 
-	# # Get non-achieved project achievements
+	# Get non-achieved project achievements
 	for a in project_user_link.project.achievements.filter( ~Q(id__in=user_achievements) ):
 
 		# For each achievement, check if metrics are achieved

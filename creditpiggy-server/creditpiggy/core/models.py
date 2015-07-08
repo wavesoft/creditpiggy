@@ -185,6 +185,25 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	#: The user's timezone
 	timezone = models.CharField(max_length=255, default="UTC", choices=TIMEZONES)
 
+	@staticmethod
+	def fromRef(refid):
+		"""
+		Get a user instance from the referral ID
+		"""
+
+		# Ensure format
+		if refid[0] != 'r':
+			return None
+
+		# Decrypt and parse user ID
+		try:
+			userid = int(str(refid[1:]), 16) ^ settings.CREDITPIGGY_TRACKID_SECRET
+		except ValueError:
+			return None
+
+		# Locate instance (and raise exception if not found)
+		return PiggyUser.objects.get(id=userid)
+
 	def profile(self):
 		"""
 		Compile and return the relevant information for the user's profile
@@ -202,15 +221,34 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			self.id
 			)
 
+		# Calculate a referrer ID, masked with a trackID secret
+		# in order to keep it small.
+		referrer = "r%06x" % (self.id ^ settings.CREDITPIGGY_TRACKID_SECRET)
+
 		# Return profile
 		return {
 			"id" 			: self.uuid,
 			"rank"			: rank,
+			"ref"			: referrer,
 			"display_name" 	: self.display_name.strip(),
 			"counters" 		: self.metrics().counters(),
 			"profile_image" : profile_img,
 			"profile_url" 	: "javascript:;",
 		}
+
+class Referral(models.Model):
+	"""
+	Referral log table
+	"""
+
+	#: The user that published the link
+	publisher = models.ForeignKey( PiggyUser, related_name="user_publisher" )
+
+	#: The user that visited the link
+	visitor = models.ForeignKey( PiggyUser, related_name="user_visitor" )
+
+	#: The time the user visited this entry
+	visited = models.DateTimeField(auto_now_add=True)
 
 class UserLinkLogs(models.Model):
 	"""
@@ -302,6 +340,9 @@ class Achievement(models.Model):
 
 	#: Metrics required for this achievement as a JSON field
 	metrics = models.TextField(default="{}")
+
+	#: If this achievement can be achieved in a personal level
+	personal = models.BooleanField(default=False)
 
 	def __unicode__(self):
 		return self.name
@@ -678,6 +719,20 @@ class CampaignProject(models.Model):
 
 	#: The project
 	project = models.ForeignKey(PiggyProject)
+
+class PersonalAchievement(models.Model):
+	"""
+	An achievement instance linked to a user
+	"""
+
+	#: The user that achieved it
+	user = models.ForeignKey(PiggyUser)
+
+	#: The achievement achieved
+	achievement = models.ForeignKey(Achievement)
+
+	#: The date he/she achieved it
+	date = models.DateTimeField(auto_now_add=True)
 
 class AchievementInstance(models.Model):
 	"""

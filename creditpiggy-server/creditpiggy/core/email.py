@@ -56,6 +56,25 @@ def send_email( template, subject, to, raiseExceptions=False, **kwargs ):
 		if raiseExceptions:
 			raise
 
+def send_personal_achievement_email( user, achievement, raiseExceptions=False ):
+	"""
+	Send an e-mail congratulating a user for his/her personal achievement
+	"""
+	send_email(
+
+		# Recepient
+		"achievement", # Template
+		"Achievement Unlocked: %s" % achievement.name, # Subject
+		(user.email,), # To
+		raiseExceptions,
+
+		# Context
+		achievement=achievement,
+		project=None,
+		user=user,
+
+		)
+
 def send_achievement_email( user, project, achievement, raiseExceptions=False ):
 	"""
 	Send an e-mail congratulating a user for his/her achievement

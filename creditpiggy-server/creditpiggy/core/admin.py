@@ -75,6 +75,16 @@ class AchievementAdmin(admin.ModelAdmin):
 
 admin.site.register(Achievement, AchievementAdmin)
 
+class PersonalAchievementAdmin(admin.ModelAdmin):
+	list_display = ('user', 'achievement' , 'date')
+
+admin.site.register(PersonalAchievement, PersonalAchievementAdmin)
+
+class ReferralAdmin(admin.ModelAdmin):
+	list_display = ('publisher', 'visitor' , 'visited')
+
+admin.site.register(Referral, ReferralAdmin)
+
 class ProjectUserRoleAdmin(admin.ModelAdmin):
 	list_display = ('user', 'project', 'role', 'credits', 'norm_credits', 'firstAction' , 'lastAction')
 	list_filter = ('role',)
