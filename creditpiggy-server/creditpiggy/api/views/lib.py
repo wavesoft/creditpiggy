@@ -57,9 +57,6 @@ def referrer(request, api="json"):
 	except PiggyUser.DoesNotExist:
 		raise APIError("The specified referral user was not found", code=203)
 
-	# Debug
-	print ">>> %s user referred by %s" % (request.user, refUser)
-
 	# Skip obvious cases where the user refers himself
 	if request.user == refUser:
 		return { }
