@@ -23,7 +23,7 @@
 
 # Helper function to check if the specified package is installed
 function isinstalled {
-  if yum list installed "$@" >/dev/null 2>&1; then
+  if yum list installed "$*" >/dev/null 2>&1; then
     return 1
   else
     return 0
@@ -86,10 +86,6 @@ function ensure_dir_policy {
 # Create a temporary file to use for logging
 LOG_FILE=$(mktemp)
 
-# Locate apache directoriy
-APACHE_CONF_DIR="/etc/httpd/conf.d"
-[ ! -d "${APACHE_CONF_DIR}" ] && echo "ERROR: Could not find conf.d in ${APACHE_CONF_DIR}!" && exit 1
-
 # Expect a directory where to deploy the server
 DEPLOY_DIR=$1
 [ -z "${DEPLOY_DIR}" ] && echo "ERROR: Please specify a directory where to deploy the server!" && exit 1
@@ -101,7 +97,7 @@ echo "Deploying project:"
 
 # Check if apache is installed
 echo -n " - Checking httpd installation..."
-APACHE_BIN=$(which httpd)
+APACHE_BIN=$(which httpd 2>/dev/null)
 if [ -z "$APACHE_BIN" ]; then
 	echo "missing"
 
@@ -113,6 +109,10 @@ if [ -z "$APACHE_BIN" ]; then
 		# Install now
 		yum -y install httpd-devel >$LOG_FILE 2>$LOG_FILE
 		[ $? -ne 0 ] && dump_errorlog
+
+		APACHE_BIN=$(which httpd 2>/dev/null)
+		[ -z "${APACHE_BIN}" ] && dump_error "Could not locate 'httpd' binary!"
+
 		echo "installed"
 	fi
 else
@@ -140,6 +140,10 @@ if [ $APACHE_240 -eq 1 ]; then
 else
 	echo $APACHE_VER " (<2.4.0)"
 fi
+
+# Locate apache directoriy
+APACHE_CONF_DIR="/etc/httpd/conf.d"
+[ ! -d "${APACHE_CONF_DIR}" ] && echo "ERROR: Could not find conf.d in ${APACHE_CONF_DIR}!" && exit 1
 
 # Check python version
 echo -n " - Checking system Python version..."
@@ -172,20 +176,20 @@ if [ $USE_SCL -eq 1 ]; then
 		fi
 		echo "ok"
 
-		# Check if it's not installed
-		echo -n " - Checking for python27 installation..."
-		if [ $(scl -l 2>&1 | grep -c python27) -eq 0 ]; then
-			# Install now
-			yum -y install python27 >$LOG_FILE 2>$LOG_FILE
-			[ $? -ne 0 ] && dump_errorlog
-			# We are good
-			echo "installed"
-		else
-			echo "ok"
-		fi
-
 	else
 		echo "exists"
+	fi
+
+	# Check if it's not installed
+	echo -n " - Checking for python27 installation..."
+	if [ $(scl -l 2>&1 | grep -c python27) -eq 0 ]; then
+		# Install now
+		yum -y install python27 >$LOG_FILE 2>$LOG_FILE
+		[ $? -ne 0 ] && dump_errorlog
+		# We are good
+		echo "installed"
+	else
+		echo "ok"
 	fi
 
 	# Export library directories for further use in this script
@@ -204,7 +208,6 @@ if [ $USE_SCL -eq 1 ]; then
 		# Use easy_install to install pip
 		/opt/rh/python27/root/usr/bin/easy_install-2.7 pip >$LOG_FILE 2>$LOG_FILE
 		[ $? -ne 0 ] && dump_errorlog
-
 		# We are good
 		echo "installed"
 
