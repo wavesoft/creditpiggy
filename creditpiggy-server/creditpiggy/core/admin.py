@@ -62,7 +62,8 @@ class AchievementAdminForm(ModelForm):
 
 class AchievementAdmin(admin.ModelAdmin):
 	form = AchievementAdminForm
-	list_display = ('name', 'image', 'metric_values')
+	list_display = ('name', 'image', 'metric_values', 'personal')
+	list_filter = ('personal',)
 
 	def image(self, obj):
 		return mark_safe('<img src="%s" style="width: 32px; vertical-align: absmiddle" />' % obj.icon)

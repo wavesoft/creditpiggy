@@ -4,6 +4,10 @@
 
 Congratulations {{ user.display_name }}! You have just unlocked the "{{ achievement.name }}" achievement. You can visit your profile to see more details: {{ base_url }}/profile/achievments
 
+{% if project %}
 This is an achievement from the {{ project.display_name }} project. On behalf of the people behind this project we would like to say a big thank you for your support!
+{% else %}
+This is your very own, personal achievement in CreditPiggy. We thank you for your support!
+{% endif %}
 
 ~~ By Credit Piggy
