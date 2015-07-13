@@ -108,7 +108,7 @@ def merge_accounts(self, user):
 	logger.info(" - Imported metric counters")
 
 	# Find project-user correlations
-	for pu in ProjectUserRole.objects.filter( user=self ):
+	for pu in ProjectUserRole.objects.filter( user=user ):
 		logger.info(" - Importing project/user role #%i" % pu.id)
 
 		# Find or create my correlation
