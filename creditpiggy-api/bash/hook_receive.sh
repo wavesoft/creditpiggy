@@ -44,31 +44,34 @@ DIR=$(mktemp -d)
 	# Extract job file
 	cd $DIR
 	tar -zxf ${JOB_FILE}
-
-	# Parse job data
 	VMID=""
-	while read LINE; do
-		KEY=$(echo "$LINE" | awk -F'=' '{print $1}')
-		VAL=$(echo "$LINE" | awk -F'=' '{print $2}')
 
-		# Update job counters
-		if [ "$KEY" == "cpuusage" ]; then
-			echo "counters,slot=${JOB_ID},job/cpuusage=${VAL}" | doit
-		elif [ "$KEY" == "diskusage" ]; then
-			echo "counters,slot=${JOB_ID},job/diskusage=${VAL}" | doit
-		elif [ "$KEY" == "events" ]; then
-			echo "counters,slot=${JOB_ID},job/events=${VAL}" | doit
-		elif [ "$KEY" == "exitcode" ]; then
-			if [ "${VAL}" == "0" ]; then
-				echo "counters,slot=${JOB_ID},job/success=1" | doit
-			else 
-				echo "counters,slot=${JOB_ID},job/failure=1" | doit
+	# If we have 'jobdata' process it
+	if [ -f jobdata ]; then
+		# Parse job data
+		while read LINE; do
+			KEY=$(echo "$LINE" | awk -F'=' '{print $1}')
+			VAL=$(echo "$LINE" | awk -F'=' '{print $2}')
+
+			# Update job counters
+			if [ "$KEY" == "cpuusage" ]; then
+				echo "counters,slot=${JOB_ID},job/cpuusage=${VAL}" | doit
+			elif [ "$KEY" == "diskusage" ]; then
+				echo "counters,slot=${JOB_ID},job/diskusage=${VAL}" | doit
+			elif [ "$KEY" == "events" ]; then
+				echo "counters,slot=${JOB_ID},job/events=${VAL}" | doit
+			elif [ "$KEY" == "exitcode" ]; then
+				if [ "${VAL}" == "0" ]; then
+					echo "counters,slot=${JOB_ID},job/success=1" | doit
+				else 
+					echo "counters,slot=${JOB_ID},job/failure=1" | doit
+				fi
+			elif [ "$KEY" == "DUMBQ_VMID" ]; then
+				VMID="${VAL}"
 			fi
-		elif [ "$KEY" == "DUMBQ_VMID" ]; then
-			VMID="${VAL}"
-		fi
 
-	done < jobdata
+		done < jobdata
+	fi
 
 	# Claim or discard slot 
 	if [ ! -z "$VMID" ]; then
