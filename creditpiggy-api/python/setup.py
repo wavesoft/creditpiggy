@@ -4,9 +4,8 @@ setup(
 
 	# Package name
     name = "creditpiggy",
+    packages = [ 'creditpiggy' ],
     version = "0.1a1",
-    packages = find_packages('src'),
-    package_dir = {'':'src'}, 
 
     # metadata for upload to PyPI
     author = "Ioannis Charalampidis",
