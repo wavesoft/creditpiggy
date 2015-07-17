@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 ################################################################
 # CreditPiggy - A Community Credit Management System
 # Copyright (C) 2013 Ioannis Charalampidis
