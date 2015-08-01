@@ -48,6 +48,12 @@ DIR=$(mktemp -d)
 
 	# If we have 'jobdata' process it
 	if [ -f jobdata ]; then
+
+		# Additional metadat
+		COLLISION_TYPE="partons"
+		EVENT_NUMBER=0
+		ENERGY=1
+
 		# Parse job data
 		while read LINE; do
 			KEY=$(echo "$LINE" | awk -F'=' '{print $1}')
@@ -60,17 +66,30 @@ DIR=$(mktemp -d)
 				echo "counters,slot=${JOB_ID},job/diskusage=${VAL}" | doit
 			elif [ "$KEY" == "events" ]; then
 				echo "counters,slot=${JOB_ID},job/events=${VAL}" | doit
+				EVENT_NUMBER="${VAL}"
 			elif [ "$KEY" == "exitcode" ]; then
 				if [ "${VAL}" == "0" ]; then
 					echo "counters,slot=${JOB_ID},job/success=1" | doit
 				else 
 					echo "counters,slot=${JOB_ID},job/failure=1" | doit
 				fi
+			elif [ "$KEY" == "runspec" ]; then
+				# Get run specifications
+				COLLISION_TYPE=$(echo "${VAL}" | awk '{ print $2 }')
+				ENERGY=$(echo "${VAL}" | awk '{ print $4 }')
 			elif [ "$KEY" == "DUMBQ_VMID" ]; then
 				VMID="${VAL}"
 			fi
 
 		done < jobdata
+
+		# Update your smashing counter
+		echo "counters,slot=${JOB_ID},smashed/${COLLISION_TYPE}=${EVENT_NUMBER}" | doit
+
+		# Update numbers
+		ENERGY=$(echo ${ENERGY}*${EVENT_NUMBER} | bc)
+		echo "counters,slot=${JOB_ID},collision/energy=${ENERGY}" | doit
+
 	fi
 
 	# Claim or discard slot 

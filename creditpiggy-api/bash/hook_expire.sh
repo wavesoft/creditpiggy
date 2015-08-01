@@ -22,7 +22,7 @@ DAEMON_ENDPOINT="/var/run/creditapi.socket"
 COMMAND_LOG=""
 
 # Get parameters from command-line
-JOB_ID=$2
+JOB_ID=$1
 
 [ -z "$JOB_ID" ] && echo "ERROR: Missing job UUID (usage: $0 [uuid])" && exit 1
 
