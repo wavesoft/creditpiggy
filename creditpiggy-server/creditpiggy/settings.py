@@ -37,7 +37,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 try:
 	import etc.settings as _CONFIG_
 except ImportError as e:
-	raise Exception("Apply your settings to config.py using config.py.example as reference!")
+	raise Exception("Apply your settings to etc/settings.py using etc/settings.py.example as reference!")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -248,15 +248,18 @@ AUTHENTICATION_BACKENDS = (
 
 
 TEMPLATE_CONTEXT_PROCESSORS = (
+
 	'django.contrib.auth.context_processors.auth',
 	'django.core.context_processors.debug',
 	'django.core.context_processors.i18n',
 	'django.core.context_processors.media',
 	'django.contrib.messages.context_processors.messages',
+
 	# - Social Auth ---
 	'social.apps.django_app.context_processors.backends',
 	'social.apps.django_app.context_processors.login_redirect',
 	# -----------------
+
 )
 
 
