@@ -57,17 +57,17 @@ def _alloc_slot(project, args):
 
 	# Check for credits or min/max
 	if 'credits' in args:
-		slot.credits = int(args['credits'])
+		slot.credits = int(float(args['credits']))
 	else:
 		if 'min' in args:
-			slot.minBound = int(args['min']) 
+			slot.minBound = int(float(args['min']))
 		if 'max' in args:
-			slot.maxBound = int(args['max']) 
+			slot.maxBound = int(float(args['max']))
 
 	# Get expire time (Default to 24h)
 	expire_time = 1440
 	if 'expire' in args:
-		expire_time = int(args['expire'])
+		expire_time = int(float(args['expire']))
 
 	# Set the slot expire time
 	slot.expireTime = int(time.time()) + expire_time * 60
@@ -134,7 +134,7 @@ def _claim_slot(project, args):
 	# credits specified in the arguments, apply them now
 	if (slot.credits is None):
 		if 'credits' in args:
-			slot.credits = int(args['credits'])
+			slot.credits = int(float(args['credits']))
 		else:
 			# Forgot to define credits? Assume the fact that the job
 			# was claimed is succicient enough to give 1 credit.
@@ -175,7 +175,7 @@ def _counters_slot(project, args):
 			continue
 
 		# Everything else is used as a counter
-		metrics.cincr( k, int(v) )
+		metrics.cincr( k, int(float(v)) )
 
 def _meta_slot(project, args):
 	pass
