@@ -442,13 +442,13 @@ if [ ! -f "${DEPLOY_DIR}/conf/httpd-creditpiggy.conf" ]; then
 	cat <<EOF > ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 
 # Static files
-Alias /static/frontend/ ${PROJECT_DIR}/creditpiggy-server/frontend/static/frontend/
-Alias /static/lib/ ${PROJECT_DIR}/creditpiggy-server/static/lib/
+Alias /static/frontend/ ${PROJECT_DIR}/creditpiggy/frontend/static/frontend/
+Alias /static/lib/ ${PROJECT_DIR}/static/lib/
 Alias /static/admin/ ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/django/contrib/admin/static/admin/
 Alias /static/django_tinymce/ ${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages/tinymce/static/django_tinymce/
 
 # Static file permissions
-<Directory ${PROJECT_DIR}/creditpiggy-server/frontend/static/frontend>
+<Directory ${PROJECT_DIR}/creditpiggy/frontend/static/frontend>
 EOF
 
 	# Version-specific configuration
@@ -462,7 +462,7 @@ EOF
 	# Continue configuration
 	cat <<EOF >> ${DEPLOY_DIR}/conf/httpd-creditpiggy.conf
 </Directory>
-<Directory ${PROJECT_DIR}/creditpiggy-server/static/lib>
+<Directory ${PROJECT_DIR}/static/lib>
 EOF
 
 	# Version-specific configuration
@@ -510,6 +510,7 @@ WSGISocketPrefix /var/run/wsgi
 WSGIDaemonProcess creditpiggy.cern.ch processes=2 threads=15 python-path=${PROJECT_DIR}:${DEPLOY_DIR}/conf:${DEPLOY_DIR}/virtualenv/lib/python2.7/site-packages
 WSGIProcessGroup creditpiggy.cern.ch
 WSGIScriptAlias / ${PROJECT_DIR}/creditpiggy/wsgi.py process-group=creditpiggy.cern.ch
+WSGIPassAuthorization On
 
 # Project directory permissions
 <Directory ${PROJECT_DIR}/creditpiggy>

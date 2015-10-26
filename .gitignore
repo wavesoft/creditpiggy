@@ -57,6 +57,7 @@ target/
 django_example/
 creditpiggy-server/etc/__init__.py
 creditpiggy-server/etc/settings.py
+creditpiggy-server/creditpiggy/static
 creditpiggy-daemon/creditpiggy.conf
 creditpiggy-daemon/cycle.sh
 
