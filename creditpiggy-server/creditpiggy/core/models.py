@@ -304,6 +304,14 @@ class VisualMetric(models.Model):
 	#: Summarization method
 	sum_method = models.IntegerField( choices=SUM_METHOD, default=ADD )
 
+	#: Values scale
+	scale = models.FloatField(default=1.0, 
+		help_text="Scale of the metrics value when presenting it")
+
+	#: Number of decimals
+	decimals = models.FloatField(default=0, 
+		help_text="Number of decimals when rounding the value before presenting it")
+
 	#: Prority
 	priority = models.IntegerField(default=0)
 
