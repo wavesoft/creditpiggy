@@ -37,6 +37,7 @@ urlpatterns = patterns('',
 	url(r'^lib/release$',						lib.release,				name="api.lib.release" ),
 	url(r'^lib/thaw$',							lib.thaw,					name="api.lib.thaw" ),
 	url(r'^lib/referrer$',						lib.referrer,				name="api.lib.referrer" ),
+	url(r'^lib/status$',						lib.status,					name="api.lib.status" ),
 
 	# Explicit protocol
 	url(r'^batch/alloc\.(?P<api>[^/]+)$',		batch.slot_alloc,			name="api.batch.alloc" ),
@@ -52,5 +53,6 @@ urlpatterns = patterns('',
 	url(r'^lib/release\.(?P<api>[^/]+)$',		lib.release,				name="api.lib.release" ),
 	url(r'^lib/thaw\.(?P<api>[^/]+)$',			lib.thaw,					name="api.lib.thaw" ),
 	url(r'^lib/referrer\.(?P<api>[^/]+)$',		lib.referrer,				name="api.lib.referrer" ),
+	url(r'^lib/status\.(?P<api>[^/]+)$',		lib.status,				name="api.lib.status" ),
 
 )

@@ -25,9 +25,10 @@ from django.views.decorators.cache import cache_page
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 
-from creditpiggy.core.models import CreditSlot, ComputingUnit, PiggyUser, Referral, new_token
+from creditpiggy.core.models import CreditSlot, ComputingUnit, PiggyUser, Referral, new_token, to_dict
 from creditpiggy.core.credits import import_machine_slots
 from creditpiggy.core.achievements import check_personal_achievements
+from creditpiggy.core.utils import VisualMetricsSum
 
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import allow_cors, require_valid_user, require_website_auth, sso_update, sso_user, sso_logout_flag
@@ -211,3 +212,62 @@ def thaw(request, api="json"):
 	
 	# Return session details
 	return information.compile_session(request)
+
+@render_with_api(context="js.status")
+@allow_cors()
+@require_website_auth()
+def status(request, api="json"):
+	"""
+	Return website status
+	"""
+
+	# Get all the observable metrics
+	visual_metrics = request.website.visual_metrics.all().order_by('-priority')
+	vmetric = VisualMetricsSum( visual_metrics )
+	umetric = VisualMetricsSum( visual_metrics )
+
+	# Aggregate information from all projects
+	projects = []
+	achievements = []
+	for p in request.website.projects.all():
+
+		# Get project record
+		project_info = to_dict(p)
+
+		# Get project achievements
+		if not request.user.is_authenticated():
+			achievements += p.achievementStatus(None)
+		else:
+
+			# Get user achievements
+			achievements += p.achievementStatus(request.user)
+
+			# Get user's role in this project
+			if request.user.is_authenticated():
+				try:
+
+					# Get user's role
+					user_role = ProjectUserRole.objects.get( user=request.user, project=p )
+					project_info['user_role'] = user_role
+
+					# Get user's metrics
+					umetric.merge( user_role.metrics() )
+
+				except ProjectUserRole.DoesNotExist:
+					pass
+
+		# Collect projects
+		projects.append( project_info )
+
+		# Accumulate the counters of interesting metrics
+		vmetric.merge( p.metrics() )
+
+	# Finalize metrics summarizers
+	vmetric.finalize()
+	umetric.finalize()
+
+	#
+	return {
+		"metrics": vmetric
+	}
+
