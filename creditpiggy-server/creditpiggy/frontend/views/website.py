@@ -61,7 +61,7 @@ def status(request, slug=""):
 	except Website.DoesNotExist:
 
 		# Render error page
-		return render_to_response("error.html", context(
+		return render_to_response("error.html", context(request,
 				message="Could not find the website specified!"
 			))
 

@@ -144,6 +144,18 @@ def import_to_users_project( slot, user ):
 			)
 		)
 
+	# The first time the user joins a project, increment
+	# participation counters
+	if created:	
+
+		# Update user metrics
+		m_owner = user.metrics()
+		m_owner.cincr("participate/projects", 1) # Update projects participated
+
+		# Update project metrics
+		m_project = slot.project.metrics()
+		m_project.cincr("participate/users", 1)	# Update users participated
+
 	# Stack machine credits
 	pu_credits.credits += slot_credits
 	pu_credits.save()

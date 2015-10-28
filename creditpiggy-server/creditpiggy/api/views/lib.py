@@ -224,6 +224,7 @@ def status(request, api="json"):
 	# Get all the observable metrics
 	visual_metrics = request.website.visual_metrics.all().order_by('-priority')
 	vmetric = VisualMetricsSum( visual_metrics )
+	vrates = VisualMetricsSum( visual_metrics, timeseriesRate="hourly" )
 	umetric = VisualMetricsSum( visual_metrics )
 
 	# Aggregate information from all projects
@@ -232,7 +233,9 @@ def status(request, api="json"):
 	for p in request.website.projects.all():
 
 		# Get project record
-		project_info = to_dict(p)
+		project_info = {
+			'name': p.display_name
+		}
 
 		# Get project achievements
 		if not request.user.is_authenticated():
@@ -256,18 +259,31 @@ def status(request, api="json"):
 				except ProjectUserRole.DoesNotExist:
 					pass
 
-		# Collect projects
-		projects.append( project_info )
+
+		# Get project metrics
+		m_project = p.metrics()
+
+		# # Get interesting rates
+		# rate_metrics = ( "slots/completed", "slots/allocated", "participate/users" )
+		# rate_values = m_project.rates( "hourly", rate_metrics )
+		# project_info['rates'] = dict(zip(rate_metrics, rate_values))
 
 		# Accumulate the counters of interesting metrics
-		vmetric.merge( p.metrics() )
+		vmetric.merge( m_project )
+		vrates.merge( m_project )
+
+		# Collect projects
+		# projects.append( project_info )
 
 	# Finalize metrics summarizers
 	vmetric.finalize()
+	vrates.finalize()
 	umetric.finalize()
 
-	#
+	# Compile response
 	return {
-		"metrics": vmetric
+		"metrics": vmetric,
+		"rates": vrates,
+#		"projects": projects,
 	}
 

@@ -102,6 +102,79 @@ class Metrics:
 	# Timeseries
 	######################################
 
+	def rates(self, seriesName, metric=None, average=False):
+		"""
+		Calculate the change rate in the specified time series
+		"""
+
+		# Return timestamps and values
+		p = self.redis.pipeline()
+		p.lrange( "%s/ts/%s/ts" % (self.namespace, seriesName), 0, -1 )
+		p.lrange( "%s/ts/%s/val" % (self.namespace, seriesName), 0, -1 )
+		ans = p.execute()
+
+		# If metric is a string, convert it to list
+		if isinstance(metric, str) or isinstance(metric, unicode):
+			metric = [metric]
+
+		# If metric is not a list, raise an error
+		if not isinstance(metric, list) and not isinstance(metric, tuple):
+			raise ValueError("Accepting only string, list, tuple or None as values of metric")
+
+		# If we don't have enough values for calculating rate, return zeros
+		num_values = len(ans[1])
+		if num_values < 1:
+			return [0] * len(metric)
+
+		# Otherwise, process values
+		vals = []
+		for m in metric:
+			series = []
+
+			# Check if we should calculate average rate
+			# or just the last two rates
+			if average:
+
+				# If yes, iterate through all values
+				last = None
+				avg = 0.0
+				for d in ans[1]:
+					values = json.loads(d)
+					if m in values:
+
+						# Get current and last value
+						curr = float(values[m])
+						if last is None:
+							last = curr
+						else:
+							avg += (curr - last)
+
+				# And calculate average
+				avg /= (num_values - 1)
+				vals.append( avg )
+
+			else:
+
+				# Get the new value
+				dict_new = json.loads(ans[1][0])
+				val_new = 0.0
+				if m in dict_new:
+					val_new = float(dict_new[m])
+
+				# Get the old item
+				val_old = 0.0
+				if len(ans[1]) > 1:
+					dict_old = json.loads(ans[1][1])
+					if m in dict_old:
+						val_old = float(dict_old[m])
+
+				# Store delta
+				vals.append( val_new - val_old )
+
+		# Return values
+		return vals
+
+
 	def timeseries(self, seriesName, metric=None, size=settings.TS_VALUE_COUNT, interval=0, fill_value=0.0):
 		"""
 		Using this function you can fetch the timeseries stored
@@ -124,7 +197,7 @@ class Metrics:
 			return (ans[0], ans[1])
 
 		# If metric is a string, convert it to list
-		if isinstance(metric, str):
+		if isinstance(metric, str) or isinstance(metric, unicode):
 			metric = [metric]
 
 		# If metric is not a list, raise an error
@@ -140,7 +213,7 @@ class Metrics:
 				if not m in values:
 					series.append(0)
 				else:
-					series.append(values[m])
+					series.append(float(values[m]))
 			vals.append(series)
 
 		# Return a tuple with ( [ timestamp, .. ], [ [values, ..], [ values, ..] .. ] )
