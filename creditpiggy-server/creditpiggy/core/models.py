@@ -30,6 +30,7 @@ from string import maketrans
 from django.conf import settings
 from django.db import models, transaction
 from django.db.models import Q
+from django.utils import timezone
 
 from django.contrib.auth.models import AbstractUser
 
@@ -680,26 +681,35 @@ class Campaign(MetricsModelMixin, models.Model):
 	#: True if the campaign is activated
 	active = models.BooleanField(default=False)
 
+	#: Website hosting this campaign
+	website = models.ForeignKey( Website, default=None, null=True )
+
+	#: True if the campaign is open to the public
+	public = models.BooleanField(default=False)
+
 	@classmethod
-	def ofProject(cls, project, active=False):
+	def ofWebsite(cls, website, active=True):
 		"""
-		Return all the Campaigns containing this project
+		Return all the Campaigns addressing this website
 		"""
 		
-		# Get all valid campaigns for this project
+		# Get all valid campaigns for this website
 		if active:
-			return CampaignProject.objects.filter( 
-				campaign__start_time__gte=datetime.datetime.now(), 
-				campaign__end_time__lte=datetime.datetime.now(),
-				campaign__active=True,
-				campaign__published=True,
-				project=project
+			return Campaign.objects.filter( 
+				start_time__lte=timezone.now(), 
+				end_time__gte=timezone.now(),
+				active=True,
+				published=True,
+				website=website
 				)
 
 		else:
-			return CampaignProject.objects.filter( 
-				project=project
+			return Campaign.objects.filter( 
+				website=website
 				)
+
+	def __unicode__(self):
+		return "%s" % (self.name)
 
 class CampaignUserCredit(MetricsModelMixin, models.Model):
 	"""
@@ -716,18 +726,7 @@ class CampaignUserCredit(MetricsModelMixin, models.Model):
 	credits = models.IntegerField(default=0)
 
 	#: Achievements related to this campaign
-	achievements = models.ManyToManyField( Achievement )
-
-class CampaignProject(models.Model):
-	"""
-	ManyToManyField relation to projects
-	"""
-
-	#: The campaign
-	campaign = models.ForeignKey(Campaign)
-
-	#: The project
-	project = models.ForeignKey(PiggyProject)
+	achievements = models.ManyToManyField( Achievement, blank=True )
 
 class PersonalAchievement(models.Model):
 	"""

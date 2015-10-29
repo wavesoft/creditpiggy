@@ -84,6 +84,10 @@ def details(request, slug=""):
 	except ProjectUserRole.DoesNotExist:
 		pass
 
+	# Finalize metrics
+	vmetric.finalize()
+	umetric.finalize()
+
 	# Return context
 	return context(request,
 		project=project,

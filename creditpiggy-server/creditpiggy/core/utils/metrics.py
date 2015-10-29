@@ -65,12 +65,33 @@ class VisualMetrics(OrderedDict):
 				# Copy metric description & Set value
 				desc = copy.deepcopy( self[k] )
 				desc['value'] = v
+				desc['text'] = self.getDisplayValue( k, v )
 
 				# Keep on anwer
 				ans[k] = v
 
 		# Return answer
 		return ans
+
+	def getDisplayValue(self, metric, value):
+		"""
+		Calculate the display value of the spcified metric
+		"""
+
+		# If value is None, return as is
+		if value is None:
+			return ""
+
+		# If that's an unknown value, return it as-is
+		if not metric in self:
+			return str(value)
+
+		# Apply scale
+		print ">>> %r <<<" % self[metric]
+		scaledValue = value * float(self[metric]['scale'])
+
+		# Apply decimals
+		return ("%%.%if" % self[metric]['decimals']) % scaledValue
 
 class VisualMetricsSum(VisualMetrics):
 	"""
@@ -164,4 +185,8 @@ class VisualMetricsSum(VisualMetrics):
 
 			# We are now summarized
 			self.summarized = True
+
+		# Calculate display value for every property
+		for k, m in self.iteritems():
+			m['text'] = self.getDisplayValue( k, m['value'] )
 

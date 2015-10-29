@@ -18,15 +18,15 @@
 ################################################################
 
 from creditpiggy.core.achievements import check_achievements
-from creditpiggy.core.models import ProjectUserRole, Campaign, CreditSlot
+from creditpiggy.core.models import ProjectUserRole, Campaign, CampaignUserCredit, CreditSlot
 
 ############################################################
 # Helper functions
 ############################################################
 
-def import_to_campaigns( slot, project ):
+def import_to_campaigns( slot, user, website ):
 	"""
-	Import specified metrics to relevant project campaigns
+	Import specified metrics to relevant website campaigns
 	"""
 
 	# Access metrics
@@ -37,7 +37,7 @@ def import_to_campaigns( slot, project ):
 	slot_metrics = m_slot.counters()
 
 	# Update all relevant campaigns running for the project
-	campaigns = Campaign.ofProject( project )
+	campaigns = Campaign.ofWebsite( website )
 	for campaign in campaigns:
 
 		# Update campaign metrics
@@ -48,6 +48,32 @@ def import_to_campaigns( slot, project ):
 
 		# Update credits histogram
 		m_campaign.hadd( "credits", slot_credits, 1 )	# Update the distribution of credits in the campaign
+
+		# Find the campaign/user link
+		(cu_credits, created) = CampaignUserCredit.objects.get_or_create(
+				user=user, campaign=campaign
+			)
+
+		# The first time the user joins a campaign, increment
+		# participation counters
+		if created:	
+
+			# Update user metrics
+			m_owner = user.metrics()
+			m_owner.cincr("participate/campaigns", 1) # Update campaigns participated
+
+			# Update project metrics
+			m_campaign.cincr("participate/users", 1)	# Update users participated
+
+		# Stack machine credits
+		cu_credits.credits += slot_credits
+		cu_credits.save()
+
+		# Update project-credits metrics
+		m_cu = cu_credits.metrics()
+		m_cu.cincr("credits", slot_credits)		# Update credits on the project/user
+		m_cu.cincr("slots/completed", 1)		# Update completed slot counter
+		m_cu.cincr( slot_metrics )				# Squash all counters of slot to the project/user
 
 		# TODO: Achieve campaign achievements
 
@@ -75,9 +101,6 @@ def import_to_project( slot ):
 
 	# Update credits histogram
 	m_project.hadd( "credits", slot_credits, 1 )	# Update the distribution of credits in the project
-
-	# Import metrics to relevant campaigns
-	import_to_campaigns( slot, slot.project )
 
 def import_to_user( slot, user ):
 	"""
@@ -116,6 +139,9 @@ def import_to_machine( slot ):
 	# the slot and the user, so we don't need to store
 	# anything in the machine record itself. All pending
 	# data are waiting on each individual slot-machine record.
+
+	# Import metrics to the campaign
+	import_to_campaigns( slot, slot.machine.owner, slot.machine.website )
 
 	# Forward metrics to the user
 	import_to_user( slot, slot.machine.owner )
@@ -201,14 +227,6 @@ def alloc_slot( slot ):
 	m_project = slot.project.metrics()
 	m_project.cincr("slots/allocated", 1)			# Update allocated slot counter
 
-	# Update all relevant campaigns running for the project
-	campaigns = Campaign.ofProject( slot.project )
-	for campaign in campaigns:
-
-		# Update campaign metrics
-		m_campaign = campaign.metrics()
-		m_project.cincr("slots/allocated", 1)		# Update allocated slot counter
-
 def claim_slot( slot, machine ):
 	"""
 	The slot 'slot' was claimed by the machine 'machine'
@@ -266,12 +284,4 @@ def discard_slot( slot, reason ):
 
 	# Update reason stats
 	m_project.hadd( "discard_reason", reason, 1 )	# Update the histogram distribution
-
-	# Update all relevant campaigns running for the project
-	campaigns = Campaign.ofProject( slot.project, active=True )
-	for campaign in campaigns:
-
-		# Update campaign metrics
-		m_campaign = campaign.metrics()
-		m_campaign.cincr("slots/discarded", 1)		# Update discarded slot counter on the project
 

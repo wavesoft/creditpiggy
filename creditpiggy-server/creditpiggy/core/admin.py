@@ -18,6 +18,8 @@
 ################################################################
 
 from django.contrib import admin
+from django.utils import timezone
+
 from creditpiggy.core.models import *
 
 from django.forms import ModelForm
@@ -27,9 +29,59 @@ from django.utils.safestring import mark_safe
 # Register your models here.
 admin.site.register(PiggyUser)
 
-admin.site.register(Campaign)
-admin.site.register(CampaignUserCredit)
-admin.site.register(CampaignProject)
+class CampaignActiveFilter(admin.SimpleListFilter):
+	title = 'Campaign Status'
+
+	# Parameter for the filter that will be used in the URL query.
+	parameter_name = 'campaign_status'
+
+	def lookups(self, request, model_admin):
+		return (
+			('running', 'Running campaigns'),
+		)
+
+	def queryset(self, request, queryset):
+		if self.value() == 'running':
+			return queryset.filter(
+				start_time__lte=timezone.now(), 
+				end_time__gte=timezone.now(),
+				active=True,
+				published=True,
+			)
+
+class CampaignAdmin(admin.ModelAdmin):
+	list_display = ('name', 'start_time', 'end_time', 'published', 'active', 'public', 'website', 'is_running')
+	list_filter = (CampaignActiveFilter,)
+
+	def is_running(self, obj):
+		date_now = timezone.now()
+
+		# Check for flags
+		if (not obj.active):
+			return mark_safe('<img src="http://test.local:8000/static/admin/img/icon-no.gif"/> NO (Inactive)')
+		if (not obj.published):
+			return mark_safe('<img src="http://test.local:8000/static/admin/img/icon-no.gif"/> NO (Unpublished)')
+
+		# Check for date range
+		if ((date_now >= obj.start_time) and (date_now <= obj.end_time)):
+			delta = obj.end_time - date_now
+			if delta.seconds < 60:
+				return mark_safe('<img src="http://test.local:8000/static/admin/img/icon-yes.gif"/> <strong>YES (%i sec left)</strong>' % delta.seconds)
+			elif delta.seconds < 3600:
+				return mark_safe('<img src="http://test.local:8000/static/admin/img/icon-yes.gif"/> <strong>YES (%i min left)</strong>' % (delta.seconds / 60))
+			elif delta.seconds < 86400:
+				return mark_safe('<img src="http://test.local:8000/static/admin/img/icon-yes.gif"/> <strong>YES (%i hours left)</strong>' % (delta.seconds / 3600))
+			else:
+				return mark_safe('<img src="http://test.local:8000/static/admin/img/icon-yes.gif"/> <strong>YES (%i days left)</strong>' % (delta.seconds / 86400))
+		else:
+			return mark_safe('<img src="http://test.local:8000/static/admin/img/icon-no.gif"/> NO (Expired)')
+
+admin.site.register(Campaign, CampaignAdmin)
+
+class CampaignUserCreditAdmin(admin.ModelAdmin):
+	list_display = ('user', 'campaign', 'credits')
+
+admin.site.register(CampaignUserCredit, CampaignUserCreditAdmin)
 
 class UserLinkLogsAdmin(admin.ModelAdmin):
 	list_display = ('user', 'link_uuid', 'linked')
