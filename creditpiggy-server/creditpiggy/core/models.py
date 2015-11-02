@@ -444,7 +444,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 		# Call super class
 		return super(PiggyProject, self).save( *args, **kwargs )
 
-	def achievementStatus(self, user=None):
+	def achievementStatus(self, user=None, onlyAchieved=False):
 		"""
 		Return the achievement with their status
 		"""
@@ -475,6 +475,8 @@ class PiggyProject(MetricsModelMixin, models.Model):
 					achieved = AchievementInstance.objects.get(project=self, achievement=a, user=user)
 				except AchievementInstance.DoesNotExist:
 					achieved = None
+					if onlyAchieved:
+						continue
 
 				# Include additional meta
 				ans.append({

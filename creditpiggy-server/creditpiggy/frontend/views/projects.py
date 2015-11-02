@@ -105,22 +105,41 @@ def dashboard(request, page):
 	Display project dashboard
 	"""
 
+	# Prepare visual metrics
+	user_metrics = []
+
 	# Get all projects that I participated
 	purs = ProjectUserRole.objects.filter(
 			user=request.user
 		)
 
-	# Overall achievements
-	achievementIndex = { }
-	achievements = [ ]
-
 	# Get achievements for every project
+	achievements = [ ]
 	for pur in purs:
-		achievements += pur.project.achievementStatus(request.user)
+
+		# Collect achievements
+		achievements += pur.project.achievementStatus(request.user, onlyAchieved=True)
+
+		# Collect one of each visual metric
+		metrics = pur.project.visual_metrics.all().order_by('-priority')
+		for m in metrics:
+			if not m in user_metrics:
+				user_metrics.append(m)
+
+	# Create visual metric
+	umetric = VisualMetricsSum( user_metrics )
+
+	# Collect all
+	for pur in purs:
+		umetric.merge( pur.metrics() )
+
+	# Finalize
+	umetric.finalize()
 
 	# Return context
 	return context(request,
-		profile=request.user,
 		page=page,
-		achievements=sorted(achievements, key=lambda a: a['achievement'].id)
+		profile=request.user,
+		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
+		metrics=umetric.values(),
 		)

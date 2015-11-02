@@ -329,6 +329,9 @@ cpjs.dyn_graphs = function( hostDOM ) {
 		showPoint: true,
 		lineSmooth: false,
 		showArea: true,
+		axisY: {
+		    onlyInteger: true,			
+		}
 	});
 
 	// The function to call in order to generate plots
