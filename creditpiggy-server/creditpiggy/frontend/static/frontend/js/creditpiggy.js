@@ -311,14 +311,24 @@ cpjs.dyn_graphs = function( hostDOM ) {
 	this.url = hostDOM.data('url');
 	this.metrics = hostDOM.data('metrics');
 	this.ts = hostDOM.data('ts');
-	this.plotClass = hostDOM.data('plot-class');
+	this.plotClass = hostDOM.data('plot-class') || "";
 
 	// Loading indicator
 	this.loading = false;
-	this.chartists = [];
 
 	// Store hostDOM
 	this.hostDOM = hostDOM;
+
+	// Create chartist DOM
+	this.chartistDOM = $('<div class="ct-chart ct-major-tenth"></div>')
+		.addClass(this.plotClass)
+		.appendTo(hostDOM);
+
+	// Create chartist
+	this.chartist = new Chartist.Line(this.chartistDOM[0], { 'labels':[''], 'series':[[0]] }, {
+		showPoint: true,
+		lineSmooth: false,
+	});
 
 	// The function to call in order to generate plots
 	var gen_plots = (function() {
@@ -335,57 +345,61 @@ cpjs.dyn_graphs = function( hostDOM ) {
 			dataType	: "json"
 		}).done((function(data) {
 
-			// Get plots
-			var data_plots = data.plots;
+			// // Get plots
+			// var data_plots = data.plots;
 
-			// Process results
-			var i =0;
-			for (var plot_name in data_plots) {
-				var plot = data_plots[plot_name];
+			// // Process results
+			// var i =0;
+			// for (var plot_name in data_plots) {
+			// 	var plot = data_plots[plot_name];
 
-				// Prepare plot layout
-				var plotDOM = $('<div class="plot '+this.plotClass+'"></div>').appendTo(this.hostDOM),
-					innerPlot = $('<div class="plot-graph"></div>').appendTo(plotDOM);
+			// 	// Prepare plot layout
+			// 	var plotDOM = $('<div class="plot '+this.plotClass+'"></div>').appendTo(this.hostDOM),
+			// 		innerPlot = $('<div class="plot-graph"></div>').appendTo(plotDOM);
 
-				// Prepare plot data
-				var plots = [];
-				for (var i=0; i<plot.series.length; i++) {
+			// 	// Prepare plot data
+			// 	var plots = [];
+			// 	for (var i=0; i<plot.series.length; i++) {
 
-					// Record values
-					var values = [];
-					for (var j=0; j<plot.series[i].length; j++) {
-						values.push([ plot.labels[j], plot.series[i][j] ]);
-					}
+			// 		// Record values
+			// 		var values = [];
+			// 		for (var j=0; j<plot.series[i].length; j++) {
+			// 			values.push([ plot.labels[j], plot.series[i][j] ]);
+			// 		}
 
-					// create plot
-					plots.push({
-						'data': values,
-						'lines': { show: true }
-					});
+			// 		// create plot
+			// 		plots.push({
+			// 			'data': values,
+			// 			'lines': { show: true }
+			// 		});
 
-				}
+			// 	}
 
-				console.log(plots);
+			// 	console.log(plots);
 
-				// Create plot
-				$.plot( innerPlot, plots, {
-					'grid': {
-						'minBorderMargin': 40
-					},
-					'xaxis': {
-						'mode': "time",
-						'timeformat': "%H:%S",
-					},
-					'yaxis': {
-						'tickFormatter': function (val, axis) {
-							return parseInt(val);
-						}
-					}
-				});
+			// 	// Create plot
+			// 	$.plot( innerPlot, plots, {
+			// 		'grid': {
+			// 			'minBorderMargin': 40
+			// 		},
+			// 		'xaxis': {
+			// 			'mode': "time",
+			// 			'timeformat': "%H:%S",
+			// 		},
+			// 		'yaxis': {
+			// 			'tickFormatter': function (val, axis) {
+			// 				return parseInt(val);
+			// 			}
+			// 		}
+			// 	});
 
-				// Increment index
-				i += 1;
-			}
+			// 	// Increment index
+			// 	i += 1;
+			// }
+
+			var plot = data.plot;
+			this.chartist.update( plot );
+
 
 		}).bind(this))
 		.fail((function(data) {

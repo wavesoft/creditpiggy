@@ -3,12 +3,12 @@
 {% load piggy_extras %}
 
 {% block javascript %}
-  <script type="text/javascript" src="{% static 'lib/js/jquery.flot.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'lib/js/jquery.flot.time.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'lib/js/jquery.flot.resize.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'lib/js/chartist.min.js' %}"></script>
 {% endblock %}
 
-{% block head %}{% verbatim %}
+{% block head %}
+<link href="{% static "lib/css/chartist.min.css" %}" rel="stylesheet">
+{% verbatim %}
 <script type="x-tmpl-mustache" id="tpl-project">
   <div class="col-sm-4">
     <div class="panel panel-default">
@@ -23,7 +23,8 @@
     </div>
   </div>
 </script>
-{% endverbatim %}{% endblock %}
+{% endverbatim %}
+{% endblock %}
 
 {% block content %}
 
@@ -131,7 +132,7 @@
     </div>
 
     {% elif page == 'history' %}
-    <div class="x-graphs row" data-url="graph.user" data-plot-class="col-sm-4">
+    <div class="x-graphs row" data-url="graph.user" data-plot-class="col-md-12">
     </div>
     {% endif %}
 

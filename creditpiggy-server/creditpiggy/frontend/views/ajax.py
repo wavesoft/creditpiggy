@@ -18,6 +18,7 @@
 ################################################################
 
 import time
+import datetime
 from django.db.models import Q
 
 from django.http import HttpResponse
@@ -230,13 +231,28 @@ def graph(request, cmd):
 		obs_metrics = [ 'credits' ]
 		obs_legends = [ 'Credits' ]
 		obs_tss 	= [ 'hourly', 'daily', 'weekly', 'monthly' ]
+		ots_ts_fn	= [
+			lambda x: datetime.datetime.fromtimestamp(int(x)).strftime('%H:%M'),
+			lambda x: datetime.datetime.fromtimestamp(int(x)).strftime('%a'),
+			lambda x: datetime.datetime.fromtimestamp(int(x)).strftime('%m/%d'),
+			lambda x: datetime.datetime.fromtimestamp(int(x)).strftime('%b'),
+		]
+
+		ts_values = []
+		ts_legends = []
 
 		# Compile response
 		ans = {}
-		for ts_name in obs_tss:
+		for i in range(0, len(obs_tss)):
+			ts_name = obs_tss[i]
+			ts_fn = ots_ts_fn[i]
 
 			# Get timeseries
 			(ts, val) = u_metrics.timeseries(ts_name, metric=obs_metrics)
+
+			# Concatenate time series and values
+			ts_values = list(reversed(val[0])) + ts_values
+			ts_legends = map(lambda x: ts_fn(int(float(x))), reversed(ts)) + ts_legends
 
 			# Convert timeseries to milliseconds
 			ts = map(lambda x: int(float(x)*1000), ts)
@@ -250,7 +266,10 @@ def graph(request, cmd):
 
 		# Return values
 		return {
-			'plots': ans
+			'plot': {
+				'labels': ts_legends,
+				'series': [ts_values]
+			}
 		}
 
 	else:
