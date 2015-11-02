@@ -27,7 +27,13 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 
 # Register your models here.
-admin.site.register(PiggyUser)
+class PiggyUserAdmin(admin.ModelAdmin):
+	list_display = ('id', 'username', 'display_name', 'timezone', 'profile', 'email_achievement', 'email_projects', 'email_surveys', 'priv_leaderboards')
+
+	def profile(self, obj):
+		return mark_safe('<img src="%s" style="width: 32px; vertical-align: absmiddle" />' % obj.profile_image)
+
+admin.site.register(PiggyUser, PiggyUserAdmin)
 
 class CampaignActiveFilter(admin.SimpleListFilter):
 	title = 'Campaign Status'

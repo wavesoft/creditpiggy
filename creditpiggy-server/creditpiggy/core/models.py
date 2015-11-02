@@ -249,6 +249,9 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			"profile_url" 	: "javascript:;",
 		}
 
+	def __unicode__(self):
+		return self.display_name
+
 class Referral(models.Model):
 	"""
 	Referral log table

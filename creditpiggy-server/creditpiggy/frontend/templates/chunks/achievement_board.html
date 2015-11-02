@@ -2,7 +2,7 @@
 <div class="achievement-board">
 	<div class="achievements">
 	{% for a in achievements %}
-		{# {% if a.achieved %} #}
+		{% if a.achieved %}
 		<div class="icon" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="'{{ a.achievement.name }}' in {% if website %}{{website.name}}{% else %}{{a.project.display_name}}{% endif %}">
 			{% if website %}
 			<a class="btn btn-default project-button">
@@ -14,8 +14,11 @@
 			</a>
 			{% endif %}
 		</div>
-		{# {% endif %} #}
+		{% endif %}
 	{% endfor %}
+	{% if not achievements %}
+	
+	{% endif %}
 	</div>
 	<div class="clearfix"></div>
 </div>
