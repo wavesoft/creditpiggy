@@ -36,19 +36,101 @@
     <p>
       <div class="btn-group pull-right" role="group" aria-label="sort-order">
         <a href="{% url 'frontend.dashboard' page='overview' %}?{{url_suffix}}" class="btn {% if page == 'overview' %}btn-info{% else %}btn-default{% endif %}">Overview</a>
-        <a href="{% url 'frontend.dashboard' page='projects' %}?{{url_suffix}}" class="btn {% if page == 'projects' %}btn-info{% else %}btn-default{% endif %}">Projects</a>
-        <a href="{% url 'frontend.dashboard' page='details' %}?{{url_suffix}}" class="btn {% if page == 'details' %}btn-info{% else %}btn-default{% endif %}">Details</a>
+        <a href="{% url 'frontend.dashboard' page='settings' %}?{{url_suffix}}" class="btn {% if page == 'settings' %}btn-info{% else %}btn-default{% endif %}">Settings</a>
+        <a href="{% url 'frontend.dashboard' page='history' %}?{{url_suffix}}" class="btn {% if page == 'history' %}btn-info{% else %}btn-default{% endif %}">History</a>
       </div>
       <a class="btn btn-default" href="/?{{url_suffix}}"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
+      {% if page == 'overview' %}
+      <div class="btn-group">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Overall Contribution &nbsp;<span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="#">Overall Contribution</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="#">Project A</a></li>
+          <li><a href="#">Project B</a></li>
+          <li><a href="#">Website A</a></li>
+        </ul>
+      </div>
+      {% endif %}
     </p>
     
     <hr />
 
     {% if page == 'overview' %}
+      
+      {% include "chunks/dasboard_metrics.html" with metrics=metrics %}
+      <hr />
+      {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics %}
+
     {% elif page == 'projects' %}
     <div class="x-paginated row" data-url="fetch.projects" data-template="#tpl-project">
     </div>
-    {% elif page == 'details' %}
+
+    {% elif page == 'settings' %}
+  
+    <div class="row">
+      <div class="col-md-6">
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            E-mail settings
+          </div>
+          <div class="panel-body">
+            <div class="form-horizontal">
+              <div class="col-lg-12">
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.email_achievement %}checked="checked"{% endif %} data-url="profile.set" name="email_achievement" class="x-click-update" value="" /> Receive e-mail when you get an achievement  
+                  </label>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.email_projects %}checked="checked"{% endif %} data-url="profile.set" name="email_projects" class="x-click-update" value="" /> Receive e-mails with project updates
+                  </label>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.email_surveys %}checked="checked"{% endif %} data-url="profile.set" name="email_surveys" class="x-click-update" value="" /> Receive e-mails with feedback questions
+                  </label>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Privacy Settings
+          </div>
+          <div class="panel-body">
+            <div class="form-horizontal">
+              <div class="col-lg-12">
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.priv_leaderboards %}checked="checked"{% endif %} data-url="profile.set" name="priv_leaderboards" class="x-click-update"  value="" /> Include my name in the leaderboards  
+                  </label>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {% elif page == 'history' %}
     <div class="x-graphs row" data-url="graph.user" data-plot-class="col-sm-4">
     </div>
     {% endif %}

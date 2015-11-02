@@ -54,6 +54,11 @@ cpjs.initialize = function( webid ) {
 		this.dyn_blur_update($(e));
 	}).bind(this))
 
+	// Register x-click-update elements
+	$("input.x-click-update").each((function(i,e) {
+		this.dyn_click_update($(e));
+	}).bind(this))
+
 	// Register x-paginated elements
 	$(".x-paginated").each((function(i,e) {
 		new this.dyn_paginator($(e));
@@ -74,8 +79,41 @@ cpjs.initialize = function( webid ) {
 
 	// Opt-in to tooltips
 	$(function () {
-	  $('[data-toggle="tooltip"]').tooltip()
+	  $('[data-toggle="tooltip"]').tooltip({container: 'body'})
 	})
+
+}
+
+/**
+ * Handle elements that update something upon click.
+ */
+cpjs.dyn_click_update = function( hostDOM ) {
+
+	// Perform AJAX Post
+	hostDOM.click(function() {
+		var elm = $(this),
+			url = elm.data('url'),
+			name = elm.attr('name'),
+			value = elm.is(":checked") ? 1 : 0;
+
+		// Prepare data
+		var data = {};
+		data[name] = value;
+
+		// Send request
+		$.ajax({
+			method 		: "POST",
+			url 		: "/ajax/"+url+"/",
+			data 		: JSON.stringify(data),
+			dataType	: "json"
+		}).done(function(data) {
+			console.info("AJAX: Updated "+url+"/"+name+" = ",value);
+			field_value = value;
+		})
+		.fail(function() {
+			console.error("AJAX: Could not perform "+url+"/"+name+" = ",value);
+		});
+	});
 
 }
 

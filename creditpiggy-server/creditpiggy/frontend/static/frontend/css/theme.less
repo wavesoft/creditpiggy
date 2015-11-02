@@ -5,6 +5,9 @@
     -o-transition: @params;
        transition: @params; }
 
+// Achievement box size
+@achievement-board-size: 120px;
+
 // =================================
 //  GENERAL STRUCTURES
 // =================================
@@ -32,6 +35,12 @@ h2 {
     font-weight: 300;
     line-height: 1.4;
     font-size: 24px;
+}
+
+.img-dim {
+	img, .glyphicon {
+		opacity: 0.5;
+	}
 }
 
 .inactive {
@@ -440,6 +449,110 @@ div.achievements {
 			}
 		}
 
+	}
+}
+
+// Achievements Board
+// ---------------------------------
+.achievement-board {
+	text-align: center;
+
+	.achievements {
+		margin: 0 auto;
+
+		> div.icon {
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: center center;
+			// display: inline-block;
+			position: relative;
+			float: left;
+			width: @achievement-board-size;
+			height: @achievement-board-size;
+
+			> a.project-button {
+
+				width:  @achievement-board-size/3;
+				height:  @achievement-board-size/3;
+				position: absolute;
+				bottom: 10px;
+				right: 10px;
+				padding: 2px;
+
+				opacity: 0;
+				.transition( opacity 0.25s ease-in );
+
+				> span.icon {
+					display: inline-block;
+					width: @achievement-board-size/3-8;
+					height: @achievement-board-size/3-8;
+					background-size: contain;
+					background-repeat: no-repeat;
+					background-position: center center;
+				}
+			}
+
+			&:hover {
+				> a.project-button {
+					opacity: 1.0;
+				}
+			}
+		}
+	}
+
+}
+
+// Resize achievements layout according to the screen size
+@media (min-width: 430px) {
+	.achievement-board > .achievements { width: 3 *@achievement-board-size;  };
+	.achievement-board > .achievements > div.icon {
+		// 3-wide
+		&:nth-child(5n+1) { clear: left;}
+		&:nth-child(5n+4) { clear: left; margin-left: @achievement-board-size/2; }
+	}
+}
+@media (min-width: 550px) {
+	.achievement-board > .achievements { width: 4 *@achievement-board-size;  };
+	.achievement-board > .achievements > div.icon {
+		// 3-wide
+		&:nth-child(5n+1) { clear: none;}
+		&:nth-child(5n+4) { clear: none; margin-left: 0; }
+		// 4-wide
+		&:nth-child(7n+1) { clear: left;}
+		&:nth-child(7n+5) { clear: left; margin-left: @achievement-board-size/2; }
+	}
+}
+@media (min-width: 670px) {
+	.achievement-board > .achievements { width: 5 *@achievement-board-size;  };
+	.achievement-board > .achievements > div.icon {
+		// Reset 4-wide
+		&:nth-child(7n+1) { clear: none;}
+		&:nth-child(7n+5) { clear: none; margin-left: 0; }
+		// 5-wide
+		&:nth-child(9n+1) { clear: left; }
+		&:nth-child(9n+6) { clear: left; margin-left: @achievement-board-size/2; }
+	}
+}
+@media (min-width: 992px) {
+	.achievement-board > .achievements { width: 7 *@achievement-board-size;  };
+	.achievement-board > .achievements > div.icon {
+		// Reset 5-wide
+		&:nth-child(9n+1) { clear: none; }
+		&:nth-child(9n+6) { clear: none; margin-left: 0; }
+		// 7-wide
+		&:nth-child(13n+1) { clear: left; }
+		&:nth-child(13n+8) { clear: left; margin-left: @achievement-board-size/2; }
+	}
+}
+@media (min-width: 1200px) {
+	.achievement-board > .achievements { width: 9 *@achievement-board-size;  };
+	.achievement-board > .achievements > div.icon {
+		// Reset 7-wide
+		&:nth-child(13n+1) { clear: none; }
+		&:nth-child(13n+8) { clear: none; margin-left: 0; }
+		// 9-wide
+		&:nth-child(17n+1) { clear: left; }
+		&:nth-child(17n+10) { clear: left; margin-left: @achievement-board-size/2; }
 	}
 }
 

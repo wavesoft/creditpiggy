@@ -16,6 +16,10 @@ h2 {
   line-height: 1.4;
   font-size: 24px;
 }
+.img-dim img,
+.img-dim .glyphicon {
+  opacity: 0.5;
+}
 .inactive {
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
@@ -314,6 +318,133 @@ div.achievements > div .icon .badge {
   right: -2px;
   bottom: -2px;
   height: 18px;
+}
+.achievement-board {
+  text-align: center;
+}
+.achievement-board .achievements {
+  margin: 0 auto;
+}
+.achievement-board .achievements > div.icon {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  position: relative;
+  float: left;
+  width: 120px;
+  height: 120px;
+}
+.achievement-board .achievements > div.icon > a.project-button {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 2px;
+  opacity: 0;
+  -webkit-transition: opacity 0.25s ease-in;
+  -moz-transition: opacity 0.25s ease-in;
+  -o-transition: opacity 0.25s ease-in;
+  transition: opacity 0.25s ease-in;
+}
+.achievement-board .achievements > div.icon > a.project-button > span.icon {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+.achievement-board .achievements > div.icon:hover > a.project-button {
+  opacity: 1.0;
+}
+@media (min-width: 430px) {
+  .achievement-board > .achievements {
+    width: 360px;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(5n+1) {
+    clear: left;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(5n+4) {
+    clear: left;
+    margin-left: 60px;
+  }
+}
+@media (min-width: 550px) {
+  .achievement-board > .achievements {
+    width: 480px;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(5n+1) {
+    clear: none;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(5n+4) {
+    clear: none;
+    margin-left: 0;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(7n+1) {
+    clear: left;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(7n+5) {
+    clear: left;
+    margin-left: 60px;
+  }
+}
+@media (min-width: 670px) {
+  .achievement-board > .achievements {
+    width: 600px;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(7n+1) {
+    clear: none;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(7n+5) {
+    clear: none;
+    margin-left: 0;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(9n+1) {
+    clear: left;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(9n+6) {
+    clear: left;
+    margin-left: 60px;
+  }
+}
+@media (min-width: 992px) {
+  .achievement-board > .achievements {
+    width: 840px;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(9n+1) {
+    clear: none;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(9n+6) {
+    clear: none;
+    margin-left: 0;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(13n+1) {
+    clear: left;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(13n+8) {
+    clear: left;
+    margin-left: 60px;
+  }
+}
+@media (min-width: 1200px) {
+  .achievement-board > .achievements {
+    width: 1080px;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(13n+1) {
+    clear: none;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(13n+8) {
+    clear: none;
+    margin-left: 0;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(17n+1) {
+    clear: left;
+  }
+  .achievement-board > .achievements > div.icon:nth-child(17n+10) {
+    clear: left;
+    margin-left: 60px;
+  }
 }
 div.collapsible > div {
   -webkit-transition: max-height 0.25s ease-in;

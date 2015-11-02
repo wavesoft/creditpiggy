@@ -134,6 +134,14 @@ def profile(request, cmd):
 		# Update fields
 		if 'name' in u_args:
 			request.user.display_name = u_args['name']
+		elif 'email_achievement' in u_args:
+			request.user.email_achievement = (int(u_args['email_achievement']) == 1)
+		elif 'email_projects' in u_args:
+			request.user.email_projects = (int(u_args['email_projects']) == 1)
+		elif 'email_surveys' in u_args:
+			request.user.email_surveys = (int(u_args['email_surveys']) == 1)
+		elif 'priv_leaderboards' in u_args:
+			request.user.priv_leaderboards = (int(u_args['priv_leaderboards']) == 1)
 
 		# Save record
 		request.user.save()

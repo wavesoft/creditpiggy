@@ -10,9 +10,9 @@
 					<i class="{{ metric.icon }}"></i>&nbsp; {{ metric.display_name }}:
 				</div>
 				<div class="col-xs-6">
-					{{ metric.value | thousands }}
+					{{ metric.text | thousands }}
 					{% if show_own %}
-						<span class="own">/ {{ own | item_value:forloop.counter0 | thousands }}</span>
+						<span class="own">/ {{ own | item_text:forloop.counter0 | thousands }}</span>
 					{% endif %}
 					<small>{{ metric.units }}</small>
 				</div>

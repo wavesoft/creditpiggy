@@ -186,6 +186,18 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	#: The user's timezone
 	timezone = models.CharField(max_length=255, default="UTC", choices=TIMEZONES)
 
+	#: E-mail options: Receive e-mail on achievement 
+	email_achievement = models.BooleanField(default=True, help_text="Receive e-mail on achievement")
+
+	#: E-mail options: Receive e-mail from project owners 
+	email_projects = models.BooleanField(default=True, help_text="Receive e-mails from project owners")
+
+	#: E-mail options: Receive e-mail for surveys 
+	email_surveys = models.BooleanField(default=True, help_text="Receive e-mails for surveys")
+
+	#: Privacy options: Show on leaderboards
+	priv_leaderboards = models.BooleanField(default=True, help_text="Show on leaderboards")
+
 	@staticmethod
 	def fromRef(refid):
 		"""
@@ -310,7 +322,7 @@ class VisualMetric(models.Model):
 		help_text="Scale of the metrics value when presenting it")
 
 	#: Number of decimals
-	decimals = models.FloatField(default=0, 
+	decimals = models.IntegerField(default=0, 
 		help_text="Number of decimals when rounding the value before presenting it")
 
 	#: Prority

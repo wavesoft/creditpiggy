@@ -60,6 +60,12 @@ def send_personal_achievement_email( user, achievement, raiseExceptions=False ):
 	"""
 	Send an e-mail congratulating a user for his/her personal achievement
 	"""
+
+	# If user has opted-out from e-mails, do not send it
+	if not user.email_achievement:
+		return
+
+	# Otherwise send it
 	send_email(
 
 		# Recepient
@@ -79,6 +85,12 @@ def send_achievement_email( user, project, achievement, raiseExceptions=False ):
 	"""
 	Send an e-mail congratulating a user for his/her achievement
 	"""
+
+	# If user has opted-out from e-mails, do not send it
+	if not user.email_achievement:
+		return
+
+	# Otherwise send it
 	send_email(
 
 		# Recepient

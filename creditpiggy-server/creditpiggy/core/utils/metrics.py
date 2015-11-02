@@ -87,7 +87,6 @@ class VisualMetrics(OrderedDict):
 			return str(value)
 
 		# Apply scale
-		print ">>> %r <<<" % self[metric]
 		scaledValue = value * float(self[metric]['scale'])
 
 		# Apply decimals

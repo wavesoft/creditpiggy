@@ -1,0 +1,21 @@
+{% load piggy_extras %}
+<div class="achievement-board">
+	<div class="achievements">
+	{% for a in achievements %}
+		{# {% if a.achieved %} #}
+		<div class="icon" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="'{{ a.achievement.name }}' in {% if website %}{{website.name}}{% else %}{{a.project.display_name}}{% endif %}">
+			{% if website %}
+			<a class="btn btn-default project-button">
+				<span class="icon" style="background-image: url('{{ website.icon }}')"></span>
+			</a>
+			{% else %}
+			<a class="btn btn-default project-button">
+				<span class="icon" style="background-image: url('{{ a.project.profile_image }}')"></span>
+			</a>
+			{% endif %}
+		</div>
+		{# {% endif %} #}
+	{% endfor %}
+	</div>
+	<div class="clearfix"></div>
+</div>

@@ -105,7 +105,22 @@ def dashboard(request, page):
 	Display project dashboard
 	"""
 
+	# Get all projects that I participated
+	purs = ProjectUserRole.objects.filter(
+			user=request.user
+		)
+
+	# Overall achievements
+	achievementIndex = { }
+	achievements = [ ]
+
+	# Get achievements for every project
+	for pur in purs:
+		achievements += pur.project.achievementStatus(request.user)
+
 	# Return context
 	return context(request,
-		page=page
+		profile=request.user,
+		page=page,
+		achievements=sorted(achievements, key=lambda a: a['achievement'].id)
 		)

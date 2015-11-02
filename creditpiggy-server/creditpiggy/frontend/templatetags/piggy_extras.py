@@ -41,6 +41,13 @@ def item_value(l, i):
     except:
         return None
 
+@register.filter(name='item_text')
+def item_text(l, i):
+    try:
+        return l[i]['text']
+    except:
+        return None
+
 @register.filter(name='get_metrics')
 def get_metrics(value):
 	"""
@@ -94,13 +101,18 @@ def thousands(value): # Add ',' on thousands
 	Divide thousand triplets
 	"""
 
+	# Strip float part
+	ending = ""
+
 	# Get value
 	if value is None:
 		v = 0
 	else:
 		try:
 			if '.' in str(value):
-				v = float(value)
+				parts = str(value).split(".")
+				ending = "." + parts[1]
+				v = int(parts[0])
 			else:
 				v = int(value)
 		except ValueError:
@@ -108,7 +120,7 @@ def thousands(value): # Add ',' on thousands
 
 	# Format value
 	locale.setlocale(locale.LC_ALL, 'en_US')
-	return str(locale.format("%d", v, grouping=True))
+	return str(locale.format("%d", v, grouping=True)) + ending
 
 @register.filter(name='timestamp')
 def timestamp(value): # Only one argument.
