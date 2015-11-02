@@ -28,11 +28,22 @@
 
 {% block content %}
 
-   	<h2>Here you can see all your contributions</h2>
-   	<p class="text-smaller">
-   		In the following list you can browse all the projects that are using CreditPiggy for keeping track of their user's contributions.
-   		If you are interested in any of them click on them to read more.
-   	</p>
+    {% if page == 'overview' %}
+     	<h2>Here you can see all your contributions</h2>
+     	<p class="text-smaller">
+     		The following table shows how many credits have you collected so far by participating in volunteer computing projects on the web. Below it, there is a list of all of your achievements so far!
+     	</p>
+    {% elif page == 'settings' %}
+      <h2>Configure your account</h2>
+      <p class="text-smaller">
+        The following options allow you to control privacy and e-mail options for your account. CreditPiggy will never spam you with advertisement material, but if you think you are getting too many e-mails from us, you can change your preferences here.
+      </p>
+    {% elif page == 'history' %}
+      <h2>How well are you doing over time</h2>
+      <p class="text-smaller">
+        The following plot shows the evolution of your credits over time. Fro this screen you can get as far as a year ago in the past and check what was your contribution at that time.
+      </p>
+    {% endif %}
 
     <p>
       <div class="btn-group pull-right" role="group" aria-label="sort-order">
@@ -47,11 +58,18 @@
           Overall Contribution &nbsp;<span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-          <li><a href="#">Overall Contribution</a></li>
+          <li><a href="{% url 'frontend.dashboard' page='overview' %}?{{url_suffix}}">Overall Contribution</a></li>
           <li role="separator" class="divider"></li>
-          <li><a href="#">Project A</a></li>
-          <li><a href="#">Project B</a></li>
-          <li><a href="#">Website A</a></li>
+          {% for c in u_campaigns %}
+          <li><a href="{% url 'frontend.dashboard.campaign' page='overview' campaign=c.id %}?{{url_suffix}}"><span class="label label-info">Campaign</span> {{c.campaign.name}}</a></li>
+          {% endfor %}
+          {% for p in u_projects %}
+          <li><a href="{% url 'frontend.dashboard.project' page='overview' project=p.id %}?{{url_suffix}}"><span class="label label-primary">Project</span> {{p.project.display_name}}</a></li>
+          {% endfor %}
+
+          {% if not u_projects and not u_campaigns %}
+          {% endif %}
+
         </ul>
       </div>
       {% endif %}
@@ -61,7 +79,7 @@
 
     {% if page == 'overview' %}
       
-      {% include "chunks/dasboard_metrics.html" with metrics=metrics %}
+      {% include "chunks/bigmetrics.html" with show_own=False own=False %}
       <hr />
       {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics %}
 

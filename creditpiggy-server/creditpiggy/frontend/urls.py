@@ -33,6 +33,11 @@ urlpatterns = patterns('',
 	url(r'^link/(?P<provider>[^/]+)/$',		account.link,			name="frontend.link"),
 
 	url(r'^dashboard/(?P<page>[^/]+)/$', 	projects.dashboard,		name="frontend.dashboard"),
+	url(r'^dashboard/(?P<page>[^/]+)/project-(?P<project>[^/]+)$', 	
+											projects.dashboard_project, name="frontend.dashboard.project"),
+	url(r'^dashboard/(?P<page>[^/]+)/campaign-(?P<campaign>[^/]+)$', 	
+											projects.dashboard_campagin, name="frontend.dashboard.campaign"),
+
 	url(r'^projects/$', 					projects.list,	 		name="frontend.projects"),
 	url(r'^project/(?P<slug>[^/]+)/$', 		projects.details,	 	name="frontend.details"),
 
