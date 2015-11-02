@@ -238,11 +238,11 @@ def graph(request, cmd):
 			lambda x: datetime.datetime.fromtimestamp(int(x)).strftime('%b'),
 		]
 
+		ts_size = []
 		ts_values = []
 		ts_legends = []
 
 		# Compile response
-		ans = {}
 		for i in range(0, len(obs_tss)):
 			ts_name = obs_tss[i]
 			ts_fn = ots_ts_fn[i]
@@ -253,22 +253,37 @@ def graph(request, cmd):
 			# Concatenate time series and values
 			ts_values = list(reversed(val[0])) + ts_values
 			ts_legends = map(lambda x: ts_fn(int(float(x))), reversed(ts)) + ts_legends
+			ts_size.insert(0, len(ts) )
 
-			# Convert timeseries to milliseconds
-			ts = map(lambda x: int(float(x)*1000), ts)
+		# Split timeseries to show them in different colors
+		ranges = []
+		range_start = 0
+		for c in ts_size:
 
-			# Store in response
-			ans[ts_name] = {
-				"labels" : ts,
-				"series" : val,
-				"legends": obs_legends
-			}
+			# Create empty array
+			rng = [None] * len(ts_values)
+
+			# Copy portion
+			plus_1 = 1
+			if range_start+c >= len(ts_values):
+				plus_1 = 0
+			rng[range_start:range_start+c+plus_1] = ts_values[range_start:range_start+c+plus_1]
+
+			# Go to next item
+			range_start += c
+
+			# Store on ranges
+			ranges.append(rng)
+
+		# Add holes every 'nth' item
+		for i in range(0, len(ts_values), 2):
+			ts_legends[i] = ""
 
 		# Return values
 		return {
 			'plot': {
 				'labels': ts_legends,
-				'series': [ts_values]
+				'series': ranges
 			}
 		}
 

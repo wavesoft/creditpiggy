@@ -328,6 +328,7 @@ cpjs.dyn_graphs = function( hostDOM ) {
 	this.chartist = new Chartist.Line(this.chartistDOM[0], { 'labels':[''], 'series':[[0]] }, {
 		showPoint: true,
 		lineSmooth: false,
+		showArea: true,
 	});
 
 	// The function to call in order to generate plots
