@@ -18,6 +18,7 @@
 ################################################################
 
 import time
+import random
 
 from django.db.models import Q
 from creditpiggy.core.utils.metrics import VisualMetrics
@@ -40,9 +41,9 @@ def personal_next_achievement( user, project=None ):
 
 	# Iterate over the candidates and calculate the
 	# distance from the user's current counters
-	candidate = None
 	candidate_dist = None
 	candidate_metrics = None
+	candidate_shortlist = None
 	for c in candidates:
 
 		# Reset properties
@@ -62,14 +63,25 @@ def personal_next_achievement( user, project=None ):
 			distance *= val_user / v
 
 		# Pick candidate
-		if (candidate_dist is None) or (distance > candidate_dist):
+		if (candidate_dist is None) or (distance >= candidate_dist):
+
+			# Check if we should clear shortlist
+			if (distance > candidate_dist):
+				candidate_shortlist = []
+
+			# Update current metrics
 			candidate_metrics = metric
 			candidate_dist = distance
-			candidate = c
+
+			# Include in short list
+			candidate_shortlist.append( c )
 
 	# Return none if no candidate
-	if candidate is None:
+	if len(candidate_shortlist) == 0:
 		return None
+
+	# Pick a random candidate
+	candidate = random.choice( candidate_shortlist )
 
 	# Get Visual Metrics translator
 	vm = VisualMetrics( VisualMetric.objects.filter( name__in=candidate_metrics.keys() ) )
