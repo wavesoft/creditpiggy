@@ -329,6 +329,31 @@ div.achievements > div .icon .badge {
   bottom: -2px;
   height: 18px;
 }
+.next-achievement {
+  background-color: #FFF;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 20px;
+  -webkit-box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.4);
+}
+.next-achievement p {
+  margin-bottom: 5px;
+}
+.next-achievement p.teaser {
+  font-weight: bold;
+}
+.next-achievement .title {
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 10px 0 13px;
+  font-weight: 300;
+  line-height: 1.4;
+  font-size: 1.2em;
+}
+.next-achievement img {
+  max-width: 60px;
+}
 .achievement-board {
   text-align: center;
 }

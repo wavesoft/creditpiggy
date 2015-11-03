@@ -68,7 +68,7 @@ class VisualMetrics(OrderedDict):
 				desc['text'] = self.getDisplayValue( k, v )
 
 				# Keep on anwer
-				ans[k] = v
+				ans[k] = desc
 
 		# Return answer
 		return ans

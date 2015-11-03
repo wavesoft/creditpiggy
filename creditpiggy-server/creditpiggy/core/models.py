@@ -249,6 +249,25 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			"profile_url" 	: "javascript:;",
 		}
 
+	def achievements(self):
+		"""
+		Return all the achievements of this user has achieved
+		"""
+
+		# Get all achievements
+		ans = []
+		for a in AchievementInstance.objects.filter(user=self):
+
+			# Include additional meta
+			ans.append({
+					"achievement": a.achievement,
+					"achieved": True,
+					"project": a.project,
+				})
+
+		# Return achievements and their status
+		return ans
+
 	def __unicode__(self):
 		return self.display_name
 

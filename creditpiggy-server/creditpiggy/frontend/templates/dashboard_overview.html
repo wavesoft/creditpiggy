@@ -37,9 +37,12 @@
     {% include "chunks/dashboard_nav.html" %}    
     <hr />
 
+
     <!-- Metrics display -->
     {% include "chunks/bigmetrics.html" with show_own=False own=False %}
     <hr />
     {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics %}
+
+    {% include "chunks/achievement_next.html" with candidate=candidate_achievement %}    
 
 {% endblock %}

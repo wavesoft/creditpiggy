@@ -1,5 +1,5 @@
     <p>
-      
+
       <div class="btn-group pull-right" role="group" aria-label="sort-order">
         <a href="{% url 'frontend.dashboard' %}?{{url_suffix}}" class="btn {% if page == 'overview' %}btn-info{% else %}btn-default{% endif %}">Overview</a>
         <a href="{% url 'frontend.dashboard.settings' %}?{{url_suffix}}" class="btn {% if page == 'settings' %}btn-info{% else %}btn-default{% endif %}">Settings</a>
@@ -13,13 +13,13 @@
           Filter by &nbsp;<span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-          <li><a href="{% url 'frontend.dashboard' %}?{{url_suffix}}">No filter</a></li>
+          <li {% if not project_id and not campaign_id %}class="active"{% endif %}><a href="{% url 'frontend.dashboard' %}?{{url_suffix}}">My overall contribution</a></li>
           <li role="separator" class="divider"></li>
           {% for c in u_campaigns %}
-          <li><a href="{% url 'frontend.dashboard.overview.campaign' campaign=c.id %}?{{url_suffix}}">{{c.campaign.name}} <span class="label label-info">Campaign</span></a></li>
+          <li {% if c.id == campaign_id %}class="active"{% endif %}><a href="{% url 'frontend.dashboard.overview.campaign' campaign=c.id %}?{{url_suffix}}">{{c.campaign.name}} <span class="label label-info">Campaign</span></a></li>
           {% endfor %}
           {% for p in u_projects %}
-          <li><a href="{% url 'frontend.dashboard.overview.project' project=p.id %}?{{url_suffix}}">{{p.project.display_name}} <span class="label label-primary">Project</span></a></li>
+          <li {% if p.id == project_id %}class="active"{% endif %}><a href="{% url 'frontend.dashboard.overview.project' project=p.id %}?{{url_suffix}}">{{p.project.display_name}} <span class="label label-primary">Project</span></a></li>
           {% endfor %}
 
           {% if not u_projects and not u_campaigns %}

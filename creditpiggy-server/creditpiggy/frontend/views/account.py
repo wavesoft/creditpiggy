@@ -38,6 +38,8 @@ from creditpiggy.core.utils import VisualMetricsSum
 from creditpiggy.api.auth import sso_logout, website_from_request
 from creditpiggy.api import information
 
+from creditpiggy.core.achievements import personal_next_achievement
+
 #######################################################
 # Utility functions
 #######################################################
@@ -280,24 +282,13 @@ def dashboard_overview_overall(request):
 	# Get all campaigns that I participated
 	u_campaigns = CampaignUserCredit.objects.filter( user=request.user )
 
-	# Get achievements for every project
-	achievements = [ ]
-	user_metrics = []
-	for pur in u_projects:
-
-		# Collect achievements
-		achievements += pur.project.achievementStatus(request.user, onlyAchieved=True)
-
-		# Collect one of each visual metric
-		metrics = pur.project.visual_metrics.all().order_by('-priority')
-		for m in metrics:
-			if not m in user_metrics:
-				user_metrics.append(m)
-
 	# Collect user metrics
-	umetric = VisualMetricsSum( user_metrics )
+	umetric = VisualMetricsSum( VisualMetric.objects.all() )
 	umetric.merge( request.user.metrics() )
 	umetric.finalize()
+
+	# Collect all achievements
+	achievements = request.user.achievements()
 
 	# Return context
 	return context(request,
@@ -307,6 +298,7 @@ def dashboard_overview_overall(request):
 		profile=request.user,
 		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
 		metrics=umetric.values(),
+		candidate_achievement=personal_next_achievement( request.user ),
 		)
 
 
@@ -339,8 +331,10 @@ def dashboard_overview_project(request, project):
 		u_projects=u_projects,
 		u_campaigns=u_campaigns,
 		profile=request.user,
+		project_id=int(project),
 		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
 		metrics=umetric.values(),
+		candidate_achievement=personal_next_achievement( request.user, project=pur.project ),
 		)
 
 @login_required()
@@ -383,6 +377,7 @@ def dashboard_overview_campagin(request, campaign):
 		u_projects=u_projects,
 		u_campaigns=u_campaigns,
 		profile=request.user,
+		campaign_id=int(campaign),
 		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
 		metrics=umetric.values(),
 		)

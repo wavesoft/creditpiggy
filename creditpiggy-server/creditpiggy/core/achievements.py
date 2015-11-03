@@ -20,8 +20,80 @@
 import time
 
 from django.db.models import Q
-from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement
+from creditpiggy.core.utils.metrics import VisualMetrics
+from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement, VisualMetric
 from creditpiggy.core.email import send_achievement_email, send_personal_achievement_email
+
+def personal_next_achievement( user, project=None ):
+	"""
+	Return next candidate personal achievement for the specified user
+	"""
+
+	# Get all user's counters
+	counters = user.metrics().counters()
+
+	# Get all un-achieved achievements
+	if project is None:
+		candidates = Achievement.objects.exclude(achievementinstance__user=user)
+	else:
+		candidates = project.achievements.exclude(achievementinstance__user=user)
+
+	# Iterate over the candidates and calculate the
+	# distance from the user's current counters
+	candidate = None
+	candidate_dist = None
+	candidate_metrics = None
+	for c in candidates:
+
+		# Reset properties
+		distance = 1.0
+
+		# Calculate distance to all metrics
+		metric = c.getMetrics()
+		for k,v in metric.iteritems():
+
+			# Get user value
+			val_user = 0.0
+			if k in counters:
+				val_user = float(counters[k])
+			print "    %s = %f" % (k, val_user)
+
+			# Contribute to distance
+			distance *= val_user / v
+
+		# Pick candidate
+		if (candidate_dist is None) or (distance > candidate_dist):
+			candidate_metrics = metric
+			candidate_dist = distance
+			candidate = c
+
+	# Return none if no candidate
+	if candidate is None:
+		return None
+
+	# Get Visual Metrics translator
+	vm = VisualMetrics( VisualMetric.objects.filter( name__in=candidate_metrics.keys() ) )
+
+	# Format reference visual metric values 
+	metrics_with_scale = vm.format( candidate_metrics )
+
+	# Calculate scale
+	for k,v in metrics_with_scale.iteritems():
+
+		# Get user value
+		val_user = 0.0
+		if k in counters:
+			val_user = float(counters[k])
+
+		# Add additional metadata
+		v['scale'] = val_user / v['value']
+		v['diff'] = vm.getDisplayValue( k, v['value'] - val_user )
+
+	# Return candidate description
+	return {
+		'achievement': candidate,
+		'metrics': metrics_with_scale.values(),
+	}
 
 def metrics_achieved( counters, achievement_metrics ):
 	"""
