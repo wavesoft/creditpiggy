@@ -250,11 +250,11 @@ def graph(request, cmd):
 			# Get timeseries
 			(ts, val) = u_metrics.timeseries(ts_name, metric=obs_metrics)
 
-			# On 2 onwards, strip the heading item, because it matches
+			# On 1 onwards, strip the heading item, because it matches
 			# the 'current' and might look like a spike in the plot
 			if i > 0:
-				ts = ts[:-2]
-				val[0] = val[0][:-2]
+				ts = ts[1:]
+				val[0] = val[0][1:]
 
 			# Concatenate time series and values
 			ts_values = list(reversed(val[0])) + ts_values
