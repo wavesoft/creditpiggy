@@ -3,7 +3,7 @@
 	<div class="achievements">
 	{% for a in achievements %}
 		{% if a.achieved %}
-		<div class="icon" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}{% if website %}in {{website.name}}{% else %}in {{a.project.display_name}}{% endif %}">
+		<div class="icon" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}{% if website %} in {{website.name}}{% elif a.project %} in {{a.project.display_name}}{% endif %}">
 			{% if website %}
 			<a class="btn btn-default project-button">
 				<span class="icon" style="background-image: url('{{ website.icon }}')"></span>
