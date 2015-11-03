@@ -1,0 +1,56 @@
+{% extends "base/p_content.html" %}
+{% load staticfiles %}
+{% load piggy_extras %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'lib/js/chartist.min.js' %}"></script>
+{% endblock %}
+
+{% block head %}
+<link href="{% static "lib/css/chartist.min.css" %}" rel="stylesheet">
+{% verbatim %}
+<script type="x-tmpl-mustache" id="tpl-project">
+  <div class="col-sm-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ display_name }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="text-center">
+          <img src="{{ profile_image }}" class="img-circle" style="width: 80px; height: 80px;" />
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+{% endverbatim %}
+{% endblock %}
+
+{% block content %}
+
+    <h2>How well are you doing over time</h2>
+    <p class="text-smaller">
+      The following plot shows the evolution of your credits over time. Fro this screen you can get as far as a year ago in the past and check what was your contribution at that time.
+    </p>
+
+    <!-- Navigation Bar -->
+    {% include "chunks/dashboard_nav.html" %}    
+    <hr />
+
+    <!-- Dynamic history plot -->
+    <div class="x-graphs row" data-url="graph.user" data-plot-class="col-md-12">
+    </div>
+
+    <!-- Legend -->
+    <div class="panel panel-default panel-legend">
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-3"><span class="legend-bullet" style="background-color: #d70206;">&nbsp;</span> Per Month</diV>
+          <div class="col-sm-3"><span class="legend-bullet" style="background-color: #f05b4f;">&nbsp;</span> Per Week</diV>
+          <div class="col-sm-3"><span class="legend-bullet" style="background-color: #f4c63d;">&nbsp;</span> Per Day</diV>
+          <div class="col-sm-3"><span class="legend-bullet" style="background-color: #d17905;">&nbsp;</span> Per Hour</diV>
+        </div>
+      </div>
+    </diV>
+
+{% endblock %}

@@ -20,17 +20,6 @@
 	{% include "chunks/achievements.html" with showAll=True %}
 	<hr />
 
-	<h2>About this website</h2>
-	<div class="collapsible">
-		<input id="about_body" type="checkbox" checked="checked" />
-		<div>
-			{{ about_body | safe }}
-		</div>
-		<label for="about_body"><span></span></label>
-	</div>
-	<br />
-	<hr />
-
 	<h2>Hosted projects</h2>
 	<div class="project-list">
 		{% for p in projects %}

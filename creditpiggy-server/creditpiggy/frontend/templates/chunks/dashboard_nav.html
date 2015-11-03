@@ -1,0 +1,33 @@
+    <p>
+      
+      <div class="btn-group pull-right" role="group" aria-label="sort-order">
+        <a href="{% url 'frontend.dashboard' %}?{{url_suffix}}" class="btn {% if page == 'overview' %}btn-info{% else %}btn-default{% endif %}">Overview</a>
+        <a href="{% url 'frontend.dashboard.settings' %}?{{url_suffix}}" class="btn {% if page == 'settings' %}btn-info{% else %}btn-default{% endif %}">Settings</a>
+        <a href="{% url 'frontend.dashboard.history' %}?{{url_suffix}}" class="btn {% if page == 'history' %}btn-info{% else %}btn-default{% endif %}">History</a>
+      </div>
+      <a class="btn btn-default" href="/?{{url_suffix}}"><span class="glyphicon glyphicon-chevron-left"></span> Back</a>
+
+      {% if page == 'overview' %}
+      <div class="btn-group">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Filter by &nbsp;<span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="{% url 'frontend.dashboard' %}?{{url_suffix}}">No filter</a></li>
+          <li role="separator" class="divider"></li>
+          {% for c in u_campaigns %}
+          <li><a href="{% url 'frontend.dashboard.overview.campaign' campaign=c.id %}?{{url_suffix}}">{{c.campaign.name}} <span class="label label-info">Campaign</span></a></li>
+          {% endfor %}
+          {% for p in u_projects %}
+          <li><a href="{% url 'frontend.dashboard.overview.project' project=p.id %}?{{url_suffix}}">{{p.project.display_name}} <span class="label label-primary">Project</span></a></li>
+          {% endfor %}
+
+          {% if not u_projects and not u_campaigns %}
+          <li class="disabled"><a href="javascript:;">(No detailed filter available)</a></li>
+          {% endif %}
+
+        </ul>
+      </div>
+      {% endif %}
+
+    </p>

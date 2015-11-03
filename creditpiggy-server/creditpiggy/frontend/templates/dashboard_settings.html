@@ -1,0 +1,101 @@
+{% extends "base/p_content.html" %}
+{% load staticfiles %}
+{% load piggy_extras %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'lib/js/chartist.min.js' %}"></script>
+{% endblock %}
+
+{% block head %}
+<link href="{% static "lib/css/chartist.min.css" %}" rel="stylesheet">
+{% verbatim %}
+<script type="x-tmpl-mustache" id="tpl-project">
+  <div class="col-sm-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ display_name }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="text-center">
+          <img src="{{ profile_image }}" class="img-circle" style="width: 80px; height: 80px;" />
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+{% endverbatim %}
+{% endblock %}
+
+{% block content %}
+
+    <h2>Configure your account</h2>
+    <p class="text-smaller">
+      The following options allow you to control privacy and e-mail options for your account. CreditPiggy will never spam you with advertisement material, but if you think you are getting too many e-mails from us, you can change your preferences here.
+      </p>
+
+    <!-- Navigation Bar -->
+    {% include "chunks/dashboard_nav.html" %}    
+    <hr />
+
+    <!-- Settings panel -->
+    <div class="row">
+      <div class="col-md-6">
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            E-mail settings
+          </div>
+          <div class="panel-body">
+            <div class="form-horizontal">
+              <div class="col-lg-12">
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.email_achievement %}checked="checked"{% endif %} data-url="profile.set" name="email_achievement" class="x-click-update" value="" /> Receive e-mail when you get an achievement  
+                  </label>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.email_projects %}checked="checked"{% endif %} data-url="profile.set" name="email_projects" class="x-click-update" value="" /> Receive e-mails with project updates
+                  </label>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.email_surveys %}checked="checked"{% endif %} data-url="profile.set" name="email_surveys" class="x-click-update" value="" /> Receive e-mails with feedback questions
+                  </label>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Privacy Settings
+          </div>
+          <div class="panel-body">
+            <div class="form-horizontal">
+              <div class="col-lg-12">
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" {% if profile.priv_leaderboards %}checked="checked"{% endif %} data-url="profile.set" name="priv_leaderboards" class="x-click-update"  value="" /> Include my name in the leaderboards  
+                  </label>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+{% endblock %}

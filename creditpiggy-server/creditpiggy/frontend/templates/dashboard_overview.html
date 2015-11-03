@@ -1,0 +1,45 @@
+{% extends "base/p_content.html" %}
+{% load staticfiles %}
+{% load piggy_extras %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'lib/js/chartist.min.js' %}"></script>
+{% endblock %}
+
+{% block head %}
+<link href="{% static "lib/css/chartist.min.css" %}" rel="stylesheet">
+{% verbatim %}
+<script type="x-tmpl-mustache" id="tpl-project">
+  <div class="col-sm-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ display_name }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="text-center">
+          <img src="{{ profile_image }}" class="img-circle" style="width: 80px; height: 80px;" />
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+{% endverbatim %}
+{% endblock %}
+
+{% block content %}
+
+   	<h2>Here you can see all your contributions</h2>
+   	<p class="text-smaller">
+   		The following table shows how many credits you have collected so far by participating in projects that support CreditPiggy. Below it, there is a list of all of your achievements so far!
+   	</p>
+
+    <!-- Navigation Bar -->
+    {% include "chunks/dashboard_nav.html" %}    
+    <hr />
+
+    <!-- Metrics display -->
+    {% include "chunks/bigmetrics.html" with show_own=False own=False %}
+    <hr />
+    {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics %}
+
+{% endblock %}

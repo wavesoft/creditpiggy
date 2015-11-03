@@ -34,6 +34,7 @@ from creditpiggy.frontend.views import context, url_suffix
 
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
+from creditpiggy.core.utils import VisualMetricsSum
 from creditpiggy.api.auth import sso_logout, website_from_request
 from creditpiggy.api import information
 
@@ -265,3 +266,148 @@ def test(request):
 	return ctx
 
 	return redirect(reverse("frontend.profile"))
+
+
+@login_required()
+@render_to("dashboard_overview.html")
+def dashboard_overview_overall(request):
+	"""
+	Display user's overall contribution to all projects
+	"""
+
+	# Get all projects that I participated
+	u_projects = ProjectUserRole.objects.filter( user=request.user )
+	# Get all campaigns that I participated
+	u_campaigns = CampaignUserCredit.objects.filter( user=request.user )
+
+	# Get achievements for every project
+	achievements = [ ]
+	user_metrics = []
+	for pur in u_projects:
+
+		# Collect achievements
+		achievements += pur.project.achievementStatus(request.user, onlyAchieved=True)
+
+		# Collect one of each visual metric
+		metrics = pur.project.visual_metrics.all().order_by('-priority')
+		for m in metrics:
+			if not m in user_metrics:
+				user_metrics.append(m)
+
+	# Collect user metrics
+	umetric = VisualMetricsSum( user_metrics )
+	umetric.merge( request.user.metrics() )
+	umetric.finalize()
+
+	# Return context
+	return context(request,
+		page="overview",
+		u_projects=u_projects,
+		u_campaigns=u_campaigns,
+		profile=request.user,
+		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
+		metrics=umetric.values(),
+		)
+
+
+@login_required()
+@render_to("dashboard_overview.html")
+def dashboard_overview_project(request, project):
+	"""
+	Display user dashboard, focused on specified project
+	"""
+	
+	# Get all projects that I participated
+	u_projects = ProjectUserRole.objects.filter( user=request.user )
+	# Get all campaigns that I participated
+	u_campaigns = CampaignUserCredit.objects.filter( user=request.user )
+
+	# Get relevant project-user role
+	pur = u_projects.filter( id=int(project) ).get()
+
+	# Create visual metrics
+	umetric = VisualMetricsSum( pur.project.visual_metrics.all().order_by('-priority') )
+	umetric.merge( pur.metrics() )
+	umetric.finalize()
+
+	# Collect achievements
+	achievements = pur.project.achievementStatus(request.user, onlyAchieved=True)
+
+	# Return context
+	return context(request,
+		page="overview",
+		u_projects=u_projects,
+		u_campaigns=u_campaigns,
+		profile=request.user,
+		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
+		metrics=umetric.values(),
+		)
+
+@login_required()
+@render_to("dashboard_overview.html")
+def dashboard_overview_campagin(request, campaign):
+	"""
+	Display user dashboard, focused on specified campaign
+	"""
+	
+	# Get all projects that I participated
+	u_projects = ProjectUserRole.objects.filter( user=request.user )
+	# Get all campaigns that I participated
+	u_campaigns = CampaignUserCredit.objects.filter( user=request.user )
+
+	# Get relevant campaign info
+	cur = u_campaigns.filter( id=int(campaign) ).get()
+
+	# Get all projects in the website
+	achievements = []
+	campaign_project_metrics = []
+	for project in cur.campaign.website.projects.all():
+
+		# Collect achievements
+		achievements += project.achievementStatus(request.user, onlyAchieved=True)
+
+		# Collect one of each visual metric
+		metrics = project.visual_metrics.all().order_by('-priority')
+		for m in metrics:
+			if not m in campaign_project_metrics:
+				campaign_project_metrics.append(m)
+
+	# Create visual metrics
+	umetric = VisualMetricsSum( campaign_project_metrics )
+	umetric.merge( cur.metrics() )
+	umetric.finalize()
+
+	# Return context
+	return context(request,
+		page="overview",
+		u_projects=u_projects,
+		u_campaigns=u_campaigns,
+		profile=request.user,
+		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
+		metrics=umetric.values(),
+		)
+
+@login_required()
+@render_to("dashboard_settings.html")
+def dashboard_settings(request):
+	"""
+	Display user's settings
+	"""
+
+	# Return context
+	return context(request,
+		page="settings",
+		profile=request.user
+		)
+
+@login_required()
+@render_to("dashboard_history.html")
+def dashboard_history(request):
+	"""
+	Display user's settings
+	"""
+
+	# Return context
+	return context(request,
+		page="history"
+		)
