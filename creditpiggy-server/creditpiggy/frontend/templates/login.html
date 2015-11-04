@@ -42,6 +42,23 @@
 			</div>
 
 			<div class="panel panel-default">
+		  		<div class="panel-heading">Login with e-mail</div>
+		  		<div class="panel-body">
+					<form>
+					  <div class="form-group" id="login-email">
+					    <input type="email" class="form-control" id="input-email" placeholder="EMail">
+					  </div>
+					  <div class="form-group" id="login-pin" style="display: none;">
+					    <input type="email" class="form-control" id="input-pin" placeholder="PIN Number">
+					  </div>
+					  <p>
+					  	We will send you an one-time pin number
+						<button type="submit" class="btn btn-default pull-right" id="button-pin">Send PIN</button>
+						<button type="submit" class="btn btn-primary pull-right" id="button-login">Login</button>
+					  </p>
+					</form>
+			  </div>
+				<!--
 				{% if website %}
 		  		<div class="panel-heading">{{ website.name }}</div>
 		  		<div class="panel-body">
@@ -54,6 +71,7 @@
 		  			<p>CreditPiggy is your on-line piggy bank for keeping all your social contributions in one place. Log-in with your social profile to check your status.</p>
 		  		</div>
 				{% endif %}
+				-->
 		  	</div>
 
 		</div>

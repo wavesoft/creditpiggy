@@ -1,0 +1,15 @@
+{% extends "base/email.html" %}
+{% block body %}
+	<h1>Email Log-In</h1>
+	<p>
+		Your one-time Log-in PIN for CreditPiggy is <strong>{{ pin }}</strong>
+	</p>
+	<br />
+
+{% endblock %}
+
+{% block footer %}
+	<p class="discreet text-center">
+		You received this message because you or someone else tried to log-in to CreditPiggy using this e-mail address.
+	</p>
+{% endblock %}

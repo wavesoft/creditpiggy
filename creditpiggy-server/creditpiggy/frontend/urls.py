@@ -47,5 +47,6 @@ urlpatterns = patterns('',
 	url(r'^ajax/profile\.(?P<cmd>[^/]+)/$',	ajax.profile,				name="frontend.ajax.profile"),
 	url(r'^ajax/fetch\.(?P<cmd>[^/]+)/$',	ajax.fetch,					name="frontend.ajax.fetch"),
 	url(r'^ajax/graph\.(?P<cmd>[^/]+)/$',	ajax.graph,					name="frontend.ajax.graph"),
+	url(r'^ajax/login\.(?P<cmd>[^/]+)/$',	ajax.login,					name="frontend.ajax.login"),
 
 )

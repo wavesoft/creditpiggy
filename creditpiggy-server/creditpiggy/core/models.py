@@ -24,6 +24,8 @@ import random
 import pytz
 import datetime
 import logging
+import hashlib
+import urllib
 
 from string import maketrans
 
@@ -53,6 +55,18 @@ def gen_token_key():
 	charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
 	key = ""
 	for i in range(0, 48):
+		key += charset[random.randint(0, len(charset)-1)]
+	# Return a unique key
+	return key
+
+def gen_pin():
+	"""
+	PIN generator
+	"""
+	# Token charset
+	charset = "0123456789"
+	key = ""
+	for i in range(0, 6):
 		key += charset[random.randint(0, len(charset)-1)]
 	# Return a unique key
 	return key
@@ -199,6 +213,36 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	priv_leaderboards = models.BooleanField(default=True, help_text="Show on leaderboards")
 
 	@staticmethod
+	def fromAnonymousEmail(email):
+		"""
+		Create or fetch an anonymous user using his e-mail
+		"""
+
+		# Check if such user exits
+		(user, created) = PiggyUser.objects.get_or_create( email=email )
+
+		# If that's a new user, set a random name
+		if created:
+
+			# Use e-mail as username
+			user.username = "ano:%s" % email
+			user.email = email
+
+			# Pick an anonymous user name
+			user.display_name = "Anonymous %s" % random.choice(settings.ANONYMOUS_NAMES).capitalize()
+
+			# Try to use gravatar to get profile image
+			user.profile_image = "//www.gravatar.com/avatar/" + hashlib.md5(email.lower()).hexdigest() + "?" + \
+								 urllib.urlencode({'d':settings.ANONYMOUS_PROFILE_IMAGE, 's':str(64)})
+
+			# Save 
+			user.save()
+
+		# Return user object
+		return user
+
+
+	@staticmethod
 	def fromRef(refid):
 		"""
 		Get a user instance from the referral ID
@@ -292,6 +336,37 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 
 	def __unicode__(self):
 		return self.display_name
+
+class PiggyUserPINLogin(models.Model):
+	"""
+	PIN-Based log-in
+	"""
+
+	#: The user that requested the log-in
+	user = models.ForeignKey( PiggyUser )
+
+	#: The PIN allocated
+	pin = models.CharField(max_length=32, default="")
+
+	#: The time allocated
+	allocated = models.DateTimeField(auto_now=True)
+
+	@staticmethod
+	def newForuser(user):
+		"""
+		Create new PIN for the specified user
+		"""
+
+		# Get pin login entity for this user
+		(pinLogin, created) = PiggyUserPINLogin.objects.get_or_create( user=user )
+
+		# Create new pin
+		pinLogin.pin = gen_pin()
+		pinLogin.save()
+
+		# Return entry
+		return pinLogin
+
 
 class Referral(models.Model):
 	"""

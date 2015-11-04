@@ -1,0 +1,10 @@
+
+Email Log-In
+==========================================
+
+Your one-time Log-in PIN for CreditPiggy is: {{ pin }}
+
+
+~~ By Credit Piggy
+
+You received this message because you or someone else tried to log-in to CreditPiggy using this e-mail address.

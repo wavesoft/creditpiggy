@@ -27,6 +27,13 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 
 # Register your models here.
+
+class PiggyUserPINLoginAdmin(admin.ModelAdmin):
+	list_display = ('user', 'pin', 'allocated')
+
+admin.site.register(PiggyUserPINLogin, PiggyUserPINLoginAdmin)
+
+
 class PiggyUserAdmin(admin.ModelAdmin):
 	list_display = ('id', 'username', 'display_name', 'timezone', 'profile', 'email_achievement', 'email_projects', 'email_surveys', 'priv_leaderboards')
 

@@ -29,7 +29,8 @@ from django.core import serializers
 
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import require_valid_user
-from creditpiggy.core.models import to_dict, PiggyProject, Achievement
+from creditpiggy.core.models import to_dict, PiggyProject, Achievement, PiggyUser, PiggyUserPINLogin
+from creditpiggy.core.email import send_pin_email
 
 #######################################################
 # Utility functions
@@ -113,6 +114,37 @@ def build_ts_labels(timestamps, interval=1, format="%d/%m/%Y %H:%M:%S"):
 #######################################################
 # View functions
 #######################################################
+
+@render_with_api(context="frontend.ajax.login", protocol="json")
+def login(request, cmd):
+	"""
+	Login operations
+	"""
+
+	# Send one-time log-in pin
+	# -------------------------------
+	if cmd == "login_pin":
+
+		# Require post method
+		# if request.method != 'POST':
+		# 	raise APIError("Log-in PIN is only requested via POST")
+
+		# Get parameters
+		u_args = request.proto.getAll()
+		if not 'email' in u_args:
+			raise APIError("Missing arguments in the request!")
+
+		# Get user from e-mail
+		user = PiggyUser.fromAnonymousEmail( u_args['email'] )
+
+		# Get PIN login record for this user
+		pinLogin = PiggyUserPINLogin.newForuser( user )
+
+		# Send e-mail to this user
+		send_pin_email( pinLogin, raiseExceptions=True )
+
+	else:
+		raise APIError("Unknown command")
 
 @render_with_api(context="frontend.ajax.profile", protocol="json")
 @require_valid_user()
