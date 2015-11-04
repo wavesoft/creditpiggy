@@ -673,7 +673,7 @@ class ProjectUserRole(MetricsModelMixin, models.Model):
 		# Get user ranking
 		redis = share_redis_connection()
 		return redis.zrevrank(
-			"%srank/project/%i/users" % (settings.REDIS_KEYS_PREFIX, self.id), 
+			"%srank/project/%i/users" % (settings.REDIS_KEYS_PREFIX, self.project.id), 
 			self.user.id
 			)
 

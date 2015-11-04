@@ -9,16 +9,32 @@ body {
   min-height: 100%;
   font-size: 16px;
 }
-h2 {
+h2,
+h3 {
   font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 10px 0 13px;
   font-weight: 300;
   line-height: 1.4;
+}
+h2 {
   font-size: 24px;
+}
+h3 {
+  font-size: 18px;
 }
 .img-dim img,
 .img-dim .glyphicon {
   opacity: 0.5;
+}
+.icon-coink {
+  display: inline;
+  background-image: url(../img/coink.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  padding: 12px;
+  width: 24px;
+  line-height: 0;
+  vertical-align: middle;
 }
 .inactive {
   -webkit-filter: grayscale(100%);
@@ -36,6 +52,22 @@ div.back-splash {
   height: 100%;
   background-repeat: no-repeat;
   background-size: cover;
+}
+div.framed-soft-shadow {
+  background-color: #FFF;
+  box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.15);
+  -ms-box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.15);
+  -o-box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.15);
+}
+@media (min-width: 768px) {
+  div.framed-soft-shadow {
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+    -ms-box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+    -o-box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+  }
 }
 div.container.solid {
   background-color: #f9f9f9;
@@ -175,41 +207,11 @@ div.metrics > div {
 }
 div.metrics > div i {
   font-size: 20px;
-  color: #999;
 }
 div.big-metrics {
   margin: 10px 5px;
-  text-align: right;
-}
-div.big-metrics .own {
-  background-color: #9C27B0;
-  color: #FFF;
-}
-div.big-metrics .own-label {
-  font-style: italic;
-  color: #B163C1;
-}
-div.big-metrics > div {
-  font-size: 20px;
-}
-div.big-metrics > div i {
-  color: #999;
-}
-div.big-metrics > div .subtitle {
-  text-align: center;
-  font-size: 14px;
-  padding-top: 8px;
 }
 @media (min-width: 768px) {
-  div.big-metrics {
-    text-align: center;
-  }
-  div.big-metrics .own {
-    text-align: center;
-  }
-  div.big-metrics > div .subtitle {
-    padding-top: 0;
-  }
   div.big-metrics > div > div > div > div {
     border-right: solid 1px #666;
   }
@@ -218,6 +220,64 @@ div.big-metrics > div .subtitle {
   }
   div.big-metrics > div > div:last-child > div > div {
     border-right: none !important;
+  }
+}
+div.big-metric {
+  font-size: 20px;
+  text-align: right;
+}
+div.big-metric .own {
+  background-color: #9C27B0;
+  color: #FFF;
+}
+div.big-metric .own-label {
+  font-style: italic;
+  color: #B163C1;
+}
+div.big-metric i {
+  color: #999;
+}
+div.big-metric .subtitle {
+  text-align: center;
+  font-size: 14px;
+  padding-top: 8px;
+}
+@media (min-width: 768px) {
+  div.big-metric {
+    text-align: center;
+  }
+  div.big-metric .own {
+    text-align: center;
+  }
+  div.big-metric > div .subtitle {
+    padding-top: 0;
+  }
+}
+div.micro-metric {
+  font-size: 1em;
+  text-align: left;
+  margin-bottom: 5px;
+}
+div.micro-metric i {
+  color: #666;
+}
+div.micro-metric .subtitle {
+  text-align: right;
+}
+div.micro-metric .subtitle::after {
+  content: ":";
+}
+@media (min-width: 768px) {
+  div.micro-metric {
+    text-align: center;
+  }
+  div.micro-metric .subtitle {
+    text-align: center;
+    font-size: 0.8em;
+    opacity: 0.5;
+  }
+  div.micro-metric .subtitle::after {
+    content: "";
   }
 }
 div.panel-page-header div.panel-project {
@@ -306,6 +366,89 @@ div.panel-page-header div.panel-project div.panel-project-title div.title-back {
   background-image: url(../img/loading.gif);
   background-repeat: no-repeat;
   background-position: center center;
+}
+div.credit-rank-panel {
+  text-align: center;
+  margin: 0 25px 4px 0;
+}
+div.credit-rank-panel > div > div {
+  margin-top: 20px;
+}
+div.credit-rank-panel .credit-header {
+  font-size: 0.8em;
+  color: #CCC;
+}
+div.credit-rank-panel .credit-body .credit {
+  font-size: 3em;
+  font-weight: bold;
+  line-height: 105px;
+}
+div.credit-rank-panel .credit-body .credit.credit-smaller {
+  font-size: 2em;
+}
+div.credit-rank-panel .credit-body .rank-laurel {
+  margin: 0 auto;
+  width: 128px;
+  height: 105px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  position: relative;
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-green {
+  background-image: url(../img/status/laurel-green.png);
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-green .rank-circle,
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-green .rank-top {
+  color: green;
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-gold {
+  background-image: url(../img/status/laurel-gold.png);
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-gold .rank-circle,
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-gold .rank-top {
+  color: #FF931E;
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-gray {
+  background-image: url(../img/status/laurel-gray.png);
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-gray .rank-circle,
+div.credit-rank-panel .credit-body .rank-laurel.rank-laurel-gray .rank-top {
+  color: #999;
+}
+div.credit-rank-panel .credit-body .rank-laurel .rank-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 40px;
+  position: absolute;
+  top: 0;
+  left: 22px;
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-with-top .rank-top {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  font-size: 0.8em;
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-size-2 > .rank-circle {
+  font-size: 3em;
+  font-weight: bold;
+  line-height: 80px;
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-size-3 > .rank-circle {
+  font-size: 2em;
+  font-weight: bold;
+  line-height: 80px;
+}
+div.credit-rank-panel .credit-body .rank-laurel.rank-size-4 > .rank-circle {
+  font-size: 1.5em;
+  font-weight: bold;
+  line-height: 80px;
+}
+@media (min-width: 768px) {
+  .credit-rank-panel > div > div {
+    margin-top: 0;
+  }
 }
 div.achievements > div {
   padding: 5px;

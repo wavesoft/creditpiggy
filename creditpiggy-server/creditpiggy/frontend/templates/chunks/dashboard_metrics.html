@@ -4,95 +4,21 @@
 
 		<!-- First Panel -->
 		<div class="col-sm-3">
-			{% if metrics.0 %}
-			<div class="row">
-				<div class="col-xs-6 col-sm-12">
-					<i class="{{ metrics.0.icon }}"></i>
-					<span>{{ metrics.0.text | thousands }} <small>{{ metrics.0.units }}</small></span>
-				</div>
-				<div class="clearfix hidden-xs"></div>
-				<div class="col-xs-6 col-sm-12 subtitle">
-					{{ metrics.0.display_name }}
-				</div>
-				{% if show_own %}
-				<div class="clearfix visible-xs"></div>
-				<div class="col-xs-6 visible-xs-block own own-label">
-					I contributed 
-				</div>
-				<div class="col-xs-6 col-sm-12 own">
-					<span>{{ own.0.text | thousands }} <small>{{ metrics.0.units }}</small></span>
-				</div>
-				{% endif %}
-			</div>
-			{% else %}
-			<div class="row">
-				<div class="col-sm-12 subtitle">
-					(No metric available)
-				</div>
-			</div>
-			{% endif %}
+		    {% include "chunks/metric_small.html" with alignClass="text-left" hideEmpty=True metric=metrics.0 %}
+		    {% include "chunks/metric_small.html" with alignClass="text-left" hideEmpty=True metric=metrics.2 %}
+		    {% include "chunks/metric_small.html" with alignClass="text-left" hideEmpty=True metric=metrics.4 %}
 		</div>
 
 		<!-- Second Panel -->
-		<div class="col-sm-6">
-			{% if metrics.1 %}
-			<div class="row">
-				<div class="col-xs-6 col-sm-12">
-					<i class="{{ metrics.1.icon }}"></i>
-					<span>{{ metrics.1.text | thousands }} <small>{{ metrics.1.units }}</small></span>
-				</div>
-				<div class="clearfix hidden-xs"></div>
-				<div class="col-xs-6 col-sm-12 subtitle">
-					{{ metrics.1.display_name }}
-				</div>
-				{% if show_own %}
-				<div class="clearfix visible-xs"></div>
-				<div class="col-xs-6 visible-xs-block own own-label">
-					I contributed 
-				</div>
-				<div class="col-xs-6 col-sm-12 own">
-					<span>{{ own.1.text | thousands }} <small>{{ metrics.1.units }}</small></span>
-				</div>
-				{% endif %}
-			</div>
-			{% else %}
-			<div class="row">
-				<div class="col-sm-12 subtitle">
-					(No metric available)
-				</div>
-			</div>
-			{% endif %}
+		<div class="col-sm-6 framed-soft-shadow">
+		    {% include "chunks/credit_rank.html" %}
 		</div>
 
 		<!-- Third Panel -->
 		<div class="col-sm-3">
-			{% if metrics.2 %}
-			<div class="row">
-				<div class="col-xs-6 col-sm-12">
-					<i class="{{ metrics.2.icon }}"></i>
-					<span>{{ metrics.2.text | thousands }} <small>{{ metrics.2.units }}</small></span>
-				</div>
-				<div class="clearfix hidden-xs"></div>
-				<div class="col-xs-6 col-sm-12 subtitle">
-					{{ metrics.2.display_name }}
-				</div>
-				{% if show_own %}
-				<div class="clearfix visible-xs"></div>
-				<div class="col-xs-6 visible-xs-block own own-label">
-					I contributed 
-				</div>
-				<div class="col-xs-6 col-sm-12 own">
-					<span>{{ own.2.text | thousands }} <small>{{ metrics.2.units }}</small></span>
-				</div>
-				{% endif %}
-			</div>
-			{% else %}
-			<div class="row">
-				<div class="col-sm-12 subtitle">
-					(No metric available)
-				</div>
-			</div>
-			{% endif %}
+		    {% include "chunks/metric_small.html" with alignClass="text-right" hideEmpty=True metric=metrics.1 %}
+		    {% include "chunks/metric_small.html" with alignClass="text-right" hideEmpty=True metric=metrics.3 %}
+		    {% include "chunks/metric_small.html" with alignClass="text-right" hideEmpty=True metric=metrics.5 %}
 		</div>
 		
 	</div>

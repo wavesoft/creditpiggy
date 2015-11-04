@@ -1,0 +1,13 @@
+{% load piggy_extras %}
+{% if metric %}
+<div class="micro-metric row">
+	<div class="col-xs-6 col-sm-12 subtitle">
+		{{ metric.display_name }}
+	</div>
+	<div class="clearfix hidden-xs"></div>
+	<div class="col-xs-6 col-sm-12">
+		<i class="{{ metric.icon }}"></i>
+		<span>{{ metric.text | thousands }} <small>{{ metric.units }}</small></span>
+	</div>
+</div>
+{% endif %}

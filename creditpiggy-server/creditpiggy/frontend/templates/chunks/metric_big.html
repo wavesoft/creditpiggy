@@ -1,0 +1,28 @@
+{% load piggy_extras %}
+{% if metric %}
+<div class="row big-metric">
+	<div class="col-xs-6 col-sm-12">
+		<i class="{{ metric.icon }}"></i>
+		<span>{{ metric.text | thousands }} <small>{{ metric.units }}</small></span>
+	</div>
+	<div class="clearfix hidden-xs"></div>
+	<div class="col-xs-6 col-sm-12 subtitle">
+		{{ metric.display_name }}
+	</div>
+	{% if show_own %}
+	<div class="clearfix visible-xs"></div>
+	<div class="col-xs-6 visible-xs-block own own-label">
+		I contributed 
+	</div>
+	<div class="col-xs-6 col-sm-12 own">
+		<span>{{ own.text | thousands }} <small>{{ metric.units }}</small></span>
+	</div>
+	{% endif %}
+</div>
+{% elif not hideEmpty %}
+<div class="row big-metric">
+	<div class="col-sm-12 subtitle">
+		(No metric available)
+	</div>
+</div>
+{% endif %}

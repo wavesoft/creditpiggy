@@ -282,9 +282,12 @@ def dashboard_overview_overall(request):
 	# Get all campaigns that I participated
 	u_campaigns = CampaignUserCredit.objects.filter( user=request.user )
 
+	# Get user metrics
+	user_counters = request.user.metrics().counters()
+
 	# Collect user metrics
 	umetric = VisualMetricsSum( VisualMetric.objects.all() )
-	umetric.merge( request.user.metrics() )
+	umetric.merge( user_counters )
 	umetric.finalize()
 
 	# Collect all achievements
@@ -295,10 +298,15 @@ def dashboard_overview_overall(request):
 		page="overview",
 		u_projects=u_projects,
 		u_campaigns=u_campaigns,
-		profile=request.user,
 		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
 		metrics=umetric.values(),
 		candidate_achievement=personal_next_achievement( request.user ),
+
+		title="My overall participation",
+		profile=request.user,
+		credits=int(user_counters.get('credits',0)),
+		rank=request.user.ranking(),
+
 		)
 
 
@@ -335,6 +343,11 @@ def dashboard_overview_project(request, project):
 		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
 		metrics=umetric.values(),
 		candidate_achievement=personal_next_achievement( request.user, project=pur.project ),
+
+		title="My participation in %s" % pur.project.display_name,
+		credits=pur.credits,
+		rank=pur.ranking(),
+
 		)
 
 @login_required()
@@ -352,6 +365,9 @@ def dashboard_overview_campagin(request, campaign):
 	# Get relevant campaign info
 	cur = u_campaigns.filter( id=int(campaign) ).get()
 
+	# Get candidate achievement
+	candidate_achievement=None
+
 	# Get all projects in the website
 	achievements = []
 	campaign_project_metrics = []
@@ -365,6 +381,10 @@ def dashboard_overview_campagin(request, campaign):
 		for m in metrics:
 			if not m in campaign_project_metrics:
 				campaign_project_metrics.append(m)
+
+		# Get candidate achievement in this project
+		if not candidate_achievement:
+			candidate_achievement = personal_next_achievement( request.user, project=project )
 
 	# Create visual metrics
 	umetric = VisualMetricsSum( campaign_project_metrics )
@@ -380,6 +400,12 @@ def dashboard_overview_campagin(request, campaign):
 		campaign_id=int(campaign),
 		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
 		metrics=umetric.values(),
+		candidate_achievement=candidate_achievement,
+
+		title="My participation in %s" % cur.campaign.name,
+		credits=cur.credits,
+		rank=cur.ranking(),
+
 		)
 
 @login_required()

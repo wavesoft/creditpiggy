@@ -1,0 +1,62 @@
+{% load piggy_extras %}
+<div class="credit-rank-panel">
+	<div class="row credit-body">
+		<div class="col-xs-7">
+			<span class="credit {% if credits > 1000000 %} credit-smaller{% endif %}">{{ credits | thousands }}</span>
+			<span class="icon-coink"></span>
+		</div>
+		<div class="col-xs-5">
+			{% if not rank %}
+			<div class="rank-laurel rank-laurel-gray rank-size-4">
+				<div class="rank-circle">???</div>
+			</div>
+			{% elif rank <= 10 %}
+			<div class="rank-laurel rank-laurel-gold rank-size-2">
+				<div class="rank-circle">{{ rank }}</div>
+			</div>
+			{% elif rank <= 50 %}
+			<div class="rank-laurel rank-laurel-green rank-size-2">
+				<div class="rank-circle">{{ rank }}</div>
+			</div>
+			{% elif rank <= 100 %}
+			<div class="rank-laurel rank-laurel-green rank-with-top rank-size-3">
+				<div class="rank-top">TOP</div>
+				<div class="rank-circle">100</div>
+			</div>
+			{% elif rank <= 200 %}
+			<div class="rank-laurel rank-laurel-green rank-with-top rank-size-3">
+				<div class="rank-top">TOP</div>
+				<div class="rank-circle">200</div>
+			</div>
+			{% elif rank <= 300 %}
+			<div class="rank-laurel rank-laurel-green rank-with-top rank-size-3">
+				<div class="rank-top">TOP</div>
+				<div class="rank-circle">300</div>
+			</div>
+			{% elif rank <= 400 %}
+			<div class="rank-laurel rank-laurel-green rank-with-top rank-size-3">
+				<div class="rank-top">TOP</div>
+				<div class="rank-circle">400</div>
+			</div>
+			{% elif rank <= 500 %}
+			<div class="rank-laurel rank-laurel-green rank-with-top rank-size-3">
+				<div class="rank-top">TOP</div>
+				<div class="rank-circle">500</div>
+			</div>
+			{% else %}
+			<div class="rank-laurel rank-laurel-gray rank-with-top rank-size-4">
+				<div class="rank-top">TOP</div>
+				<div class="rank-circle">1,000</div>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+	<div class="row credit-header">
+		<div class="col-xs-7">
+			COINKS COLLECTED
+		</div>
+		<div class="col-xs-5">
+			RANKING
+		</div>
+	</div>
+</div>

@@ -131,7 +131,12 @@ class VisualMetricsSum(VisualMetrics):
 			if not self.timeseriesRate:
 
 				# Get counter value
-				counter = metrics.counter(k, "")
+				if isinstance(metrics, dict):
+					counter = metrics.get(k, "")
+				else:
+					counter = metrics.counter(k, "")
+
+				# Handle result
 				if not counter:
 					counter = 0
 				elif '.' in str(counter):

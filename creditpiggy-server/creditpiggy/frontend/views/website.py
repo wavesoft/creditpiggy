@@ -28,6 +28,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from creditpiggy.frontend.views import context
 from creditpiggy.api.auth import website_from_request
 
+from creditpiggy.core.achievements import personal_next_achievement
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
 from creditpiggy.core.utils import VisualMetricsSum
@@ -65,7 +66,7 @@ def status(request, slug=""):
 				message="Could not find the website specified!"
 			))
 
-	# Get all the observable metrics
+	# Get all the website metrics
 	visual_metrics = website.visual_metrics.all().order_by('-priority')
 	vmetric = VisualMetricsSum( visual_metrics )
 	umetric = VisualMetricsSum( visual_metrics )
@@ -73,42 +74,75 @@ def status(request, slug=""):
 	# Aggregate information from all projects
 	projects = []
 	achievements = []
+	candidate_achievement = None
 	for p in website.projects.all():
 
 		# Get project record
 		project_info = to_dict(p)
+
+		# Collect projects
+		projects.append( project_info )
 
 		# Get project achievements
 		if not request.user.is_authenticated():
 			achievements += p.achievementStatus(None)
 		else:
 
-			# Get user achievements
+			# Get user achievements in this project
 			achievements += p.achievementStatus(request.user)
+
+			# Get a candidate achievement
+			if candidate_achievement is None:
+				candidate_achievement = personal_next_achievement( request.user, project=p )
+
+
+	# Query campaigns and pick first
+	campaigns = Campaign.ofWebsite(website, active=True)
+	user_campaign = None
+
+	# Update counters according to campaign or project
+	if not campaigns.exists():
+
+		# Get project counters
+		for p in website.projects.all():
 
 			# Get user's role in this project
 			if request.user.is_authenticated():
 				try:
-
 					# Get user's role
 					user_role = ProjectUserRole.objects.get( user=request.user, project=p )
-					project_info['user_role'] = user_role
-
 					# Get user's metrics
 					umetric.merge( user_role.metrics() )
-
 				except ProjectUserRole.DoesNotExist:
 					pass
 
-		# Collect projects
-		projects.append( project_info )
+			# Accumulate the counters of interesting metrics
+			vmetric.merge( p.metrics() )
 
-		# Accumulate the counters of interesting metrics
-		vmetric.merge( p.metrics() )
+	else:
+
+		# Get campaign counters
+		for c in campaigns:
+
+			# Get user's role in this project
+			if request.user.is_authenticated():
+				try:
+					# Get user's role
+					user_role = CampaignUserCredit.objects.get( user=request.user, campaign=c )
+					# Keep user's campaign
+					user_campaign = user_role
+					# Get user's metrics
+					umetric.merge( user_role.metrics() )
+				except ProjectUserRole.DoesNotExist:
+					pass
+
+			# Accumulate the counters of interesting metrics
+			vmetric.merge( c.metrics() )
 
 	# Finalize metrics summarizers
 	vmetric.finalize()
 	umetric.finalize()
+
 
 	# Return context
 	return context(request,
@@ -121,5 +155,7 @@ def status(request, slug=""):
 			usermetrics=umetric.values(),
 			projects=projects,
 			achievements=achievements,
+			campaign=user_campaign,
+			candidate_achievement=candidate_achievement,
 		)
 
