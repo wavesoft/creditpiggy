@@ -15,7 +15,7 @@
 	{% include "chunks/bigmetrics.html" with show_own=user.is_authenticated own=usermetrics %}
 	{% if campaign %}
 	<p>
-		&nbsp;<a href="{% url 'frontend.dashboard.overview.campaign' campaign=campaign.id %}" class="btn btn-sm btn-default pull-right">See more details</a> 
+		&nbsp;<a href="{% url 'frontend.dashboard.overview.campaign' campaign=campaign.id %}?{{url_suffix}}" class="btn btn-sm btn-default pull-right">See more details</a> 
 	</p>
 	{% endif %}
 	<hr />
