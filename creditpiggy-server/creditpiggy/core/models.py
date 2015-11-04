@@ -217,17 +217,24 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		# Locate instance (and raise exception if not found)
 		return PiggyUser.objects.get(id=userid)
 
-	def ranking(self):
+	def ranking(self, base=1):
 		"""
 		Get overall user ranking
 		"""
 
 		# Get user ranking
 		redis = share_redis_connection()
-		return redis.zrevrank(
+		rank = redis.zrevrank(
 			"%srank/users" % (settings.REDIS_KEYS_PREFIX,),
 			self.id
 			)
+
+		# If missing return None
+		if rank is None:
+			return None
+
+		# Otherwise adapt to base-rank
+		return rank + base
 
 	def profile(self):
 		"""
@@ -460,17 +467,24 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	def __unicode__(self):
 		return u"%s" % self.display_name
 
-	def ranking(self):
+	def ranking(self, base=1):
 		"""
 		Get overall project ranking
 		"""
 
 		# Get user ranking
 		redis = share_redis_connection()
-		return redis.zrevrank(
+		rank = redis.zrevrank(
 			"%srank/projects" % (settings.REDIS_KEYS_PREFIX,), 
 			self.id
 			)
+
+		# If missing return None
+		if rank is None:
+			return None
+
+		# Otherwise adapt to base-rank
+		return rank + base
 
 	def save(self, *args, **kwargs):
 		"""
@@ -665,17 +679,24 @@ class ProjectUserRole(MetricsModelMixin, models.Model):
 	#: The normalized of the user in this model
 	norm_credits = models.FloatField(default=0.0)
 
-	def ranking(self):
+	def ranking(self, base=1):
 		"""
 		Get user ranking in this project
 		"""
 
 		# Get user ranking
 		redis = share_redis_connection()
-		return redis.zrevrank(
+		rank = redis.zrevrank(
 			"%srank/project/%i/users" % (settings.REDIS_KEYS_PREFIX, self.project.id), 
 			self.user.id
 			)
+
+		# If missing return None
+		if rank is None:
+			return None
+
+		# Otherwise adapt to base-rank
+		return rank + base
 
 class CreditSlot(MetricsModelMixin, models.Model):
 	"""
@@ -803,17 +824,24 @@ class CampaignUserCredit(MetricsModelMixin, models.Model):
 	#: Achievements related to this campaign
 	achievements = models.ManyToManyField( Achievement, blank=True )
 
-	def ranking(self):
+	def ranking(self, base=1):
 		"""
 		Return user's ranking in this campaign
 		"""
 
 		# Get user ranking
 		redis = share_redis_connection()
-		return redis.zrevrank(
+		rank = redis.zrevrank(
 			"%srank/campaign/%i/users" % (settings.REDIS_KEYS_PREFIX, self.campaign.id),
 			self.user.id
 			)
+
+		# If missing return None
+		if rank is None:
+			return None
+
+		# Otherwise adapt to base-rank
+		return rank + base
 
 class PersonalAchievement(models.Model):
 	"""
