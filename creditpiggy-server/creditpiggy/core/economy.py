@@ -52,6 +52,26 @@ class ProjectNormalizer(HousekeepingTask):
 		# Open a redis connection
 		self.redis = share_redis_connection()
 
+	def update_campaign_ranking(self):
+		"""
+		Update user-campaign ranking
+		"""
+
+		# Create a transaction for REDIS operations
+		pipe = self.redis.pipeline()
+
+		# Get all users participating in this project
+		for cu in CampaignUserCredit.objects.filter():
+
+			# Update user ranking
+			pipe.zadd(
+				"%srank/campaign/%i/users" % (settings.REDIS_KEYS_PREFIX, cu.campaign.id),
+				cu.credits, cu.user.id
+				)
+
+		# Run pipeline
+		pipe.execute()
+
 	def update_user_ranking(self):
 		"""
 		Update user ranking
@@ -173,5 +193,8 @@ class ProjectNormalizer(HousekeepingTask):
 			# Update user normalization on this project
 			self.normalize_project_users( p )
 
-		# Update user credits
+		# Update user ranking
 		self.update_user_ranking()
+
+		# Update campaign ranking
+		self.update_campaign_ranking()

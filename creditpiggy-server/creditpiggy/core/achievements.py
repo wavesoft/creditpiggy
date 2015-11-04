@@ -57,7 +57,6 @@ def personal_next_achievement( user, project=None ):
 			val_user = 0.0
 			if k in counters:
 				val_user = float(counters[k])
-			print "    %s = %f" % (k, val_user)
 
 			# Contribute to distance
 			distance *= val_user / v

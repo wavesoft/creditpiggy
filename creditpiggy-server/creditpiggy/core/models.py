@@ -217,6 +217,18 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		# Locate instance (and raise exception if not found)
 		return PiggyUser.objects.get(id=userid)
 
+	def ranking(self):
+		"""
+		Get overall user ranking
+		"""
+
+		# Get user ranking
+		redis = share_redis_connection()
+		return redis.zrevrank(
+			"%srank/users" % (settings.REDIS_KEYS_PREFIX,),
+			self.id
+			)
+
 	def profile(self):
 		"""
 		Compile and return the relevant information for the user's profile
@@ -227,13 +239,6 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		if not profile_img:
 			profile_img = settings.CREDITPIGGY_ANONYMOUS_PROFILE
 
-		# Get user ranking
-		redis = share_redis_connection()
-		rank = redis.zrevrank(
-			"%srank/users" % (settings.REDIS_KEYS_PREFIX,),
-			self.id
-			)
-
 		# Calculate a referrer ID, masked with a trackID secret
 		# in order to keep it small.
 		referrer = "r%06x" % (self.id ^ settings.CREDITPIGGY_TRACKID_SECRET)
@@ -241,7 +246,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		# Return profile
 		return {
 			"id" 			: self.uuid,
-			"rank"			: rank,
+			"rank"			: self.ranking(),
 			"ref"			: referrer,
 			"display_name" 	: self.display_name.strip(),
 			"counters" 		: self.metrics().counters(),
@@ -455,6 +460,18 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	def __unicode__(self):
 		return u"%s" % self.display_name
 
+	def ranking(self):
+		"""
+		Get overall project ranking
+		"""
+
+		# Get user ranking
+		redis = share_redis_connection()
+		return redis.zrevrank(
+			"%srank/projects" % (settings.REDIS_KEYS_PREFIX,), 
+			self.id
+			)
+
 	def save(self, *args, **kwargs):
 		"""
 		Save model
@@ -648,6 +665,18 @@ class ProjectUserRole(MetricsModelMixin, models.Model):
 	#: The normalized of the user in this model
 	norm_credits = models.FloatField(default=0.0)
 
+	def ranking(self):
+		"""
+		Get user ranking in this project
+		"""
+
+		# Get user ranking
+		redis = share_redis_connection()
+		return redis.zrevrank(
+			"%srank/project/%i/users" % (settings.REDIS_KEYS_PREFIX, self.id), 
+			self.user.id
+			)
+
 class CreditSlot(MetricsModelMixin, models.Model):
 	"""
 	A slot allocated and claimed by the server
@@ -773,6 +802,18 @@ class CampaignUserCredit(MetricsModelMixin, models.Model):
 
 	#: Achievements related to this campaign
 	achievements = models.ManyToManyField( Achievement, blank=True )
+
+	def ranking(self):
+		"""
+		Return user's ranking in this campaign
+		"""
+
+		# Get user ranking
+		redis = share_redis_connection()
+		return redis.zrevrank(
+			"%srank/campaign/%i/users" % (settings.REDIS_KEYS_PREFIX, self.campaign.id),
+			self.user.id
+			)
 
 class PersonalAchievement(models.Model):
 	"""
