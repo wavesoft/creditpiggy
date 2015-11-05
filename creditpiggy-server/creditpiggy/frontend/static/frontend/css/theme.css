@@ -390,6 +390,9 @@ div.credit-rank-panel .credit-body .credit {
 div.credit-rank-panel .credit-body .credit.credit-smaller {
   font-size: 2em;
 }
+div.credit-rank-panel .credit-body .credit.credit-smallest {
+  font-size: 1.4em;
+}
 div.credit-rank-panel .credit-body .rank-laurel {
   margin: 0 auto;
   width: 128px;

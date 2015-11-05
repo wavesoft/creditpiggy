@@ -133,7 +133,7 @@ def status(request, slug=""):
 					user_campaign = user_role
 					# Get user's metrics
 					umetric.merge( user_role.metrics() )
-				except ProjectUserRole.DoesNotExist:
+				except CampaignUserCredit.DoesNotExist:
 					pass
 
 			# Accumulate the counters of interesting metrics

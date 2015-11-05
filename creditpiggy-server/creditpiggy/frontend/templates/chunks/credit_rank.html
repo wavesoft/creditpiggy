@@ -2,7 +2,7 @@
 <div class="credit-rank-panel">
 	<div class="row credit-body">
 		<div class="col-xs-7">
-			<span class="credit {% if credits > 1000000 %} credit-smaller{% endif %}">{{ credits | thousands }}</span>
+			<span class="credit{% if credits >= 1000000 %} credit-smallest{% elif credits >= 10000 %} credit-smaller{% endif %}">{{ credits | thousands }}</span>
 			<span class="icon-coink"></span>
 		</div>
 		<div class="col-xs-5">
