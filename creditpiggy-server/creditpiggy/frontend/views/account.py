@@ -18,6 +18,8 @@
 ################################################################
 
 import json
+import hashlib
+import re
 
 from social.apps.django_app.default.models import UserSocialAuth
 
@@ -25,6 +27,8 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as auth_logout
+from django.contrib.auth import login as auth_login
+
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.core.mail import EmailMultiAlternatives
@@ -39,6 +43,8 @@ from creditpiggy.api.auth import sso_logout, website_from_request
 from creditpiggy.api import information
 
 from creditpiggy.core.achievements import personal_next_achievement
+
+NOT_NUMBERS = re.compile('[^0-9]')
 
 #######################################################
 # Utility functions
@@ -126,6 +132,52 @@ def logout(request):
 	# Render the logout page
 	return context(request)
 
+def login_pin(request):
+	"""
+	Check if we can log-in with pin
+	"""
+
+	# Get fields from POST
+	token = request.POST['token']
+	pin = request.POST['pin']
+	email = request.POST['email']
+
+	# Get candidate user
+	user = PiggyUser.fromAnonymousEmail( email, False )
+	if not user:
+		return render_to_response("error.html", context(request,
+				message="Could not find the user specified!"
+			))
+
+	# Get login token
+	try:
+		loginToken = PiggyUserPINLogin.objects.get( user=user )
+	except PiggyUserPINLogin.DoesNotExist:
+		return render_to_response("error.html", context(request,
+				message="A PIN was never sent to this e-mail address!"
+			))
+
+	# Validate token
+	if token:
+		if loginToken.token != token:
+			return render_to_response("error.html", context(request,
+					message="Mismatch offline PIN validation!"
+				))
+
+	# Validate pin
+	elif pin:
+		pin = NOT_NUMBERS.sub("", pin)
+		if loginToken.pin != pin:
+			return render_to_response("error.html", context(request,
+					message="Wrong PIN specified!"
+				))
+
+
+	# Login & redirect to login ack
+	user.backend = "django.contrib.auth.backends.ModelBackend"
+	auth_login( request, user )
+	return redirect( reverse("frontend.login.done") )
+
 @render_to("done_login.html")
 def login_ack(request):
 	"""
@@ -143,7 +195,9 @@ def login_ack(request):
 	# Return context
 	return context(request,
 			session=json.dumps(information.compile_session(request)),
-			next=next_url
+			next=next_url,
+			pin_token=request.session.get('pin_token', None),
+			pin_hash=hashlib.sha256(request.user.email.lower()).hexdigest(),
 		)
 
 def link(request, provider):
@@ -161,6 +215,7 @@ def home(request):
 	else:
 		return redirect(reverse("frontend.login") )
 
+@ensure_csrf_cookie
 @render_to("login.html")
 def login(request):
 	"""

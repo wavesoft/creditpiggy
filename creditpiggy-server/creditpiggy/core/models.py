@@ -213,13 +213,23 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 	priv_leaderboards = models.BooleanField(default=True, help_text="Show on leaderboards")
 
 	@staticmethod
-	def fromAnonymousEmail(email):
+	def fromAnonymousEmail(email, create=True):
 		"""
 		Create or fetch an anonymous user using his e-mail
 		"""
 
 		# Check if such user exits
-		(user, created) = PiggyUser.objects.get_or_create( email=email )
+		user = None
+		created = False
+
+		# Check if we should create missing user
+		if create:
+			(user, created) = PiggyUser.objects.get_or_create( email=email )
+		else:
+			try:
+				user = PiggyUser.objects.get( email=email )
+			except PiggyUser.DoesNotExist:
+				return None
 
 		# If that's a new user, set a random name
 		if created:
@@ -343,13 +353,16 @@ class PiggyUserPINLogin(models.Model):
 	"""
 
 	#: The user that requested the log-in
-	user = models.ForeignKey( PiggyUser )
+	user = models.ForeignKey( PiggyUser, unique=True, db_index=True )
 
 	#: The PIN allocated
 	pin = models.CharField(max_length=32, default="")
 
 	#: The time allocated
 	allocated = models.DateTimeField(auto_now=True)
+
+	#: SSO Token
+	token = models.CharField(max_length=48, default=gen_token_key)
 
 	@staticmethod
 	def newForuser(user):

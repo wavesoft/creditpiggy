@@ -29,7 +29,7 @@ from django.core import serializers
 
 from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import require_valid_user
-from creditpiggy.core.models import to_dict, PiggyProject, Achievement, PiggyUser, PiggyUserPINLogin
+from creditpiggy.core.models import to_dict, gen_token_key, PiggyProject, Achievement, PiggyUser, PiggyUserPINLogin
 from creditpiggy.core.email import send_pin_email
 
 #######################################################
@@ -123,11 +123,11 @@ def login(request, cmd):
 
 	# Send one-time log-in pin
 	# -------------------------------
-	if cmd == "login_pin":
+	if cmd == "pin":
 
 		# Require post method
-		# if request.method != 'POST':
-		# 	raise APIError("Log-in PIN is only requested via POST")
+		if request.method != 'POST':
+			raise APIError("Log-in PIN is only requested via POST")
 
 		# Get parameters
 		u_args = request.proto.getAll()
@@ -140,8 +140,30 @@ def login(request, cmd):
 		# Get PIN login record for this user
 		pinLogin = PiggyUserPINLogin.newForuser( user )
 
+		# Check for matching authentication token
+		if 'token' in u_args:
+			if pinLogin.token == u_args['token']:
+				# We are logging-in with token
+				return {
+					'login': 'token'
+				}
+			else:
+				pinLogin.token = gen_token_key()
+				pinLogin.save()
+		else:
+			pinLogin.token= gen_token_key()
+			pinLogin.save()
+
+		# Keep user token insession
+		request.session['pin_token'] = pinLogin.token
+
 		# Send e-mail to this user
 		send_pin_email( pinLogin, raiseExceptions=True )
+
+		# We are logging-in with pin
+		return {
+			'login': 'pin'
+		}
 
 	else:
 		raise APIError("Unknown command")

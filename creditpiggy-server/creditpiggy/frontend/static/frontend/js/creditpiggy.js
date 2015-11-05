@@ -69,6 +69,11 @@ cpjs.initialize = function( webid ) {
 		new this.dyn_graphs($(e));
 	}).bind(this))
 
+	// Register x-pin-login elements
+	$(".x-pin-login").each((function(i,e) {
+		new this.dyn_pin_login($(e));
+	}).bind(this))
+
 	// Enable popovers on achievements
 	$(".achievements > div").click(function(e) {
 		var msg = $(this).data('popup-id');
@@ -228,7 +233,7 @@ cpjs.dyn_paginator = function( hostDOM ) {
 		$.ajax({
 			method 		: "GET",
 			url 		: "/ajax/"+this.url+"/",
-			data 		: { 'page': this.page },
+			data 		: JSON.stringify({ 'page': this.page }),
 			dataType	: "json"
 		}).done((function(data) {
 
@@ -420,6 +425,184 @@ cpjs.dyn_graphs = function( hostDOM ) {
 
 	// Generate plots
 	gen_plots();
+
+}
+
+/**
+ * Pin-based e-mail login sequence
+ */
+cpjs.dyn_pin_login = function( hostDOM ) {
+
+	// Lookup hosts
+	var panelEmail = hostDOM.find(".login-panel-email"),
+		panelPIN = hostDOM.find(".login-panel-pin"),
+		inpEmail = hostDOM.find(".login-email"),
+		inpPIN = hostDOM.find(".login-pin"),
+		inpToken = hostDOM.find(".login-token"),
+		lblEmail = hostDOM.find(".login-label-email"),
+		btnContinue = hostDOM.find(".login-btn-continue"),
+		btnBack = hostDOM.find(".login-btn-back"),
+		btnState = 0,
+		errorTitles = [ 'Ow snap!', 'Dang it!', 'Ooops!', 'Howdy!' ];
+
+	// Show pin panel
+	var showPinPanel = function( cb ) {
+		// Don't do anything if visible
+		if (panelPIN.is(":visible")) return;
+		// Fade out email panel
+		panelEmail.fadeOut(125, function() {
+			// Fade in pin panel
+			panelPIN.fadeIn(125, function() {
+				// Focus on pin field
+				inpPIN.focus();
+				if (cb) cb();
+			});
+		});
+	}
+
+	// Show email panel
+	var showEmailPanel = function( cb ) {
+		// Don't do anything if visible
+		if (panelEmail.is(":visible")) return;
+		// Fade out pin panel
+		panelPIN.fadeOut(125, function() {
+			// Fade in email panel
+			panelEmail.fadeIn(125, function() {
+				if (cb) cb();
+			});
+		});
+	}
+
+	// Reset states
+	var setButtonState = function( state ) {
+		btnState = state;
+
+		// [0] Reset button state
+		if (state == 0) {
+			btnContinue.text("Continue");
+			btnContinue.attr("type", "button");
+			btnContinue.attr("class", "btn btn-default pull-right");
+			inpEmail.removeClass("disabled");
+		}
+
+		// [1] Primary continue
+		else if (state == 1) {
+			btnContinue.text("Continue");
+			btnContinue.attr("type", "submit");
+			btnContinue.attr("class", "btn btn-primary pull-right");
+		}
+
+	}
+
+	// Show error
+	var showError = function( errorMessage ) {
+		var errorDOM = $("#modal-error");
+		errorDOM.modal('show');
+		errorDOM
+			.find(".modal-title")
+			.html('<i class="glyphicon glyphicon-warning-sign"></i> '+errorTitles[Math.floor(Math.random()*errorTitles.length)]);
+		errorDOM
+			.find(".modal-body > p")
+			.empty()
+			.html( errorMessage );
+	}
+
+	// Start with hidden host
+	panelPIN.hide();
+	setButtonState(0);
+
+	// Bind on input changes and if it matches a stored
+	// e-mail address hash, change from 'continue' to 'login'
+	inpEmail.keyup(function() {
+		var email = Sha256.hash( inpEmail.val() ),
+			emailHash = localStorage.getItem("creditpiggy-pin-hash");
+
+		// Change classes
+		if (email == emailHash) {
+			if (!btnContinue.hasClass("btn-primary")) {
+				btnContinue.text("Login");
+				btnContinue.removeClass("btn-default");
+				btnContinue.addClass("btn-primary");
+			}
+		} else {
+			if (!btnContinue.hasClass("btn-default")) {
+				btnContinue.text("Continue");
+				btnContinue.addClass("btn-default");
+				btnContinue.removeClass("btn-primary");
+			}
+		}
+
+	});
+
+	// Bind on BACK clicks
+	btnBack.click(function(e) {
+		setButtonState(0);
+		showEmailPanel();
+	});
+
+	// Bind on PIN login clicks
+	btnContinue.click(function(e) {
+		if (btnState == 0) {
+			e.preventDefault();
+			e.stopPropagation();
+
+			// Check if we have a local authentication token
+			var token = localStorage.getItem("creditpiggy-pin-token");
+			btnContinue.addClass("disabled");
+			inpEmail.addClass("disabled");
+			lblEmail.text( inpEmail.val() );
+
+			// Send request
+			$.ajax({
+				method 		: "POST",
+				url 		: "/ajax/login.pin/",
+				data 		: JSON.stringify({ 'email': inpEmail.val(), 'token': token }),
+				dataType	: "json"
+			})
+			.done((function(data) {
+
+				// Handle errors
+				if (data['result'] != 'ok') {
+					showError("There was an error while sending a PIN to your . "+data['error']);
+					return;
+				}
+
+				// Handle according to login action
+				if (data['login'] == 'token') {
+
+					// We can log-in with token
+					inpToken.attr("value", token);
+					hostDOM.submit();
+
+				} else {
+
+					// Ask for pin
+					showPinPanel();
+					setButtonState(1);
+
+				}
+
+			}).bind(this))
+			.fail((function(error) {
+
+				// Server error
+				var errMessage = "It was a #"+error.status+" error.";
+				if (error.responseJSON && error.responseJSON['message']) {
+					errMessage = error.responseJSON['message']+".";
+				}
+				showError("There was an error while communicating with the server. "+errMessage);
+
+				// Reset button state
+				setButtonState(0);
+
+			}).bind(this))
+
+		} else if (btnState == 1) {
+
+			// Allow submitting
+
+		}
+	});
 
 }
 

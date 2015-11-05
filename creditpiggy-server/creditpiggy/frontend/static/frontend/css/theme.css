@@ -280,6 +280,10 @@ div.micro-metric .subtitle::after {
     content: "";
   }
 }
+#login-pin input {
+  font-size: 2em;
+  height: 60px;
+}
 div.panel-page-header div.panel-project {
   height: 150px;
   position: relative;

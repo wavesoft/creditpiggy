@@ -15,6 +15,10 @@
     <script type="text/javascript">
     var o = window.opener || window.parent;
     o.postMessage(JSON.stringify({"action": "session", "session": {{ session|safe }}}), "*");
+    {% if pin_token %}
+    localStorage.setItem("creditpiggy-pin-token","{{ pin_token }}");
+    localStorage.setItem("creditpiggy-pin-hash","{{ pin_hash }}");
+    {% endif %}
     </script>
 
 {% endblock %}

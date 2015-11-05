@@ -45,18 +45,12 @@ def send_email( template, subject, to, raiseExceptions=False, **kwargs ):
 		html = render_to_string("email/%s.html" % template, context=ctx)
 		text = render_to_string("email/%s.txt" % template, context=ctx)
 
-		print "--- Sending email to %r ---" % to
-		print text
-		print "---"
-
 		# Send e-mail
 		mail = EmailMultiAlternatives( body=text, subject=subject, to=to )
 		mail.attach_alternative(html, "text/html")
 		mail.send()
 
 	except Exception as e:
-
-		print e
 
 		# Re-throw exception if we should raise them
 		if raiseExceptions:
@@ -133,16 +127,21 @@ def send_pin_email( pinLogin, raiseExceptions=False ):
 	"""
 	Send a PIN login e-mail to the specified user
 	"""
+
+	# Add spaces on pin
+	pin = "%s-%s-%s" % (pinLogin.pin[0:2], pinLogin.pin[2:4], pinLogin.pin[4:6])
+
+	# Send e-mail
 	send_email(
 
 		# Recepient
 		"pinlogin", # Template
-		"Login PIN: %s" % pinLogin.pin, # Subject
+		"Login PIN: %s" % pin, # Subject
 		(pinLogin.user.email,), # To
 		raiseExceptions,
 
 		# Context
 		user=pinLogin.user,
-		pin=pinLogin.pin,
+		pin=pin,
 
 		)
