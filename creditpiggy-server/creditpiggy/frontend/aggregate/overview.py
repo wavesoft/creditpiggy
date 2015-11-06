@@ -134,7 +134,7 @@ def campaign_user_website(user, website):
 		return None
 
 	# Accumulate total metrics for comparison
-	u_campaign__total.merge( c.metrics() )
+	u_campaign__total.merge( campaigns[0].metrics() )
 
 	# Include campaign details in the answer
 	return {
