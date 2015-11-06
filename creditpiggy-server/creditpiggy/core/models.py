@@ -380,6 +380,17 @@ class PiggyUserPINLogin(models.Model):
 		# Return entry
 		return pinLogin
 
+	def expired(self, timeout=60):
+		"""
+		Check if the specified token is expired
+		"""
+
+		# Get time delta
+		delta = timezone.now() - self.allocated
+
+		# Check if expired
+		return delta.seconds > timeout
+
 
 class Referral(models.Model):
 	"""
