@@ -373,7 +373,7 @@ class PiggyUserPINLogin(models.Model):
 	"""
 
 	#: The user that requested the log-in
-	user = models.ForeignKey( PiggyUser, unique=True, db_index=True )
+	user = models.OneToOneField( PiggyUser, db_index=True )
 
 	#: The PIN allocated
 	pin = models.CharField(max_length=32, default="")

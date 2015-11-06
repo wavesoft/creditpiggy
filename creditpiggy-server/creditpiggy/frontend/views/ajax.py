@@ -152,14 +152,14 @@ def login(request, cmd):
 		if pinLogin.expired(timeout=300):
 
 			# Generate new token
-			pinLogin.token= gen_token_key()
+			pinLogin.token=gen_token_key()
 			pinLogin.save()
 
 			# Send e-mail to this user
-			send_pin_email( pinLogin, raiseExceptions=True )
+			send_pin_email( pinLogin )
 
-			# Keep user token insession
-			request.session['pin_token'] = pinLogin.token
+		# Keep user token insession
+		request.session['pin_token'] = pinLogin.token
 
 		# We are logging-in with pin
 		return {
