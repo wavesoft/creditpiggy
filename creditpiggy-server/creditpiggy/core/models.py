@@ -334,6 +334,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			ans.append({
 					"achievement": a.achievement,
 					"achieved": True,
+					"details": a,
 					"project": a.project,
 				})
 
@@ -347,6 +348,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			ans.append({
 					"achievement": a.achievement,
 					"achieved": True,
+					"details": a,
 					"project": None,
 				})
 
@@ -358,6 +360,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 				ans.append({
 						"achievement": a,
 						"achieved": False,
+						"details": None,
 						"project": None,
 					})
 
@@ -662,8 +665,9 @@ class PiggyProject(MetricsModelMixin, models.Model):
 				# Include additional meta
 				ans.append({
 						"achievement": a,
-						"achieved": achieved,
+						"achieved": not (achieved is None),
 						"project": self,
+						"details": achieved,
 					})
 
 				# Achieved first
