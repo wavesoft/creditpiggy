@@ -24,4 +24,4 @@ Many projects set some goals and they reward you with achievement badges! If you
 
 ~~ By Credit Piggy
 
-You received this message because you have logged-in to CreditPiggy for the first time. You will not receive this message again. You can configure your e-mail options from your profile page.
+You received this message because you have logged-in to CreditPiggy for the first time. You will not receive this message again. You can configure your e-mail preferences from your Profile Settings ({{ base_url }}/dashboard/settings/)

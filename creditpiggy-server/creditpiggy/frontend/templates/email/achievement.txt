@@ -11,3 +11,5 @@ This is your very own, personal achievement in CreditPiggy. We thank you for you
 {% endif %}
 
 ~~ By Credit Piggy
+
+You are receiving this message when a new achievement is reached because of your contribution. You can configure your e-mail preferences from your Profile Settings ({{ base_url }}/dashboard/settings/)
