@@ -95,7 +95,7 @@ def user_website(user, website):
 		'title'					: 'contribution in website %s' % website.name,
 		'metrics' 				: u_project__total.values(),
 		'usermetrics' 			: u_project__metrics.values(),
-		'achievements' 			: sorted(u_project__achievements, key=lambda a: a['achieved']),
+		'achievements' 			: sorted(u_user__achievements, key=lambda a: -int(a['achieved'])),
 		'candidate_achievement'	: u_project__candidateAchievement,
 		'credits' 				: int(user.metrics().counter("credits",0)),
 		'ranking' 				: user.ranking(),
