@@ -55,6 +55,11 @@
 		"__claimedWorkers": [],
 
 		/**
+		 * List of embed objects that needs to be updated
+		 */
+		"__embedObjects": [],
+
+		/**
 		 * The ID of the VM
 		 */
 		"__webid": null,
@@ -319,6 +324,13 @@
 			this.__applySessionChanges( data, false, fromInit );
 
 		}).bind(this));
+
+		// Update all embeds
+		for (var i=0; i<this.__embedObjects.length; i++) {
+			var e = this.__embedObjects[i];
+			e.attr("src", e.attr("src")); // Force reload 
+		}
+
 	}
 
 	/**
@@ -381,10 +393,11 @@
 	/**
 	 * Configure the CreditPiggy API 
 	 */
-	CreditPiggy.configure = function( webid ) {
+	CreditPiggy.configure = function( webid, baseURL ) {
 
 		// Update parameters
 		this.__webid = webid;
+		if (baseURL) this.baseURL = baseURL;
 
 		// If the page was loaded but not initialized
 		// initialize now, otherwise update session
@@ -593,6 +606,31 @@
 
 			}
 		}).bind(this));
+
+	}
+
+	/**
+	 * Crate an embedded resource to creditpiggy.
+	 *
+	 * @param {string} name - The embed name to display
+	 * @param {DOMElement} container - The continer to host the embed iframe into
+	 */
+	CreditPiggy.createEmbed = function( name, container ) {
+
+		// Make sure we have a container
+		if (!container)
+			container = $('<div class="creditpiggy-embed-container"></div>');
+
+		// Create iframe that will host the embed content
+		var iframe = $('<iframe frameborder="0" class="creditpiggy-embed-iframe"></iframe>')
+			.attr("src", this.baseURL + "/embed/" + name + "/?webid=" + escape(this.__webid))
+			.appendTo( container );
+
+		// Collect this on embed objects
+		this.__embedObjects.push(iframe);
+
+		// Return container
+		return container;
 
 	}
 

@@ -1,0 +1,31 @@
+{% extends "base/p_unstyled.html" %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="embed-frame">
+	{% if not user %}
+	<div class="embed-login-banner">
+		<div>
+			<h2>You can log-in to see your progress</h2>
+		    <p class="text-center">
+		        <img src="{% static 'frontend/img/powered-by.png' %}" alt="Powered by CreditPiggy" />
+		    </p>
+		</div>
+	</div>
+	{% else %}
+	<div class="row">
+		<div class="col-xs-6">
+			{% include "chunks/credit_rank.html" %}
+		</div>
+		<div class="col-xs-6">
+			{% include "chunks/achievement_next.html" with candidate=candidate_achievement %}    
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			{% include "chunks/achievements.html" with showAll=True %}
+		</div>
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

@@ -138,7 +138,7 @@ def login(request, cmd):
 		user = PiggyUser.fromAnonymousEmail( u_args['email'] )
 
 		# Get PIN login record for this user
-		pinLogin = PiggyUserPINLogin.newForuser( user )
+		pinLogin = PiggyUserPINLogin.forUser( user )
 
 		# Check for matching authentication token
 		if 'token' in u_args:
@@ -158,8 +158,8 @@ def login(request, cmd):
 			# Send e-mail to this user
 			send_pin_email( pinLogin, raiseExceptions=True )
 
-		# Keep user token insession
-		request.session['pin_token'] = pinLogin.token
+			# Keep user token insession
+			request.session['pin_token'] = pinLogin.token
 
 		# We are logging-in with pin
 		return {

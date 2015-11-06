@@ -19,7 +19,7 @@
 
 from django.conf.urls import patterns, include, url
 
-from creditpiggy.frontend.views import account, projects, ajax, website
+from creditpiggy.frontend.views import account, projects, ajax, website, embed
 
 urlpatterns = patterns('',
 	url(r'^$', 								account.home, 				name="frontend.home"),
@@ -49,5 +49,7 @@ urlpatterns = patterns('',
 	url(r'^ajax/fetch\.(?P<cmd>[^/]+)/$',	ajax.fetch,					name="frontend.ajax.fetch"),
 	url(r'^ajax/graph\.(?P<cmd>[^/]+)/$',	ajax.graph,					name="frontend.ajax.graph"),
 	url(r'^ajax/login\.(?P<cmd>[^/]+)/$',	ajax.login,					name="frontend.ajax.login"),
+
+	url(r'^embed/mystatus/$',	 			embed.mystatus,				name="frontend.embed.mystatus"),
 
 )

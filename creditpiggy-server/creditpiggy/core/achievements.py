@@ -25,7 +25,7 @@ from creditpiggy.core.utils.metrics import VisualMetrics
 from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement, VisualMetric
 from creditpiggy.core.email import send_achievement_email, send_personal_achievement_email
 
-def personal_next_achievement( user, project=None ):
+def personal_next_achievement( user, project=None, involvesMetrics=None ):
 	"""
 	Return next candidate personal achievement for the specified user
 	"""
@@ -39,18 +39,43 @@ def personal_next_achievement( user, project=None ):
 	else:
 		candidates = project.achievements.exclude(achievementinstance__user=user)
 
+	# Populate valid_metrics if we are invovling metrics
+	valid_metrics = None
+	if not involvesMetrics is None:
+		valid_metrics = []
+		for m in involvesMetrics:
+
+			# Get metric name (we accept array of strings or array of VisualMetrics)
+			m_name = m
+			if isinstance(m, str) or isinstance(m, unicode):
+				m_name = m
+			elif isinstance(m, VisualMetric):
+				m_name = m.name
+
+			# Collect valid metric
+			valid_metrics.append( m_name )
+
 	# Iterate over the candidates and calculate the
 	# distance from the user's current counters
 	candidate_dist = None
 	candidate_metrics = None
 	candidate_shortlist = None
 	for c in candidates:
-
-		# Reset properties
 		distance = 1.0
+		metric = c.getMetrics()
+
+		# Discard invalid candidates
+		if not valid_metrics is None:
+			discard = False
+			for k,v in metric.iteritems():
+				if not k in valid_metrics:
+					discard = True
+					break
+			# If we should discard this, continue
+			if discard:
+				continue
 
 		# Calculate distance to all metrics
-		metric = c.getMetrics()
 		for k,v in metric.iteritems():
 
 			# Get user value

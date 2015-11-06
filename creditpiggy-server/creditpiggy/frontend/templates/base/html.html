@@ -18,7 +18,7 @@
     <link href="{% static "frontend/css/theme.css" %}" rel="stylesheet">
     {% block css %}{% endblock %}
   </head>
-  <body style="{% block body_style %}{% endblock %}">
+  <body style="{% block body_style %}{% endblock %}" class="{% block body_class %}{% endblock %}">
     {% block body %}{% endblock %}
     {% block footer %}{% endblock %}
 

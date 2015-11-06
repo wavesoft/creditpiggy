@@ -315,14 +315,20 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			"profile_url" 	: "javascript:;",
 		}
 
-	def achievements(self, personal=True):
+	def achievements(self, personal=True, unachieved=False):
 		"""
 		Return all the achievements of this user has achieved
 		"""
 
+		# List of achieved IDs
+		achieved_ids = []
+
 		# Get all achievements
 		ans = []
 		for a in AchievementInstance.objects.filter(user=self):
+
+			# Collect IDs
+			achieved_ids.append( a.achievement.id )
 
 			# Include additional meta
 			ans.append({
@@ -334,12 +340,26 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		# If we include personal, get them too
 		for a in PersonalAchievement.objects.filter(user=self):
 
+			# Collect IDs
+			achieved_ids.append( a.achievement.id )
+
 			# Include additional meta
 			ans.append({
 					"achievement": a.achievement,
 					"achieved": True,
 					"project": None,
 				})
+
+		# Check if we should include also unachieved
+		if unachieved:
+			for a in Achievement.objects.exclude( id__in=achieved_ids ):
+
+				# Include additional meta
+				ans.append({
+						"achievement": a,
+						"achieved": False,
+						"project": None,
+					})
 
 		# Return achievements and their status
 		return ans
@@ -365,17 +385,18 @@ class PiggyUserPINLogin(models.Model):
 	token = models.CharField(max_length=48, default=gen_token_key)
 
 	@staticmethod
-	def newForuser(user):
+	def forUser(user):
 		"""
-		Create new PIN for the specified user
+		Create or get a user/pin correlation
 		"""
 
 		# Get pin login entity for this user
 		(pinLogin, created) = PiggyUserPINLogin.objects.get_or_create( user=user )
 
 		# Create new pin
-		pinLogin.pin = gen_pin()
-		pinLogin.save()
+		if created:
+			pinLogin.pin = gen_pin()
+			pinLogin.save()
 
 		# Return entry
 		return pinLogin
@@ -387,6 +408,7 @@ class PiggyUserPINLogin(models.Model):
 
 		# Get time delta
 		delta = timezone.now() - self.allocated
+		print ">> Delta %i <<" % delta.seconds
 
 		# Check if expired
 		return delta.seconds > timeout

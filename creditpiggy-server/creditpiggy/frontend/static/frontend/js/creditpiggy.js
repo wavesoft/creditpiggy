@@ -586,7 +586,7 @@ cpjs.dyn_pin_login = function( hostDOM ) {
 			.fail((function(error) {
 
 				// Server error
-				var errMessage = "It was a #"+error.status+" error.";
+				var errMessage = "If anyone asks, the error code is #"+error.status+".";
 				if (error.responseJSON && error.responseJSON['message']) {
 					errMessage = error.responseJSON['message']+".";
 				}
