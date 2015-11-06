@@ -236,6 +236,7 @@
 			if ((!currSession || !currSession["profile"]) && newSession && newSession["profile"]) {
 				this.profile = newSession['profile'];
 				$(this).triggerHandler("login", [ newSession["profile"], userAction ]);
+				this.__reloadEmbeds();
 
 				// If we have a user log-in, it means that we now update referrer tracing information
 				var url = String(window.location);
@@ -253,6 +254,7 @@
 			} else if ((!newSession || !newSession["profile"]) && (currSession && currSession["profile"])) {
 				$(this).triggerHandler("logout", [ currSession["profile"], userAction ]);
 				this.profile = null;
+				this.__reloadEmbeds();
 			}
 
 			// Trigger the "profile" event if we have a profile
@@ -298,6 +300,19 @@
 	}
 
 	/**
+	 * Reload all embeds
+	 */
+	CreditPiggy.__reloadEmbeds = function( fromInit ) {		
+
+		// Update all embeds
+		for (var i=0; i<this.__embedObjects.length; i++) {
+			var e = this.__embedObjects[i];
+			e.attr("src", e.attr("src")); // Force reload 
+		}
+
+	}
+
+	/**
 	 * Request as session update
 	 */
 	CreditPiggy.__updateSession = function( fromInit ) {		
@@ -325,11 +340,8 @@
 
 		}).bind(this));
 
-		// Update all embeds
-		for (var i=0; i<this.__embedObjects.length; i++) {
-			var e = this.__embedObjects[i];
-			e.attr("src", e.attr("src")); // Force reload 
-		}
+		// Reload Embeds
+		this.__reloadEmbeds();
 
 	}
 
