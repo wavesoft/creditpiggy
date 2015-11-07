@@ -411,7 +411,6 @@ class PiggyUserPINLogin(models.Model):
 
 		# Get time delta
 		delta = timezone.now() - self.allocated
-		print ">> Delta %i <<" % delta.seconds
 
 		# Check if expired
 		return delta.seconds > timeout
@@ -531,7 +530,12 @@ class Achievement(models.Model):
 	metrics = models.TextField(default="{}")
 
 	#: If this achievement can be achieved in a personal level
-	personal = models.BooleanField(default=False)
+	personal = models.BooleanField(default=False,
+		help_text="This is something achieved in the user's personal metrics")
+
+	#: If this achievement is for everyone in the host project/campaign/website
+	team = models.BooleanField(default=False, 
+		help_text="When used as a campaign or project achievement, grant this to each member of the campaign")
 
 	def __unicode__(self):
 		return self.name
@@ -908,26 +912,41 @@ class Campaign(MetricsModelMixin, models.Model):
 	#: True if the campaign is open to the public
 	public = models.BooleanField(default=False)
 
+	#: Achievements related to this campaign
+	achievements = models.ManyToManyField( Achievement, blank=True )
+
+	def expired(self):
+		"""
+		Check if the campaign is expired
+		"""
+		return self.end_time < timezone.now()
+
 	@classmethod
-	def ofWebsite(cls, website, active=True):
+	def ofWebsite(cls, website, active=True, expired=False):
 		"""
 		Return all the Campaigns addressing this website
 		"""
-		
-		# Get all valid campaigns for this website
+
+		# Prepare query
+		query = Campaign.objects.filter(
+			website=website)
+
+		# Mark active
 		if active:
-			return Campaign.objects.filter( 
-				start_time__lte=timezone.now(), 
-				end_time__gte=timezone.now(),
-				active=True,
-				published=True,
-				website=website
+			query = query.filter(
+				active=True, 
+				published=True
 				)
 
-		else:
-			return Campaign.objects.filter( 
-				website=website
+		# Check if we should include expired
+		if not expired:
+			query = query.filter(
+				start_time__lte=timezone.now(), 
+				end_time__gte=timezone.now(),
 				)
+		
+		# Return query
+		return query.order_by('-end_time')
 
 	def __unicode__(self):
 		return "%s" % (self.name)
@@ -946,7 +965,7 @@ class CampaignUserCredit(MetricsModelMixin, models.Model):
 	#: The credits of the user in this model
 	credits = models.IntegerField(default=0)
 
-	#: Achievements related to this campaign
+	#: Achievements related to this user contribution to the campaign
 	achievements = models.ManyToManyField( Achievement, blank=True )
 
 	def ranking(self, base=1):
@@ -1004,6 +1023,20 @@ class AchievementInstance(models.Model):
 
 	def __unicode__(self):
 		return "%s/%s for %s" % (self.achievement.name, self.project.display_name, self.user.display_name)
+
+class CampaignAchievementInstance(models.Model):
+	"""
+	An achievement instance for a campaign
+	"""
+
+	#: The parent campaign
+	campaign = models.ForeignKey( Campaign )
+
+	#: The achievement achieved
+	achievement = models.ForeignKey( Achievement )
+
+	#: The time allocated
+	date = models.DateTimeField(auto_now=True)
 
 ###################################################################
 # Utility Classes

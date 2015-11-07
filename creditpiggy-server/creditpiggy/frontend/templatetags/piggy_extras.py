@@ -156,3 +156,9 @@ def time_delta(value): # Only one argument.
 
 	return "%i:%02i:%02i" % (t_hour, t_min, t_sec)
 
+@register.filter(name='expired')
+def expired(value):
+    try:
+        return value.expired()
+    except:
+        return None

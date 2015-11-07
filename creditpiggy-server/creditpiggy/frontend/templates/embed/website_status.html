@@ -1,0 +1,64 @@
+{% extends "base/p_unstyled.html" %}
+{% load staticfiles %}
+{% load piggy_extras %}
+
+{% block body_class %}clip-gradient clip-gradient-top no-scroll{% endblock %}
+{% block content %}
+<div class="embed-frame website-achievements">
+	{% if not campaign %}
+	<div class="embed-login-banner">
+		<div>
+			<h2>No active campaign</h2>
+		    <p class="text-center">
+		        <img src="{% static 'frontend/img/powered-by.png' %}" alt="Powered by CreditPiggy" />
+		    </p>
+		</div>
+	</div>
+	{% else %}
+	<div class="fix-bottom">
+			{% for a in campaign.past %}
+			<div class="achievement-past">
+				<h2><img src="{{a.achievement.icon}}" /> {{a.achievement.name}}</h2>
+				<p><span class="glyphicon glyphicon-ok"></span> Achieved on {{a.date}}</p>
+			</div>
+			{% endfor %}
+
+			{% if not campaign.details.active %}
+			<div class="achievement-missing">
+				<p class="text-center text-muted">Campaign completed</p>
+			</div>
+			{% elif campaign.details|expired %}
+			<div class="achievement-missing">
+				<p class="text-center text-muted">Campaign completed on {{campaign.details.end_time}}</p>
+			</div>
+			{% else %}
+				{% if campaign.next %}
+				<div class="framed-soft-shadow achievement-current">
+					<img src="{{campaign.next.achievement.icon}}" />
+					<div class="body">
+						<h2>{{campaign.next.achievement.name}}</h2>
+						{{campaign.next.achievement.desc | safe}}
+
+						{% for metric in campaign.next.metrics %}
+						<div class="metric">
+							<div class="metric-label">
+								<span class="{{metric.icon}}"></span>
+								{{metric.diff|thousands}}
+								{{metric.display_name}}
+								to go
+							</div>
+							<div class="metric-progress">
+								<div class="metric-progress-indicator" style="width: {{metric.progress}}%"></div>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						{% endfor %}
+					</div>
+					<div class="clearfix"></div>
+				</div>
+				{% endif %}
+			{% endif %}
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

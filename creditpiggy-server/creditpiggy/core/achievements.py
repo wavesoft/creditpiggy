@@ -22,43 +22,21 @@ import random
 
 from django.db.models import Q
 from creditpiggy.core.utils.metrics import VisualMetrics
-from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement, VisualMetric
+from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement, CampaignAchievementInstance, VisualMetric
 from creditpiggy.core.email import send_achievement_email, send_personal_achievement_email
 
-def personal_next_achievement( user, project=None, involvesMetrics=None ):
+################################################
+# 
+################################################
+
+def shortlist_candidates( candidates, counters, valid_metrics=None, pick_one=True ):
 	"""
-	Return next candidate personal achievement for the specified user
+	Shortlist candidate achievements
 	"""
-
-	# Get all user's counters
-	counters = user.metrics().counters()
-
-	# Get all un-achieved achievements
-	if project is None:
-		candidates = Achievement.objects.exclude(achievementinstance__user=user)
-	else:
-		candidates = project.achievements.exclude(achievementinstance__user=user)
-
-	# Populate valid_metrics if we are invovling metrics
-	valid_metrics = None
-	if not involvesMetrics is None:
-		valid_metrics = []
-		for m in involvesMetrics:
-
-			# Get metric name (we accept array of strings or array of VisualMetrics)
-			m_name = m
-			if isinstance(m, str) or isinstance(m, unicode):
-				m_name = m
-			elif isinstance(m, VisualMetric):
-				m_name = m.name
-
-			# Collect valid metric
-			valid_metrics.append( m_name )
 
 	# Iterate over the candidates and calculate the
 	# distance from the user's current counters
 	candidate_dist = None
-	candidate_metrics = None
 	candidate_shortlist = None
 	for c in candidates:
 		distance = 1.0
@@ -94,18 +72,41 @@ def personal_next_achievement( user, project=None, involvesMetrics=None ):
 				candidate_shortlist = []
 
 			# Update current metrics
-			candidate_metrics = metric
 			candidate_dist = distance
 
 			# Include in short list
-			candidate_shortlist.append( c )
+			candidate_shortlist.append( (c, metric) )
 
 	# Return none if no candidate
-	if len(candidate_shortlist) == 0:
-		return None
+	if not candidate_shortlist:
+		return (None, None)
 
-	# Pick a random candidate
-	candidate = random.choice( candidate_shortlist )
+	# Return shortlist or one item
+	if pick_one:
+		return random.choice( candidate_shortlist )
+	else:
+		return candidate_shortlist
+
+
+################################################
+# Interface functions
+################################################
+
+def campaign_next_achievement( campaign ):
+	"""
+	Return the next candidate achievement for the specified campaign
+	"""
+
+	# Get all user's counters
+	counters = campaign.metrics().counters()
+
+	# Get all un-achieved achievements
+	candidates = campaign.achievements.exclude(campaignachievementinstance__campaign=campaign)
+
+	# Shortlist and pick candidate
+	(candidate, candidate_metrics) = shortlist_candidates( candidates, counters, pick_one=True )
+	if not candidate:
+		return None
 
 	# Get Visual Metrics translator
 	vm = VisualMetrics( VisualMetric.objects.filter( name__in=candidate_metrics.keys() ) )
@@ -122,7 +123,66 @@ def personal_next_achievement( user, project=None, involvesMetrics=None ):
 			val_user = float(counters[k])
 
 		# Add additional metadata
-		v['scale'] = val_user / v['value']
+		v['progress'] = val_user * 100.0 / v['value']
+		v['diff'] = vm.getDisplayValue( k, v['value'] - val_user )
+
+	# Return candidate description
+	return {
+		'achievement': candidate,
+		'metrics': metrics_with_scale.values(),
+	}
+
+def personal_next_achievement( user, project=None, involvesMetrics=None ):
+	"""
+	Return next candidate personal achievement for the specified user
+	"""
+
+	# Get all user's counters
+	counters = user.metrics().counters()
+
+	# Get all un-achieved achievements
+	if project is None:
+		candidates = Achievement.objects.exclude(achievementinstance__user=user)
+	else:
+		candidates = project.achievements.exclude(achievementinstance__user=user)
+
+	# Populate valid_metrics if we are invovling metrics
+	valid_metrics = None
+	if not involvesMetrics is None:
+		valid_metrics = []
+		for m in involvesMetrics:
+
+			# Get metric name (we accept array of strings or array of VisualMetrics)
+			m_name = m
+			if isinstance(m, str) or isinstance(m, unicode):
+				m_name = m
+			elif isinstance(m, VisualMetric):
+				m_name = m.name
+
+			# Collect valid metric
+			valid_metrics.append( m_name )
+
+	# Shortlist and pick candidate
+	(candidate, candidate_metrics) = shortlist_candidates( candidates, counters, valid_metrics=valid_metrics, pick_one=True )
+	if not candidate:
+		return None
+
+	# Get Visual Metrics translator
+	vm = VisualMetrics( VisualMetric.objects.filter( name__in=candidate_metrics.keys() ) )
+
+	# Format reference visual metric values 
+	metrics_with_scale = vm.format( candidate_metrics )
+
+	# Calculate scale
+	for k,v in metrics_with_scale.iteritems():
+
+		# Get user value
+		val_user = 0.0
+		if k in counters:
+			val_user = float(counters[k])
+
+		# Add additional metadata
+		v['progress'] = val_user * 100.0 / v['value']
 		v['diff'] = vm.getDisplayValue( k, v['value'] - val_user )
 
 	# Return candidate description
@@ -152,6 +212,38 @@ def metrics_achieved( counters, achievement_metrics ):
 
 	# Matched
 	return True
+
+def check_campaign_achievements( campaign ):
+	"""
+	Check the campaign's achievements
+	"""
+
+	# Get campaign-achievement link metrics
+	metrics = campaign.metrics()
+	m_counters = metrics.counters()
+
+	# Iterate over non-achieved achievements in the campaign instances
+	for a in campaign.achievements.exclude(campaignachievementinstance__campaign=campaign):
+
+		# For each achievement, check if metrics are achieved
+		if metrics_achieved( m_counters, a.getMetrics() ):
+
+			# Award the achievement to the campaign
+			ac = CampaignAchievementInstance(
+					campaign=campaign,
+					achievement=a
+				)
+			ac.save()
+
+			# If this achievement should be awarded to all members
+			# of the campaign, perform mass award now
+			if a.team:
+				for cuc in CampaignUserCredit.objects.filter( campaign=campaign ):
+					user = cuc.user
+
+					# Send e-mail
+					# send_personal_achievement_email( user, a )
+					pass
 
 def check_personal_achievements( user ):
 	"""

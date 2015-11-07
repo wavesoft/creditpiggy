@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
-from creditpiggy.core.achievements import check_achievements
+from creditpiggy.core.achievements import check_achievements, check_campaign_achievements
 from creditpiggy.core.models import ProjectUserRole, Campaign, CampaignUserCredit, CreditSlot
 
 ############################################################
@@ -75,7 +75,8 @@ def import_to_campaigns( slot, user, website ):
 		m_cu.cincr("slots/completed", 1)		# Update completed slot counter
 		m_cu.cincr( slot_metrics )				# Squash all counters of slot to the project/user
 
-		# TODO: Achieve campaign achievements
+		# Check campaign achievements
+		check_campaign_achievements( campaign )
 
 def import_to_project( slot ):
 	"""

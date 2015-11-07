@@ -50,6 +50,10 @@ urlpatterns = patterns('',
 	url(r'^ajax/graph\.(?P<cmd>[^/]+)/$',	ajax.graph,					name="frontend.ajax.graph"),
 	url(r'^ajax/login\.(?P<cmd>[^/]+)/$',	ajax.login,					name="frontend.ajax.login"),
 
+	# Transitional compatibility
 	url(r'^embed/mystatus/$',	 			embed.mystatus,				name="frontend.embed.mystatus"),
+
+	url(r'^embed/status\.my/$',	 			embed.mystatus,				name="frontend.embed.mystatus"),
+	url(r'^embed/status\.website/$',		embed.webstatus,			name="frontend.embed.webstatus"),
 
 )

@@ -96,6 +96,11 @@ class CampaignUserCreditAdmin(admin.ModelAdmin):
 
 admin.site.register(CampaignUserCredit, CampaignUserCreditAdmin)
 
+class CampaignAchievementInstanceAdmin(admin.ModelAdmin):
+	list_display = ('achievement', 'campaign', 'date')
+
+admin.site.register(CampaignAchievementInstance, CampaignAchievementInstanceAdmin)
+
 class UserLinkLogsAdmin(admin.ModelAdmin):
 	list_display = ('user', 'link_uuid', 'linked')
 
@@ -127,8 +132,8 @@ class AchievementAdminForm(ModelForm):
 
 class AchievementAdmin(admin.ModelAdmin):
 	form = AchievementAdminForm
-	list_display = ('name', 'image', 'metric_values', 'personal')
-	list_filter = ('personal',)
+	list_display = ('name', 'image', 'metric_values', 'personal', 'team')
+	list_filter = ('personal', 'team')
 
 	def image(self, obj):
 		return mark_safe('<img src="%s" style="width: 32px; vertical-align: absmiddle" />' % obj.icon)
