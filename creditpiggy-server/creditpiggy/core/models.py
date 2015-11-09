@@ -697,8 +697,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 				ans.append({
 						"achievement": a,
 						"instances": inst,
-						"project": self,
-						"share_id": inst.getShareID(),
+						"project": self
 					})
 
 				# Sort by instances
