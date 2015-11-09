@@ -17,6 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import re
+
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 
@@ -28,6 +30,9 @@ from creditpiggy.api.models import WebsiteCredentials
 from creditpiggy.core.email import send_welcome_email
 from creditpiggy.core.models import merge_accounts
 
+#: Regex to replace image size
+RE_ROOGLE_SZ = re.compile(r'sz=[0-9]+')
+
 def social_update_displayname(backend, social, response={}, user=None, *args, **kwargs):
 	"""
 	Update user's display name
@@ -38,10 +43,16 @@ def social_update_displayname(backend, social, response={}, user=None, *args, **
 	if social:
 		if social.provider == "twitter":
 			profile_image = response['profile_image_url']
+			# Get origial size
+			if '_normal' in profile_image:
+				profile_image = profile_image.replace("_normal", "")
 		elif social.provider == "facebook":
-			profile_image = 'http://graph.facebook.com/{0}/picture'.format(response['id'])
+			profile_image = 'http://graph.facebook.com/{0}/picture?type=large'.format(response['id'])
 		elif social.provider == "google-oauth2":
 			profile_image = response['image'].get('url')
+			# Specify profile image size
+			if 'sz=' in profile_image:
+				profile_image = RE_ROOGLE_SZ.sub("sz=168", profile_image)
 		elif social.provider == "live":
 			profile_image = 'https://apis.live.net/v5.0/{0}/picture'.format(response['id'])
 
