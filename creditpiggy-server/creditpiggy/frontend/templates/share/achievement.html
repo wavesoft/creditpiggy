@@ -1,0 +1,56 @@
+{% extends "base/p_content.html" %}
+{% load staticfiles %}
+
+{% block header_icon %}{{achievement.user.profile_image}}{% endblock %}
+
+{% block head %}
+	<!-- OpenGraph Properties -->
+	<meta property="og:title" content="Achieved {{achievement.achievement.name}}" />
+	<meta property="og:description" content="{{achievement.achievement.desc|striptags}}" />
+	<meta property="og:image" content="{{achievement.achievement.icon}}" />
+{% endblock %}
+
+{% block content %}
+	
+	<h2>{{ achievement.user.display_name}} achieved {{achievement.achievement.name}}</h2>
+	<div class="row">
+		<div class="col-xs-3">
+			<img class="img-responsive" src="{{achievement.achievement.icon}}" alt="{{achievement.achievement.name}} icon" />
+		</div>
+		<div class="col-xs-9">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					{{achievement.achievement.desc|safe}}
+				</div>
+				<div class="panel-footer">
+					This is an achievement in project <a href="#">{{achievement.project.display_name}}</a>
+				</div>
+			</div>
+			<p>Achieved on <strong>{{achievement.date}}</strong></p>
+			<p>
+				<div class="pull-right">
+					<span class="st_sharethis_large" displayText="ShareThis"></span>
+					<span class="st_googleplus_large" displayText="Google +"></span>
+					<span class="st_facebook_large" displayText="Facebook"></span>
+					<span class="st_twitter_large" displayText="Tweet"></span>
+					<span class="st_email_large" displayText="Email"></span>
+				</div>
+				{% if see_more %}
+				<a href="{{see_more}}" class="btn btn-primary">
+					<span class="visible-xs">See more</span>
+					<span class="hidden-xs">Visit the {{see_more_title}}</span>
+				</a>
+				{% endif %}
+			</p>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block javascript %}
+<!-- ShareThis -->
+<script type="text/javascript">var switchTo5x=true;</script>
+<script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
+<script type="text/javascript">stLight.options({publisher: "b6ab7194-4d0a-4d5e-b1bf-762e8b833510", doNotHash: false, doNotCopy: true, hashAddressBar: false});</script>
+<!-- End of ShareThis -->
+{% endblock %}

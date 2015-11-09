@@ -105,6 +105,45 @@ def to_dict(instance):
 			data[f.name] = f.value_from_object(instance)
 	return data
 
+def achievement_from_share_id(share_id):
+	"""
+	Return the appropriate achievement according to it's ID
+	"""
+
+	# Try to parse
+	try:
+		achievement = int(share_id) & 0xffffff
+	except ValueError:
+		return None
+
+	# Decrypt
+	achievement = (achievement ^ settings.CREDITPIGGY_TRACKID_SECRET) & 0xffffff
+
+	# Get type and ID
+	a_type = achievement & 0x03
+	a_id = achievement >> 2
+
+	print "type=%i, id=%i" % (a_type, a_id)
+
+	# lookup according to type
+	if a_type == 1:
+		try:
+			return PersonalAchievement.objects.get(id=a_id)
+		except PersonalAchievement.DoesNotExist:
+			return None
+	elif a_type == 2:
+		try:
+			return AchievementInstance.objects.get(id=a_id)
+		except AchievementInstance.DoesNotExist:
+			return None
+	elif a_type == 3:
+		try:
+			return CampaignAchievementInstance.objects.get(id=a_id)
+		except CampaignAchievementInstance.DoesNotExist:
+			return None
+	else:
+		return None
+
 def merge_accounts(self, user):
 	"""
 	Merge user 'user' to self
@@ -290,6 +329,12 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		# Otherwise adapt to base-rank
 		return rank + base
 
+	def getRefererID(self):
+		"""
+		Return user's referer ID
+		"""
+		return "r%06x" % (self.id ^ settings.CREDITPIGGY_TRACKID_SECRET)
+
 	def profile(self):
 		"""
 		Compile and return the relevant information for the user's profile
@@ -336,6 +381,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 					"achieved": True,
 					"details": a,
 					"project": a.project,
+					"share_id": a.getShareID(),
 				})
 
 		# If we include personal, get them too
@@ -350,6 +396,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 					"achieved": True,
 					"details": a,
 					"project": None,
+					"share_id": a.getShareID(),
 				})
 
 		# Check if we should include also unachieved
@@ -651,6 +698,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 						"achievement": a,
 						"instances": inst,
 						"project": self,
+						"share_id": a.getShareID(),
 					})
 
 				# Sort by instances
@@ -661,8 +709,10 @@ class PiggyProject(MetricsModelMixin, models.Model):
 				# Check if the user has it
 				try:
 					achieved = AchievementInstance.objects.get(project=self, achievement=a, user=user)
+					share_id = achieved.getShareID()
 				except AchievementInstance.DoesNotExist:
 					achieved = None
+					share_id = None
 					if onlyAchieved:
 						continue
 
@@ -672,6 +722,7 @@ class PiggyProject(MetricsModelMixin, models.Model):
 						"achieved": not (achieved is None),
 						"project": self,
 						"details": achieved,
+						"share_id": share_id,
 					})
 
 				# Achieved first
@@ -692,6 +743,10 @@ class Website(MetricsModelMixin, models.Model):
 	#: URL ID, derrived from display_name
 	slug = models.CharField(max_length=200, default="", db_index=True, editable=False,
 		help_text="An indexing keyword, useful for human-readable URLs")
+
+	#: The website URL
+	url = models.CharField(max_length=200, default="", blank=True,
+		help_text="The website URL")
 
 	#: A short description for the website
 	desc = HTMLField(
@@ -1001,6 +1056,16 @@ class PersonalAchievement(models.Model):
 	#: The date he/she achieved it
 	date = models.DateTimeField(auto_now_add=True)
 
+	def getShareID(self):
+		"""
+		Calculate an achievement sharable ID that makes it difficult
+		to access other achievements (not impossible though)
+		"""
+
+		# Get share ID for AchievementInstance
+		share_id = ((self.id << 2) | 0x01) & 0xffffff
+		return "%010i" % (share_id ^ settings.CREDITPIGGY_TRACKID_SECRET)
+
 class AchievementInstance(models.Model):
 	"""
 	An achievement instance for a user/project combination
@@ -1024,6 +1089,16 @@ class AchievementInstance(models.Model):
 	def __unicode__(self):
 		return "%s/%s for %s" % (self.achievement.name, self.project.display_name, self.user.display_name)
 
+	def getShareID(self):
+		"""
+		Calculate an achievement sharable ID that makes it difficult
+		to access other achievements (not impossible though)
+		"""
+
+		# Get share ID for AchievementInstance
+		share_id = ((self.id << 2) | 0x02) & 0xffffff
+		return "%010i" % (share_id ^ settings.CREDITPIGGY_TRACKID_SECRET)
+
 class CampaignAchievementInstance(models.Model):
 	"""
 	An achievement instance for a campaign
@@ -1037,6 +1112,16 @@ class CampaignAchievementInstance(models.Model):
 
 	#: The time allocated
 	date = models.DateTimeField(auto_now=True)
+
+	def getShareID(self):
+		"""
+		Calculate an achievement sharable ID that makes it difficult
+		to access other achievements (not impossible though)
+		"""
+
+		# Get share ID for AchievementInstance
+		share_id = ((self.id << 2) | 0x03) & 0xffffff
+		return "%010i" % (share_id ^ settings.CREDITPIGGY_TRACKID_SECRET)
 
 ###################################################################
 # Utility Classes

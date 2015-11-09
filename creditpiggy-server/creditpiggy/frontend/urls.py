@@ -19,7 +19,7 @@
 
 from django.conf.urls import patterns, include, url
 
-from creditpiggy.frontend.views import account, projects, ajax, website, embed
+from creditpiggy.frontend.views import account, projects, ajax, website, embed, share
 
 urlpatterns = patterns('',
 	url(r'^$', 								account.home, 				name="frontend.home"),
@@ -55,5 +55,7 @@ urlpatterns = patterns('',
 
 	url(r'^embed/status\.my/$',	 			embed.mystatus,				name="frontend.embed.mystatus"),
 	url(r'^embed/status\.website/$',		embed.webstatus,			name="frontend.embed.webstatus"),
+
+	url(r'^share/achievement/(?P<aid>[^/]+)/$',	share.achievement,		name="frontend.share.achievement"),
 
 )

@@ -180,6 +180,9 @@ div.container.solid {
   padding-left: 5px;
   padding-top: 4px;
   position: absolute;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
   right: 0;
 }
 .btn-achieved {
@@ -656,6 +659,7 @@ div.achievements > div .icon .badge {
   float: left;
   width: 120px;
   height: 120px;
+  cursor: pointer;
 }
 .achievement-board .achievements > div.icon > a.project-button {
   width: 40px;

@@ -24,6 +24,7 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.cache import cache_page
 
 from creditpiggy.frontend.views import context
 from creditpiggy.api.auth import website_from_request
@@ -47,6 +48,7 @@ def auto(request):
 	else:
 		return redirect(reverse("frontend.website.status", kwargs={'slug': website.slug} ))
 
+@cache_page(60)
 @render_to("website.html")
 def status(request, slug=""):
 	"""

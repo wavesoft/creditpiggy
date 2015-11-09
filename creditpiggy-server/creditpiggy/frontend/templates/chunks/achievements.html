@@ -3,7 +3,7 @@
 <div class="achievements">
 	{% for a in achievements %}
 		{% if showAll or a.achieved and not showAll %}
-			<div class="btn {% if a.achieved or a.instances %}btn-default{% endif %}" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}" data-popup-id="#achievement-payload-{{ forloop.counter }}">
+			<div class="btn {% if a.achieved or a.instances %}btn-default{% endif %}" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}" data-popup-id="#achievement-modal-{{ forloop.counter }}">
 				<div class="icon {% if not a.achieved and not a.instances %}inactive{% endif %}" style="background-image: url( {{ a.achievement.icon }} )">
 					{% if a.achieved %}
 					<span class="badge"><i class="fa fa-check-circle"></i></span>
@@ -13,66 +13,7 @@
 					{% endif %}
 				</div>
 			</div>
-			<div id="achievement-payload-{{ forloop.counter }}" class="modal fade">
-			  <div class="modal-dialog">
-			    <div class="modal-content">
-
-				  <!-- Modal header -->
-			      <div class="modal-header">
-			        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-			        <h4 class="modal-title">{{ a.achievement.name }}</h4>
-			      </div>
-
-				  <!-- Modal body -->
-			      <div class="modal-body">
-					<div class="row">
-						<div class="col-xs-4">
-							<img src="{{ a.achievement.icon }}" style="width: 100%" />
-						</div>
-						<div class="col-xs-8">
-							<!-- Description -->
-							{{ a.achievement.desc|safe }}
-							<p>Project: <strong>{{ a.project }}</strong></p>
-							<!-- Unlocked / Achieved date -->
-							{% if a.achieved %}
-								<p class="text-success">
-									{% localtime on %}
-									Achieved on <strong>{{ a.details.date }}</strong>
-									{% endlocaltime %}
-								</p>
-							{% endif %}
-							{% if a.instances %}
-								<p class="text-success">
-									{% localtime on %}
-									Achieved by <strong>{{ a.instances }}</strong> user{{ a.instances|pluralize }}
-									{% endlocaltime %}
-								</p>
-							{% endif %}
-							<!-- Requirements -->
-							<table class="table table-condensed">
-								<tr>
-									<th>Counter</th>
-									<th>Value</th>
-								</tr>
-								{% for k,v in a.achievement|get_metrics %}
-								<tr>
-									<td>{{ k }}</td>
-									<td>&gt;= {{ v }}</td>
-								</tr>
-								{% endfor %}
-							</table>
-						</div>
-					</div>
-			      </div>
-
-			      <!-- Modal footer -->
-			      <div class="modal-footer">
-			        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-			      </div>
-
-			    </div>
-			  </div>
-			</div>
+		    {% include "chunks/achievement_modal.html" with achievement=a index=forloop.counter %}
 		{% endif %}
 	{% endfor %}
 </div>

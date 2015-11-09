@@ -1,9 +1,11 @@
 {% load piggy_extras %}
+{% load tz %}
+<pre>ID={{index}}</pre>
 <div class="achievement-board">
 	<div class="achievements">
 	{% for a in achievements %}
 		{% if a.achieved %}
-		<div class="icon" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}{% if website %} in {{website.name}}{% elif a.project %} in {{a.project.display_name}}{% else %} (Personal){% endif %}">
+		<div class="icon" data-popup-id="#achievement-modal-{{ forloop.counter }}" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}{% if website %} in {{website.name}}{% elif a.project %} in {{a.project.display_name}}{% else %} (Personal){% endif %}">
 			{% if website %}
 			<a class="btn btn-default project-button">
 				<span class="icon" style="background-image: url('{{ website.icon }}')"></span>
@@ -24,3 +26,9 @@
 	</div>
 	<div class="clearfix"></div>
 </div>
+
+{% for a in achievements %}
+	{% if a.achieved %}
+    {% include "chunks/achievement_modal.html" with achievement=a index=forloop.counter %}
+	{% endif %}
+{% endfor %}

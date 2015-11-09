@@ -1,6 +1,10 @@
 {% extends "base/p_unstyled.html" %}
 {% load staticfiles %}
 
+{% block head %}
+	<meta http-equiv="refresh" content="61">
+{% endblock %}
+
 {% block content %}
 <div class="embed-frame">
 	{% if not user %}
@@ -23,6 +27,7 @@
 	</div>
 	<div class="row">
 		<div class="col-xs-12">
+			<br />
 			{% include "chunks/achievements.html" with showAll=True %}
 		</div>
 	</div>

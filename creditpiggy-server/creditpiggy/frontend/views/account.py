@@ -304,25 +304,16 @@ def credits(request):
 		slots=slots
 		)
 
-@render_to("email/welcome.html")
+@render_to("share/achievement.html")
 @login_required()
 def test(request):
 	"""
 	Testing endpoint
 	"""
-
-	a = Achievement.objects.all()[0]
-	p = PiggyProject.objects.all()[0]
-
-	ctx = context(request,
-		achievement=a, 
-		project=p,
-		base_url=settings.BASE_URL,
+	return context(request,
+		achievement=AchievementInstance.objects.all()[0], 
+		user=request.user
 		)
-
-	return ctx
-
-	return redirect(reverse("frontend.profile"))
 
 
 @login_required()
