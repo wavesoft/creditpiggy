@@ -64,7 +64,7 @@ def achievement(request, aid):
 
 	# If we have a see more link, add tracking code
 	if see_more_link and request.user.is_authenticated():
-		see_more_link += "#cpr=%s." % request.user.getRefererID()
+		see_more_link += "?cpr=%s." % request.user.getRefererID()
 
 	# Return context
 	return context(request,
