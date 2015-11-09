@@ -6,6 +6,7 @@
 {% block head %}
 	<!-- OpenGraph Properties -->
 	<meta property="og:title" content="Achieved {{achievement.achievement.name}}" />
+	<meta property="og:headline" content="{{achievement.achievement.desc|striptags}}" />
 	<meta property="og:description" content="{{achievement.achievement.desc|striptags}}" />
 	<meta property="og:image" content="{{achievement.achievement.icon}}" />
 {% endblock %}

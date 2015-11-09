@@ -21,6 +21,8 @@ from functools import wraps
 
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+from django.utils.decorators import available_attrs
+from django.views.decorators.cache import cache_page
 
 def render_to(tpl):
 	"""
@@ -34,5 +36,23 @@ def render_to(tpl):
 			if isinstance(out, dict):
 				out = render_to_response(tpl, out, RequestContext(request))
 			return out
+		return wrapper
+	return decorator
+
+def cache_page_per_user(timeout):
+	"""
+	Use this decorator in a view to cache it's response per user and not globaly
+	"""
+	def decorator(func):
+		@wraps(func)
+		def wrapper(request, *args, **kwargs):
+			# Calculate prefix per user
+			user_id = "page_all"
+			if request.user.is_authenticated():
+				user_id = "page_u%i" % request.user.id
+
+			# Wrap per user
+			cached = cache_page(timeout, key_prefix=user_id)(func)
+			return cached(request, *args, **kwargs)
 		return wrapper
 	return decorator
