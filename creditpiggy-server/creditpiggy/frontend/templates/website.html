@@ -1,4 +1,5 @@
 {% extends "base/p_bigheader.html" %}
+{% load tz %}
 
 {% block head %}
 	<meta http-equiv="refresh" content="61">
@@ -15,7 +16,9 @@
 	{% include "chunks/bigmetrics.html" with show_own=user.is_authenticated own=usermetrics %}
 	{% if campaign %}
 	<p>
-		&nbsp;<a href="{% url 'frontend.dashboard.overview.campaign' campaign=campaign.id %}?{{url_suffix}}" class="btn btn-sm btn-default pull-right">See more details</a> 
+		<small class="text-muted"><span class="glyphicon glyphicon-asterisk"></span> We are on campaign <strong>{{campaign.campaign.name}}</strong> till {{campaign.campaign.end_time}}</small>
+		&nbsp;
+		<a href="{% url 'frontend.dashboard.overview.campaign' campaign=campaign.id %}?{{url_suffix}}" class="btn btn-sm btn-default pull-right">See more details</a> 
 	</p>
 	{% endif %}
 	<hr />
