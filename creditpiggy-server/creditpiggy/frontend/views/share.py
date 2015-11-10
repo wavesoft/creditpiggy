@@ -25,7 +25,7 @@ from creditpiggy.frontend.views import context
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
 
-# @cache_page( 25200 ) # A week
+@cache_page( 25200 ) # A week
 @render_to("share/achievement.html")
 def achievement(request, aid):
 	"""
@@ -70,9 +70,9 @@ def achievement(request, aid):
 			if websites[0].url:
 				see_more_link = websites[0].url
 
-	# If we have a see more link, add tracking code
-	if see_more_link and request.user.is_authenticated():
-		see_more_link += "?cpr=%s." % request.user.getRefererID()
+			# Add user tracking ID
+			see_more_link += "?cpr=%s." % achievement.user.getRefererID()
+
 
 	# Return context
 	return context(request,
