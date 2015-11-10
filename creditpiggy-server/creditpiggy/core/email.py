@@ -46,7 +46,12 @@ def send_email( template, subject, to, raiseExceptions=False, **kwargs ):
 		text = render_to_string("email/%s.txt" % template, context=ctx)
 
 		# Send e-mail
-		mail = EmailMultiAlternatives( body=text, subject=subject, to=to )
+		if isinstance(to, list):
+			mail = EmailMultiAlternatives( body=text, subject=subject, to=[], bcc=to )
+		else:
+			mail = EmailMultiAlternatives( body=text, subject=subject, to=[to] )
+
+		# Attach HTML version
 		mail.attach_alternative(html, "text/html")
 		mail.send()
 
@@ -55,6 +60,38 @@ def send_email( template, subject, to, raiseExceptions=False, **kwargs ):
 		# Re-throw exception if we should raise them
 		if raiseExceptions:
 			raise
+
+def send_campaign_achievement_email( users, campaign_achievement, raiseExceptions=False ):
+	"""
+	Send an e-mail congratulating a group of people for their campaign achievement
+	"""
+
+	# Get e-mails of all users
+	emails = []
+	for u in users:
+		if u.email_achievement:
+			if u.email:
+				emails.append( u.email )
+
+	# If we have no e-mails, return
+	if len(emails) == 0:
+		return
+
+	# Otherwise send it
+	send_email(
+
+		# Recepient
+		"campaign_achievement", # Template
+		"Achievement Unlocked: %s" % campaign_achievement.achievement.name, # Subject
+		emails, # To
+		raiseExceptions,
+
+		# Context
+		achievement=campaign_achievement.achievement,
+		share_id=campaign_achievement.getShareID(),
+		campaign=campaign_achievement.campaign,
+
+		)
 
 def send_personal_achievement_email( user, achievement, raiseExceptions=False ):
 	"""
@@ -71,11 +108,12 @@ def send_personal_achievement_email( user, achievement, raiseExceptions=False ):
 		# Recepient
 		"achievement", # Template
 		"Achievement Unlocked: %s" % achievement.name, # Subject
-		(user.email,), # To
+		user.email, # To
 		raiseExceptions,
 
 		# Context
 		achievement=achievement,
+		share_id=achievement.getShareID(),
 		project=None,
 		user=user,
 
@@ -96,11 +134,12 @@ def send_achievement_email( user, project, achievement, raiseExceptions=False ):
 		# Recepient
 		"achievement", # Template
 		"Achievement Unlocked: %s" % achievement.name, # Subject
-		(user.email,), # To
+		user.email, # To
 		raiseExceptions,
 
 		# Context
 		achievement=achievement,
+		share_id=achievement.getShareID(),
 		project=project,
 		user=user,
 
@@ -115,7 +154,7 @@ def send_welcome_email( user, raiseExceptions=False ):
 		# Recepient
 		"welcome", # Template
 		"Welcome to CreditPiggy", # Subject
-		(user.email,), # To
+		user.email, # To
 		raiseExceptions,
 
 		# Context

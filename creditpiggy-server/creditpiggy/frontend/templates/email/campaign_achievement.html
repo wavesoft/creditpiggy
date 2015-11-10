@@ -1,0 +1,33 @@
+{% extends "base/email.html" %}
+{% block body %}
+	<h1><a href="{{ base_url }}/profile/">{{ achievement.name }} achieved!</a></h1>
+	<p>Congratulations to you all! You have just unlocked the <strong>{{ achievement.name }}</strong> achievement. Click on the icon below to share the news with your friends:</p>
+
+	<div class="badge text-center">
+		<div>
+			<a style="border:none" href="{{ base_url }}/share/achievement/{{share_id}}/">
+				<img alt="{{ achievement.name }} badge" src="{{ achievement.icon }}" />
+			</a>
+			<blockquote style="color: {{ achievement.color }}">
+			{{ achievement.desc | safe }}
+			</blockquote>
+		</div>
+	</div>
+
+	<table class="project">
+		<tr>
+			<td>
+				<img src="data:image/gif;base64,R0lGODlhLQAtANUgABAQEEBAQM/Pz+/v75+fn/LIHmBgYPjhh39/fzAwMCAgIPvww/778L+/v3BwcPrppfXTS1BQUI+Pj9/f3/z00q+vr/344fvstPTPPPPLLfXXWvbaaffeePnllgAAAPHED////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAACAALAAAAAAtAC0AAAb/QJBwSCwaj8ikcslsOoeMxeNAfSwsz6zwssl8vmBwYXPRKhmHQnjNLhwY5mJHza6v3XGQBWLvszEUWhR0foVfBWVOD4aMYQ9NC42SX49Kg5OSBYFJGJiTGHBHB5gFEAeLjAdHFoR+EBwPWEOjjLJEHH0ZsJsgExUIAQAEDF6GG0UMrWuqA7/BHtAeAAADCxoQEJ12BaFCqHYaIAHRCQ4EAiAIHg5FC3x1lUIafRoL4h4NQwISAwTQAQADGJgA4luYcEOUgcnQywC0AUIaTCMXMAE0ARbsDKHQ55hFBQ4SBLAoLQIBgkTUIQBhZ1OkOogGeIhARAA0AkckAPAgAcS7/zX2QNBaJsRfBIhDJHrAOWTCOA8K9Cj8oEponQUTFEQDgAApCAE7KwjRCVXrynlsqg4Ns6CBhwACCGjlijSCB4ISEFSAOECrgGRphawFs8DmyqJzHYwLcKSBVgMgLgSOfBXE25ND5EbrWUSdB8gUioVJ9DIMQ3/RQO796hZy06dvQaAFOoRNBxAKAMQ1oBVaOa2MhyAY7gAaiA51iGgD49FDTQkRdno4XETAY8prMNxac6w4gAgI8g0Zh6R1QYVVhXAEA8omAJK+DTxFZ0Qm5J9hbAn5CQGEQ7EgNIBAdP8AWIRTseGyRn/t5FfBW/I5UAFZh01AHQhkXUQMbUa805FeNCACIN4ACdAnwDgAVOAWNZd8waARGbW3Ez9fSWCAVyYJ4dmNY8V2gRoF6FfEBQyAtVQSCLAjwEfiDWEXaBjEg8QEOzF1BGrROODVECR6kMCWShhgpRH+fBfAdUg4xE4emUlDX5euNcZmm7oRAeecSpRJn50WBQAmniDomYRDXwJKRAUR7ImEA4ka6uijjgYBADs=" style="width: 45px" />
+			</td>
+			<td>This is a team achievement for the campaign <strong>{{campaign.name}}</strong>. You and many others participating in the same campaign made it possible. A big thank you to you all!</td>
+		</tr>
+	</table>
+
+{% endblock %}
+
+{% block footer %}
+	<p class="discreet text-center">
+		You are receiving this message when a new achievement is reached because of your contribution.<br />
+		You can configure your e-mail preferences from your <a href="{{ base_url }}/dashboard/settings/">Profile Settings</a>.
+	</p>
+{% endblock %}

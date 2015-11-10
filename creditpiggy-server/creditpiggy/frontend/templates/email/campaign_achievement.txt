@@ -1,0 +1,11 @@
+
+{{ achievement.name }} achieved!
+==========================================
+
+Congratulations to you all! You have just unlocked the "{{ achievement.name }}" achievement. Click on the link below to share the news with your friends: {{ base_url }}/share/achievement/{{share_id}}/
+
+This is a team achievement for the campaign {{campaign.name}}. You and many others participating in the same campaign made it possible. A big thank you to you all!
+
+~~ By Credit Piggy
+
+You are receiving this message when a new achievement is reached because of your contribution. You can configure your e-mail preferences from your Profile Settings ({{ base_url }}/dashboard/settings/)

@@ -1,11 +1,11 @@
 {% extends "base/email.html" %}
 {% block body %}
 	<h1><a href="{{ base_url }}/profile/">{{ achievement.name }} achieved!</a></h1>
-	<p>Congratulations {{ user.display_name }}! You have just unlocked the <strong>{{ achievement.name }}</strong> achievement.</p>
+	<p>Congratulations {{ user.display_name }}! You have just unlocked the <strong>{{ achievement.name }}</strong> achievement. Click on the icon below to share the news with your friends:</p>
 
 	<div class="badge text-center">
 		<div>
-			<a style="border:none" href="{{ base_url }}/profile/achievments/">
+			<a style="border:none" href="{{ base_url }}/share/achievement/{{share_id}}/">
 				<img alt="{{ achievement.name }} badge" src="{{ achievement.icon }}" />
 			</a>
 			<blockquote style="color: {{ achievement.color }}">

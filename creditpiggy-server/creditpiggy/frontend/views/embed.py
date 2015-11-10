@@ -23,6 +23,7 @@ import creditpiggy.frontend.aggregate.overview as overview
 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.cache import cache_page
 
 from creditpiggy.api.auth import website_from_request
 from creditpiggy.core.achievements import campaign_next_achievement
@@ -79,7 +80,7 @@ def mystatus(request):
 	# Render
 	return data
 
-@cache_page_per_user( 60 )
+@cache_page( 60 )
 @xframe_options_exempt
 @render_to("embed/website_status.html")
 @accept_bg_option

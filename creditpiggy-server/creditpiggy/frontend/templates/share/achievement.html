@@ -13,7 +13,11 @@
 
 {% block content %}
 	
+	{% if campaign %}
+	<h2>Achieved {{achievement.achievement.name}}</h2>
+	{% else %}
 	<h2>{{ achievement.user.display_name}} achieved {{achievement.achievement.name}}</h2>
+	{% endif %}
 	<div class="row">
 		<div class="col-xs-3">
 			<img class="img-responsive" src="{{achievement.achievement.icon}}" alt="{{achievement.achievement.name}} icon" />
@@ -23,9 +27,15 @@
 				<div class="panel-body">
 					{{achievement.achievement.desc|safe}}
 				</div>
+				{% if project %}
 				<div class="panel-footer">
-					This is an achievement in project <a href="#">{{achievement.project.display_name}}</a>
+					This is an achievement in project <a href="{% url 'frontend.details' slug=project.slug %}">{{project.display_name}}</a>
 				</div>
+				{% elif campaign %}
+				<div class="panel-footer">
+					This is a team achievement of campaign <span class="text-primary">{{campaign.name}}</span>
+				</div>
+				{% endif %}
 			</div>
 			<p>Achieved on <strong>{{achievement.date}}</strong></p>
 			<p>

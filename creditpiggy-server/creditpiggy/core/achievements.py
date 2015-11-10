@@ -22,8 +22,8 @@ import random
 
 from django.db.models import Q
 from creditpiggy.core.utils.metrics import VisualMetrics
-from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement, CampaignAchievementInstance, VisualMetric
-from creditpiggy.core.email import send_achievement_email, send_personal_achievement_email
+from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement, CampaignAchievementInstance, CampaignUserCredit, VisualMetric
+from creditpiggy.core.email import send_achievement_email, send_personal_achievement_email, send_campaign_achievement_email
 
 ################################################
 # 
@@ -238,12 +238,14 @@ def check_campaign_achievements( campaign ):
 			# If this achievement should be awarded to all members
 			# of the campaign, perform mass award now
 			if a.team:
-				for cuc in CampaignUserCredit.objects.filter( campaign=campaign ):
-					user = cuc.user
 
-					# Send e-mail
-					# send_personal_achievement_email( user, a )
-					pass
+				# Collect all users
+				users = []
+				for cuc in CampaignUserCredit.objects.filter( campaign=campaign, user__email_achievement=True ):
+					users.append( cuc.user )
+
+				# Send to all of them
+				send_campaign_achievement_email( users, ac )
 
 def check_personal_achievements( user ):
 	"""

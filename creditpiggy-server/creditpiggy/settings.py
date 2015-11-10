@@ -62,7 +62,7 @@ LOGGING =  _CONFIG_.LOGGING
 CACHES = {
 	'default': {
 		"BACKEND": "django_redis.cache.RedisCache",
-		"LOCATION": "redis://%s:%i/%i" % (_CONFIG_.REDIS_HOST, _CONFIG_.REDIS_PORT, _CONFIG_.REDIS_DB),
+		"LOCATION": "redis://%s:%i/%i" % (_CONFIG_.REDIS_HOST, _CONFIG_.REDIS_PORT, _CONFIG_.REDIS_DB_CACHE),
 		"OPTIONS": {
 			"CLIENT_CLASS": "django_redis.client.DefaultClient",
 		}

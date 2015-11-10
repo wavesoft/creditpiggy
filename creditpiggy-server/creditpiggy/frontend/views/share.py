@@ -25,7 +25,7 @@ from creditpiggy.frontend.views import context
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
 
-@cache_page( 25200 ) # A week
+# @cache_page( 25200 ) # A week
 @render_to("share/achievement.html")
 def achievement(request, aid):
 	"""
@@ -38,6 +38,8 @@ def achievement(request, aid):
 		return redirect(reverse("frontend.home") )
 
 	# Try to lookup a relevant campaign
+	campaign = None
+	project = None
 	see_more_link = ""
 	see_more_title = ""
 	if isinstance( achievement, CampaignAchievementInstance ):
@@ -46,11 +48,17 @@ def achievement(request, aid):
 		see_more_link = reverse("frontend.website.status", kwargs={'slug': achievement.campaign.website.slug} )
 		see_more_title = achievement.campaign.website.name
 
+		# Get related campaign
+		campaign = achievement.campaign
+
 		# If we have a url, update see more link
 		if achievement.campaign.website.url:
-			see_more_link = achievement.campaign.website
+			see_more_link = achievement.campaign.website.url
 
 	elif isinstance( achievement, AchievementInstance ):
+
+		# Get related project
+		project = achievement.project
 
 		# Get websites hosting this project
 		websites = Website.objects.filter(projects=achievement.project)
@@ -69,6 +77,8 @@ def achievement(request, aid):
 	# Return context
 	return context(request,
 		achievement=achievement,
+		campaign=campaign,
+		project=project,
 		see_more=see_more_link,
 		see_more_title=see_more_title,
 		)

@@ -2,7 +2,7 @@
 {{ achievement.name }} achieved!
 ==========================================
 
-Congratulations {{ user.display_name }}! You have just unlocked the "{{ achievement.name }}" achievement. You can visit your profile to see more details: {{ base_url }}/profile/achievments
+Congratulations {{ user.display_name }}! You have just unlocked the "{{ achievement.name }}" achievement. Click on the link below to share the news with your friends: {{ base_url }}/share/achievement/{{share_id}}/
 
 {% if project %}
 This is an achievement from the {{ project.display_name }} project. On behalf of the people behind this project we would like to say a big thank you for your support!
