@@ -47,7 +47,7 @@ def auto(request):
 	else:
 		return redirect(reverse("frontend.website.status", kwargs={'slug': website.slug} ))
 
-# @cache_page_per_user(60)
+@cache_page_per_user(60)
 @render_to("website.html")
 def status(request, slug=""):
 	"""
