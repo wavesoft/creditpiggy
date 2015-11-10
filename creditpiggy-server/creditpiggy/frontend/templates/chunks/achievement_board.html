@@ -4,7 +4,7 @@
 	<div class="achievements">
 	{% for a in achievements %}
 		{% if a.achieved %}
-		<div class="icon" data-popup-id="#achievement-modal-{{ forloop.counter }}" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}{% if website %} in {{website.name}}{% elif a.project %} in {{a.project.display_name}}{% else %} (Personal){% endif %}">
+		<div class="icon" data-popup-id="#achievement-modal-{{ forloop.counter }}" style="background-image: url('{{ a.achievement.icon }}')" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}{% if website %} in {{website.name}}{% elif a.project %} in {{a.project.display_name}}{% elif a.campaign %} in {{a.campaign.name}}{% else %} (Personal){% endif %}">
 			{% if website %}
 			<a class="btn btn-default project-button">
 				<span class="icon" style="background-image: url('{{ website.icon }}')"></span>
@@ -13,6 +13,10 @@
 				{% if a.project %}
 				<a class="btn btn-default project-button" href="{% url 'frontend.details' slug=a.project.slug %}?{{url_suffix}}">
 					<span class="icon" style="background-image: url('{{ a.project.profile_image }}')"></span>
+				</a>
+				{% elif a.campaign %}
+				<a class="btn btn-default project-button" href="{% url 'frontend.website.status' slug=a.campaign.website.slug %}?{{url_suffix}}">
+					<span class="icon" style="background-image: url('{{ a.campaign.website.icon }}')"></span>
 				</a>
 				{% endif %}
 			{% endif %}

@@ -360,7 +360,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 			"profile_url" 	: "javascript:;",
 		}
 
-	def achievements(self, personal=True, unachieved=False):
+	def achievementStatus(self, personal=True, unachieved=False):
 		"""
 		Return all the achievements of this user has achieved
 		"""
@@ -974,6 +974,46 @@ class Campaign(MetricsModelMixin, models.Model):
 		Check if the campaign is expired
 		"""
 		return self.end_time < timezone.now()
+
+	def achievementStatus(self, unachieved=False):
+		"""
+		Return all the achievements of this user has achieved
+		"""
+
+		# List of achieved IDs
+		achieved_ids = []
+
+		# Get all achievements
+		ans = []
+		for a in CampaignAchievementInstance.objects.filter(campaign=self):
+
+			# Collect IDs
+			achieved_ids.append( a.achievement.id )
+
+			# Include additional meta
+			ans.append({
+					"achievement": a.achievement,
+					"achieved": True,
+					"details": a,
+					"campaign": self,
+					"share_id": a.getShareID(),
+				})
+
+		# Check if we should include also unachieved
+		if unachieved:
+			for a in self.achievements.exclude( id__in=achieved_ids ):
+
+				# Include additional meta
+				ans.append({
+						"achievement": a,
+						"achieved": False,
+						"campaign": self,
+						"details": None,
+					})
+
+		# Return achievements and their status
+		return ans
+
 
 	@classmethod
 	def ofWebsite(cls, website, active=True, expired=False):

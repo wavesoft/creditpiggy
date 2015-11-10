@@ -42,7 +42,7 @@ from creditpiggy.core.utils import VisualMetricsSum
 from creditpiggy.api.auth import sso_logout, website_from_request
 from creditpiggy.api import information
 
-from creditpiggy.core.achievements import personal_next_achievement
+from creditpiggy.core.achievements import personal_next_achievement, campaign_next_achievement
 
 NOT_NUMBERS = re.compile('[^0-9]')
 
@@ -337,7 +337,7 @@ def dashboard_overview_overall(request):
 	umetric.finalize()
 
 	# Collect all achievements
-	achievements = request.user.achievements()
+	achievements = request.user.achievementStatus()
 
 	# Return context
 	return context(request,
@@ -348,6 +348,7 @@ def dashboard_overview_overall(request):
 		metrics=umetric.values(),
 		candidate_achievement=personal_next_achievement( request.user ),
 
+		overview_type="Personal",
 		title="My overall participation",
 		profile=request.user,
 		credits=int(user_counters.get('credits',0)),
@@ -390,6 +391,7 @@ def dashboard_overview_project(request, project):
 		metrics=umetric.values(),
 		candidate_achievement=personal_next_achievement( request.user, project=pur.project ),
 
+		overview_type="Project",
 		title="My participation in %s" % pur.project.display_name,
 		credits=pur.credits,
 		rank=pur.ranking(),
@@ -412,15 +414,15 @@ def dashboard_overview_campagin(request, campaign):
 	cur = u_campaigns.filter( id=int(campaign) ).get()
 
 	# Get candidate achievement
-	candidate_achievement=None
+	candidate_achievement = campaign_next_achievement( cur.campaign )
 
-	# Get all projects in the website
-	achievements = []
+	# Get campaign achievements
+	project_achievements = []
+	campaign_achievements = cur.campaign.achievementStatus()
+
+	# Get metrics of all projects
 	campaign_project_metrics = []
 	for project in cur.campaign.website.projects.all():
-
-		# Collect achievements
-		achievements += project.achievementStatus(request.user, onlyAchieved=True)
 
 		# Collect one of each visual metric
 		metrics = project.visual_metrics.all().order_by('-priority')
@@ -428,9 +430,12 @@ def dashboard_overview_campagin(request, campaign):
 			if not m in campaign_project_metrics:
 				campaign_project_metrics.append(m)
 
-		# Get candidate achievement in this project
-		if not candidate_achievement:
-			candidate_achievement = personal_next_achievement( request.user, project=project )
+		# Collect project achievements
+		project_achievements += project.achievementStatus(request.user, onlyAchieved=True)
+		
+		# # Get candidate achievement in this project
+		# if not candidate_achievement:
+		# 	candidate_achievement = personal_next_achievement( request.user, project=project )
 
 	# Create visual metrics
 	umetric = VisualMetricsSum( campaign_project_metrics )
@@ -444,10 +449,12 @@ def dashboard_overview_campagin(request, campaign):
 		u_campaigns=u_campaigns,
 		profile=request.user,
 		campaign_id=int(campaign),
-		achievements=sorted(achievements, key=lambda a: a['achievement'].id),
+		achievements=sorted(project_achievements, key=lambda a: a['achievement'].id),
 		metrics=umetric.values(),
 		candidate_achievement=candidate_achievement,
 
+		overview_type="Project",
+		campaign_achievements=sorted(campaign_achievements, key=lambda a: a['achievement'].id),
 		title="My participation in %s" % cur.campaign.name,
 		credits=cur.credits,
 		rank=cur.ranking(),

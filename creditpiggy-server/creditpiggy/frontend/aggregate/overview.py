@@ -35,7 +35,7 @@ def user(user):
 	u_user__metrics.finalize()
 
 	# Collect all achievements
-	u_user__achievements = user.achievements(unachieved=True)
+	u_user__achievements = user.achievementStatus(unachieved=True)
 	u_user__candidateAchievement = personal_next_achievement( user )
 
 	# Return details

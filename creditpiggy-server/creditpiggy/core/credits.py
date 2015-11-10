@@ -37,7 +37,7 @@ def import_to_campaigns( slot, user, website ):
 	slot_metrics = m_slot.counters()
 
 	# Update all relevant campaigns running for the project
-	campaigns = Campaign.ofWebsite( website )
+	campaigns = Campaign.ofWebsite( website, active=True, expired=False )
 	for campaign in campaigns:
 
 		# Update campaign metrics

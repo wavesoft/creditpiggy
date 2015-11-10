@@ -19,7 +19,11 @@
 				<div class="col-xs-8">
 					<!-- Description -->
 					{{ achievement.achievement.desc|safe }}
+					{% if achievement.project %}
 					<p>Project: <strong>{{ achievement.project }}</strong></p>
+					{% elif achievement.campaign %}
+					<p>Campaign: <strong>{{ achievement.campaign }}</strong></p>
+					{% endif %}
 					<!-- Unlocked / Achieved date -->
 					{% if achievement.achieved %}
 						<p class="text-success">

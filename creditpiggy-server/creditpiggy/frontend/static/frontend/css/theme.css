@@ -641,6 +641,9 @@ div.achievements > div .icon .badge {
 .next-achievement p.teaser {
   font-weight: bold;
 }
+.next-achievement hr {
+  margin: 10px 0;
+}
 .next-achievement .title {
   font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 10px 0 13px;

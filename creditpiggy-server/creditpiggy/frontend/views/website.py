@@ -28,7 +28,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from creditpiggy.frontend.views import context
 from creditpiggy.api.auth import website_from_request
 
-from creditpiggy.core.achievements import personal_next_achievement
+from creditpiggy.core.achievements import personal_next_achievement, campaign_next_achievement
 from creditpiggy.core.decorators import render_to, cache_page_per_user
 from creditpiggy.core.models import *
 from creditpiggy.core.utils import VisualMetricsSum
@@ -47,7 +47,7 @@ def auto(request):
 	else:
 		return redirect(reverse("frontend.website.status", kwargs={'slug': website.slug} ))
 
-@cache_page_per_user(60)
+# @cache_page_per_user(60)
 @render_to("website.html")
 def status(request, slug=""):
 	"""
@@ -92,10 +92,6 @@ def status(request, slug=""):
 			# Get user achievements in this project
 			achievements += p.achievementStatus(request.user)
 
-			# Get a candidate achievement
-			if candidate_achievement is None:
-				candidate_achievement = personal_next_achievement( request.user, project=p )
-
 
 	# Query campaigns and pick first
 	campaigns = Campaign.ofWebsite(website, active=True)
@@ -120,10 +116,17 @@ def status(request, slug=""):
 			# Accumulate the counters of interesting metrics
 			vmetric.merge( p.metrics() )
 
+			# Get a candidate achievement
+			if candidate_achievement is None:
+				candidate_achievement = personal_next_achievement( request.user, project=p )
+
 	else:
 
 		# Get campaign counters
 		for c in campaigns:
+
+			# Prepend campaign achievements
+			achievements = c.achievementStatus(unachieved=True) + achievements
 
 			# Get user's role in this project
 			if request.user.is_authenticated():
@@ -140,10 +143,13 @@ def status(request, slug=""):
 			# Accumulate the counters of interesting metrics
 			vmetric.merge( c.metrics() )
 
+			# Get a candidate achievement
+			if candidate_achievement is None:
+				candidate_achievement = campaign_next_achievement( c )
+
 	# Finalize metrics summarizers
 	vmetric.finalize()
 	umetric.finalize()
-
 
 	# Return context
 	return context(request,
