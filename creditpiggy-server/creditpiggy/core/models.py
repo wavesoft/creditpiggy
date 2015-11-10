@@ -358,12 +358,15 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 
 			# Get user's contribution on active campaigns
 			campaign = Campaign.ofWebsite( website )
-			user_campaigns = CampaignUserCredit.objects.filter( campaign=campaign )
+			user_campaigns = CampaignUserCredit.objects.filter( campaign=campaign[0], user=self )
 
 			# Get ranking and counters of first campaign
 			if user_campaigns.exists():
 				rank = user_campaigns[0].ranking()
 				counters = user_campaigns[0].metrics().counters()
+			else:
+				rank = 0
+				counters = {}
 
 		# Fallback to user ranking
 		if rank is None:
