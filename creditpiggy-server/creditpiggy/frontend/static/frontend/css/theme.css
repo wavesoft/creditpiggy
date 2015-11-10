@@ -144,6 +144,9 @@ div.embed-frame {
   padding-top: 10px;
   min-height: 100%;
 }
+div.embed-frame div.achievements {
+  margin-top: 20px;
+}
 .embed-login-banner {
   width: 100%;
   height: 100%;
