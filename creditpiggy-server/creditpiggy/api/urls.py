@@ -18,10 +18,12 @@
 ################################################################
 
 from django.conf.urls import patterns, include, url
-from creditpiggy.api.views import batch
-from creditpiggy.api.views import lib
+from creditpiggy.api.views import batch, lib, maintenance
 
 urlpatterns = patterns('',
+
+	# heartbeat
+	url(r'^heartbeat$',							maintenance.heartbeat),
 	
 	# Default Protocol
 	url(r'^batch/alloc$',						batch.slot_alloc,			name="api.batch.alloc" ),
