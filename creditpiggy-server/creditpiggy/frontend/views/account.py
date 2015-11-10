@@ -192,12 +192,21 @@ def login_ack(request):
 	if website:
 		next_url = reverse("frontend.website.status", kwargs={ "slug": website.slug })
 
+	# Include pin token if we have a pin token
+	pin_token=request.session.get('pin_token', None),
+	pin_hash=""
+	if not pin_token is None:
+		try:
+			pin_hash=hashlib.sha256(request.user.email.lower()).hexdigest(),
+		except AttributeError:
+			pin_token=None
+
 	# Return context
 	return context(request,
 			session=json.dumps(information.compile_session(request)),
 			next=next_url,
-			pin_token=request.session.get('pin_token', None),
-			pin_hash=hashlib.sha256(request.user.email.lower()).hexdigest(),
+			pin_token=pin_token,
+			pin_hash=pin_hash,
 		)
 
 def link(request, provider):
