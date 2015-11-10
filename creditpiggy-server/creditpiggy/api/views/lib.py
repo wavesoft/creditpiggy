@@ -185,7 +185,7 @@ def session(request, api="json"):
 		raise APIError("Your session has expired", code=203)
 
 	# Return session details
-	return information.compile_session(request)
+	return information.compile_session(request, website=request.website)
 
 @render_with_api(context="js.thaw")
 @allow_cors()
@@ -211,7 +211,7 @@ def thaw(request, api="json"):
 	sso_update( request.website, user )
 	
 	# Return session details
-	return information.compile_session(request)
+	return information.compile_session(request, website=request.website)
 
 @render_with_api(context="js.status")
 @allow_cors()

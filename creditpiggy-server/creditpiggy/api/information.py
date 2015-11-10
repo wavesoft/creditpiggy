@@ -34,7 +34,7 @@ def gen_crypto_key():
 	# Return a unique key
 	return key
 
-def compile_session(request, auth_token=None):
+def compile_session(request, auth_token=None, website=None):
 	"""
 	Compile session information
 	"""
@@ -67,7 +67,7 @@ def compile_session(request, auth_token=None):
 	# If user is authenticated, return profile
 	if user.is_authenticated():
 		# Insert user profile
-		session['profile'] = user.profile()
+		session['profile'] = user.profile( website=website )
 
 	# If don't have an auth_token specified, try to locate
 	if auth_token is None:

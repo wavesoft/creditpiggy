@@ -335,7 +335,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		"""
 		return "r%06x" % (self.id ^ settings.CREDITPIGGY_TRACKID_SECRET)
 
-	def profile(self):
+	def profile(self, website=None):
 		"""
 		Compile and return the relevant information for the user's profile
 		"""
@@ -349,13 +349,34 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		# in order to keep it small.
 		referrer = "r%06x" % (self.id ^ settings.CREDITPIGGY_TRACKID_SECRET)
 
+		# Get ranking
+		rank = None
+		counters = None
+
+		# Check if we should get per-website/campaign ranking
+		if not website is None:
+
+			# Get user's contribution on active campaigns
+			campaign = Campaign.ofWebsite( website )
+			user_campaigns = CampaignUserCredit.objects.filter( campaign=campaign )
+
+			# Get ranking and counters of first campaign
+			if user_campaigns.exists():
+				rank = user_campaigns[0].ranking()
+				counters = user_campaigns[0].metrics().counters()
+
+		# Fallback to user ranking
+		if rank is None:
+			rank = self.ranking()
+			counters = self.metrics().counters()
+
 		# Return profile
 		return {
 			"id" 			: self.uuid,
-			"rank"			: self.ranking(),
 			"ref"			: referrer,
+			"rank"			: rank,
+			"counters" 		: counters,
 			"display_name" 	: self.display_name.strip(),
-			"counters" 		: self.metrics().counters(),
 			"profile_image" : profile_img,
 			"profile_url" 	: "javascript:;",
 		}
