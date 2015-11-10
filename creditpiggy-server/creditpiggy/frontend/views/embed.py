@@ -26,12 +26,13 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from creditpiggy.api.auth import website_from_request
 from creditpiggy.core.achievements import campaign_next_achievement
-from creditpiggy.core.decorators import render_to, cache_page_per_user
+from creditpiggy.core.decorators import render_to, cache_page_per_user, accept_bg_option
 from creditpiggy.core.models import *
 
 @cache_page_per_user( 60 )
 @xframe_options_exempt
 @render_to("embed/user_status.html")
+@accept_bg_option
 def mystatus(request):
 	"""
 	Display an embed with my status
@@ -67,8 +68,6 @@ def mystatus(request):
 		# Include user profile
 		data['user'] = request.user
 
-		# Render
-		return data
 	else:
 
 		# Otherwise return a personal overview
@@ -77,11 +76,13 @@ def mystatus(request):
 		# Include user profile
 		data['user'] = request.user
 
-		return data
+	# Render
+	return data
 
 @cache_page_per_user( 60 )
 @xframe_options_exempt
 @render_to("embed/website_status.html")
+@accept_bg_option
 def webstatus(request):
 	"""
 	Display status of a website
@@ -113,6 +114,6 @@ def webstatus(request):
 			'next': campaign_next_achievement( d_campaign ),
 		}
 
-	print repr(data)
+	# Render
 	return data
 

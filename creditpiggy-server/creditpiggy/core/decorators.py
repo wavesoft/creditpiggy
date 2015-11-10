@@ -17,12 +17,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ################################################################
 
+import re
 from functools import wraps
 
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.utils.decorators import available_attrs
 from django.views.decorators.cache import cache_page
+
+RE_VALID_BG = re.compile(r'^[0-f][0-f][0-f]([0-f][0-f][0-f])?$')
 
 def render_to(tpl):
 	"""
@@ -56,3 +59,34 @@ def cache_page_per_user(timeout):
 			return cached(request, *args, **kwargs)
 		return wrapper
 	return decorator
+
+def accept_bg_option(func):
+	"""
+	Accept background altering options (used by embed)
+	WARNING: This MUST be used before render_width
+	"""
+	@wraps(func)
+	def wrapper(request, *args, **kwargs):
+		out = func(request, *args, **kwargs)
+		if isinstance(out, dict):
+			if 'bg' in request.GET:
+				bg = request.GET['bg']
+				if RE_VALID_BG.match(bg):
+
+					# Convert 3-notation to 6-notation
+					if len(bg) == 3:
+						bg = bg[0] + bg[0] + bg[1] + bg[1] + bg[2] + bg[2]
+
+					# Parse to rgb
+					r = int(bg[0:2], 16)
+					g = int(bg[2:4], 16)
+					b = int(bg[4:6], 16)
+
+					# Inject additional details
+					out['bg_color'] = bg
+					out['bg_color_r'] = r
+					out['bg_color_g'] = g
+					out['bg_color_b'] = b
+		return out
+	return wrapper
+

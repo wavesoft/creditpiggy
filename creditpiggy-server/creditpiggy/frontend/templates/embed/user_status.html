@@ -5,6 +5,8 @@
 	<meta http-equiv="refresh" content="61">
 {% endblock %}
 
+{% block body_style %}{% if bg_color %}background-color: #{{bg_color}};{% endif %}{% endblock %}
+
 {% block content %}
 <div class="embed-frame">
 	{% if not user %}
