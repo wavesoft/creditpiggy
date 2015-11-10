@@ -42,10 +42,10 @@
     {% include "chunks/dashboard_metrics.html" with show_own=False own=False %}
     <hr />
     <h3>{{overview_type|capfirst}} Achievements</h3>
-    {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics %}
+    {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics modal_group="achievement" %}
     {% if campaign_achievements %}
     <h3>Campaign Achievements</h3>
-    {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics achievements=campaign_achievements %}
+    {% include "chunks/achievement_board.html" with show_own=user.is_authenticated own=usermetrics achievements=campaign_achievements modal_group="campaign" %}
     {% endif %}
     {% include "chunks/achievement_next.html" with candidate=candidate_achievement %}    
 

@@ -3,7 +3,7 @@
 <div class="achievements">
 	{% for a in achievements %}
 		{% if showAll or a.achieved and not showAll %}
-			<div class="btn {% if a.achieved or a.instances %}btn-default{% endif %}" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}" data-popup-id="#achievement-modal-{{ forloop.counter }}">
+			<div class="btn {% if a.achieved or a.instances %}btn-default{% endif %}" data-toggle="tooltip" data-placement="top" title="{{ a.achievement.name }}" data-popup-id="#achievement-{{ modal_group }}-{{ forloop.counter }}">
 				<div class="icon {% if not a.achieved and not a.instances %}inactive{% endif %}" style="background-image: url( {{ a.achievement.icon }} )">
 					{% if a.achieved %}
 					<span class="badge"><i class="fa fa-check-circle"></i></span>
