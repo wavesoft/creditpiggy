@@ -6,7 +6,7 @@
 
 			<div class="row">
 				<div class="col-xs-2 col-sm-12 text-center">
-					<img src="{{candidate.achievement.icon}}" />
+					<img class="clickable" border="0" data-toggle="popup" data-popup-id="#achievement-candidate-0" src="{{candidate.achievement.icon}}" />
 				</div>
 				<div class="clearfix hidden-xs"></div>
 				<div class="col-xs-10 col-sm-12 title text-center">
@@ -17,9 +17,7 @@
 		<div class="col-sm-9">
 			<p class="teaser">Coming up next!</p>
 			{{ candidate.achievement.desc|safe }}
-			
 			<hr />
-			
 			<div class="row">
 			{% for metric in candidate.metrics %}
 				{% if metric.diff > 0 %}
@@ -36,4 +34,5 @@
 		</div>
 	</div>
 </div>
+{% include "chunks/achievement_modal.html" with achievement=candidate index=0 modal_group="candidate" %}
 {% endif %}

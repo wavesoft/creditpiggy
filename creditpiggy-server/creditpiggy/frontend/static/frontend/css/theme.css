@@ -81,6 +81,9 @@ h3 {
 .img-dim .glyphicon {
   opacity: 0.5;
 }
+.clickable {
+  cursor: pointer;
+}
 .modal-compact-footer .modal-body {
   padding-bottom: 0;
 }
