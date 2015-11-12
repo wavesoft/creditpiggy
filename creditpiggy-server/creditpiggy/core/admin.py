@@ -28,6 +28,11 @@ from django.utils.safestring import mark_safe
 
 # Register your models here.
 
+class ManualEmailAdmin(admin.ModelAdmin):
+	list_display = ('subject', 'created', 'draft', 'sent_date')
+
+admin.site.register(ManualEmail, ManualEmailAdmin)
+
 class PiggyUserPINLoginAdmin(admin.ModelAdmin):
 	list_display = ('user', 'pin', 'allocated')
 

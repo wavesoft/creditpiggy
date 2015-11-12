@@ -1,0 +1,9 @@
+
+{{title}}
+==========================================
+
+{{body|striptags}}
+
+~~ By Credit Piggy
+
+This message was sent by an administrator or a project manager. You can configure your e-mail preferences from your Profile Settings ({{ base_url }}/dashboard/settings/)

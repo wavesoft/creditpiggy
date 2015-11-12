@@ -40,6 +40,7 @@ from creditpiggy.core.metrics import MetricsModelMixin
 from creditpiggy.core.housekeeping import HousekeepingTask, periodical
 from creditpiggy.core.image import image_colors
 from creditpiggy.core.redis import share_redis_connection
+from creditpiggy.core.email import send_custom_email
 
 from tinymce.models import HTMLField
 
@@ -1185,6 +1186,69 @@ class CampaignAchievementInstance(models.Model):
 		# Get share ID for AchievementInstance
 		share_id = ((self.id << 2) | 0x03) & 0xffffff
 		return "%010i" % (share_id ^ settings.CREDITPIGGY_TRACKID_SECRET)
+
+class ManualEmail(models.Model):
+	"""
+	An e-mail sent from the interface non-automatically
+	"""
+
+	#: The date it was created
+	created = models.DateTimeField(auto_now=True, editable=False)
+
+	#: Subject of the e-mail
+	subject = models.CharField(max_length=512, default="")
+
+	#: A short description for the achievement
+	body = HTMLField(help_text="The e-mail body")
+
+	#: Target users
+	target_user = models.ManyToManyField( PiggyUser, blank=True )
+
+	#: Target campaigns
+	target_campaign = models.ManyToManyField( Campaign, blank=True )
+
+	#: Target project
+	target_project = models.ManyToManyField( PiggyProject, blank=True )
+
+	#: The date it was sent (or None if not sent)
+	sent_date = models.DateTimeField(default=None, null=True, editable=False)
+
+	#: A flag that denotes that this e-mail is draft and should not be sent 
+	draft = models.BooleanField(default=True, help_text="Uncheck this to send the e-mail")
+
+	def save(self, *args, **kwargs):
+		"""
+		Send e-mail when saving this model
+		"""
+
+		# Check if we should send this e-mail
+		if not self.draft:
+			emails = set()
+
+			# Collect user e-mails
+			for u in self.target_user.all():
+				emails.add( u.email )
+
+			# Get all users from campaigns
+			for c in PiggyUser.objects.filter( campaignusercredit__campaign=self.target_campaign.all() ):
+				emails.add( u.email )
+
+			# Get all users from projects
+			for c in PiggyUser.objects.filter( projectuserrole__project=self.target_project.all() ):
+				emails.add( u.email )
+
+			# Send custom e-mail
+			send_custom_email(
+				list(emails),
+				self.subject,
+				self.body
+				)
+
+			# Mark date sent
+			self.sent_date = timezone.now()
+
+		# Call super class
+		return super(ManualEmail, self).save( *args, **kwargs )
 
 ###################################################################
 # Utility Classes

@@ -176,11 +176,31 @@ def send_pin_email( pinLogin, raiseExceptions=False ):
 		# Recepient
 		"pinlogin", # Template
 		"Login PIN: %s" % pin, # Subject
-		(pinLogin.user.email,), # To
+		pinLogin.user.email, # To
 		raiseExceptions,
 
 		# Context
 		user=pinLogin.user,
 		pin=pin,
+
+		)
+
+def send_custom_email( emails, subject, body, raiseExceptions=False ):
+	"""
+	Send a custom e-mail to specified targets
+	"""
+
+	# Send e-mail
+	send_email(
+
+		# Recepient
+		"custom", # Template
+		subject, # Subject
+		emails, # To
+		raiseExceptions,
+
+		# Context
+		body=body,
+		title=subject,
 
 		)

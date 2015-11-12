@@ -1,0 +1,12 @@
+{% extends "base/email.html" %}
+{% block body %}
+	<h1>{{title}}In</h1>
+	{{body|safe}}
+	<br />
+{% endblock %}
+{% block footer %}
+	<p class="discreet text-center">
+		This message was sent by an administrator or a project manager. 
+		You can configure your e-mail preferences from your <a href="{{ base_url }}/dashboard/settings/">Profile Settings</a>.
+	</p>
+{% endblock %}
