@@ -44,18 +44,20 @@
 					{{campaign.next.achievement.desc | safe}}
 
 					{% for metric in campaign.next.metrics %}
-					<div class="metric">
-						<div class="metric-label">
-							<span class="{{metric.icon}}"></span>
-							{{metric.diff|thousands}}
-							{{metric.display_name}}
-							to go
+						{% if metric.diff > 0 %}
+						<div class="metric">
+							<div class="metric-label">
+								<span class="{{metric.icon}}"></span>
+								{{metric.diff_text|thousands}}
+								{{metric.display_name}}
+								to go
+							</div>
+							<div class="metric-progress">
+								<div class="metric-progress-indicator" style="width: {{metric.progress}}%"></div>
+							</div>
+							<div class="clearfix"></div>
 						</div>
-						<div class="metric-progress">
-							<div class="metric-progress-indicator" style="width: {{metric.progress}}%"></div>
-						</div>
-						<div class="clearfix"></div>
-					</div>
+						{% endif %}
 					{% endfor %}
 				</div>
 				<div class="clearfix"></div>

@@ -124,7 +124,8 @@ def campaign_next_achievement( campaign ):
 
 		# Add additional metadata
 		v['progress'] = val_user * 100.0 / v['value']
-		v['diff'] = vm.getDisplayValue( k, v['value'] - val_user )
+		v['diff'] = v['value'] - val_user
+		v['diff_text'] = vm.getDisplayValue( k, v['diff'] )
 
 	# Return candidate description
 	return {
@@ -183,7 +184,8 @@ def personal_next_achievement( user, project=None, involvesMetrics=None ):
 
 		# Add additional metadata
 		v['progress'] = val_user * 100.0 / v['value']
-		v['diff'] = vm.getDisplayValue( k, v['value'] - val_user )
+		v['diff'] = v['value'] - val_user
+		v['diff_text'] = vm.getDisplayValue( k, v['diff'] )
 
 	# Return candidate description
 	return {

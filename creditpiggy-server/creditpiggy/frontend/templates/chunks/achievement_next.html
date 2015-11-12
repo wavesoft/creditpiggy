@@ -27,7 +27,7 @@
 					<i class="{{ metric.icon }}"></i>&nbsp; {{ metric.display_name }}:
 				</div>
 				<div class="col-xs-6">
-					{{ metric.diff | thousands }} <small>{{ metric.units }}</small> to go
+					{{ metric.diff_text | thousands }} <small>{{ metric.units }}</small> to go
 				</div>
 				{% endif %}
 			{% endfor %}
