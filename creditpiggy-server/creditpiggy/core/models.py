@@ -102,6 +102,8 @@ def to_dict(instance):
 				data[f.name] = []
 			else:
 				data[f.name] = list(f.value_from_object(instance).values_list('pk', flat=True))
+		elif isinstance(f, models.DateTimeField):
+			data[f.name] = str(f.value_from_object(instance))
 		else:
 			data[f.name] = f.value_from_object(instance)
 	return data
