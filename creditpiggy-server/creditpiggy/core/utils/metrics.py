@@ -62,6 +62,14 @@ class VisualMetrics(OrderedDict):
 		for k,v in values.iteritems():
 			if k in self:
 
+				# Handle appropriate numerical type
+				if not v:
+					v = 0
+				elif '.' in str(v):
+					v = float(v)
+				else:
+					v = int(v)
+
 				# Copy metric description & Set value
 				desc = copy.deepcopy( self[k] )
 				desc['value'] = v
