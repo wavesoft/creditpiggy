@@ -18,7 +18,7 @@
 ################################################################
 
 from django.conf.urls import patterns, include, url
-from creditpiggy.api.views import batch, lib, maintenance
+from creditpiggy.api.views import batch, lib, maintenance, info
 
 urlpatterns = patterns('',
 
@@ -41,6 +41,8 @@ urlpatterns = patterns('',
 	url(r'^lib/referrer$',						lib.referrer,				name="api.lib.referrer" ),
 	url(r'^lib/status$',						lib.status,					name="api.lib.status" ),
 
+	url(r'^info/website$',						info.website,				name="api.info.website" ),
+
 	# Explicit protocol
 	url(r'^batch/alloc\.(?P<api>[^/]+)$',		batch.slot_alloc,			name="api.batch.alloc" ),
 	url(r'^batch/claim\.(?P<api>[^/]+)$',		batch.slot_claim,			name="api.batch.claim" ),
@@ -55,6 +57,8 @@ urlpatterns = patterns('',
 	url(r'^lib/release\.(?P<api>[^/]+)$',		lib.release,				name="api.lib.release" ),
 	url(r'^lib/thaw\.(?P<api>[^/]+)$',			lib.thaw,					name="api.lib.thaw" ),
 	url(r'^lib/referrer\.(?P<api>[^/]+)$',		lib.referrer,				name="api.lib.referrer" ),
-	url(r'^lib/status\.(?P<api>[^/]+)$',		lib.status,				name="api.lib.status" ),
+	url(r'^lib/status\.(?P<api>[^/]+)$',		lib.status,					name="api.lib.status" ),
+
+	url(r'^info/website\.(?P<api>[^/]+)$',		info.website,				name="api.info.website" ),
 
 )

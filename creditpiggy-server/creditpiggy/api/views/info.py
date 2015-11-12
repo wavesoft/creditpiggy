@@ -29,14 +29,14 @@ from creditpiggy.api.protocol import render_with_api, APIError
 from creditpiggy.api.auth import allow_cors
 
 ##########################################
-# Public API Calls
+# Information Calls
 ##########################################
 
-@render_with_api(context="js.status")
+@render_with_api(context="js.website_info")
 @allow_cors()
-def referrer(request, api="json"):
+def website(request, api="json"):
 	"""
-	Query details regarding a user, project or website
+	Query details regarding a website
 	"""
 
 	return { }
