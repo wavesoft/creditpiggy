@@ -162,3 +162,13 @@ def expired(value):
         return value.expired()
     except:
         return None
+
+@register.filter(name='empty')
+def empty(value):
+	try:
+		if isinstance(value, str) or isinstance(value, unicode):
+			return (value.strip() == "")
+		else:
+			return not value
+	except:
+		return True

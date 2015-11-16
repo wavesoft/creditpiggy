@@ -11,7 +11,7 @@
 		{% for rank in scores %}
 		<tr>
 			<td width="100" class="{% if rank.me %}text-primary text-strong{% endif %}">#{{ rank.rank }}</td>
-			{% if not rank.priv_leaderboards or not rank.display_name %}
+			{% if not rank.priv_leaderboards or rank.display_name|empty %}
 			<td class="text-muted {% if rank.me %}text-primary text-strong{% endif %}">(A Shy User)</td>
 			{% else %}
 			<td class="{% if rank.me %}text-primary text-strong{% endif %}">{{ rank.display_name }}</td>
