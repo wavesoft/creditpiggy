@@ -172,3 +172,13 @@ def empty(value):
 			return not value
 	except:
 		return True
+
+@register.filter(name='https')
+def https(value):
+	try:
+		url = str(value)
+		if url.startswith("http:"):
+			url = "https:" + url[5:]
+		return url
+	except:
+		return value

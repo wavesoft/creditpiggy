@@ -1,5 +1,6 @@
 {% extends "base/p_content.html" %}
 {% load staticfiles %}
+{% load piggy_extras %}
 
 {% block header_icon %}{{achievement.user.profile_image}}{% endblock %}
 
@@ -9,6 +10,7 @@
 	<meta property="og:headline" content="{{achievement.achievement.desc|striptags}}" />
 	<meta property="og:description" content="{{achievement.achievement.desc|striptags}}" />
 	<meta property="og:image" content="{{achievement.achievement.icon}}" />
+	<meta property="og:image:secure_url" content="{{achievement.achievement.icon|https}}" />
 {% endblock %}
 
 {% block content %}
