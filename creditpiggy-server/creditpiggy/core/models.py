@@ -1170,11 +1170,11 @@ class ManualEmail(models.Model):
 
 		# Get all users from campaigns
 		for c in PiggyUser.objects.filter( campaignusercredit__campaign=self.target_campaign.all() ):
-			emails.add( u.email )
+			emails.add( c.email )
 
 		# Get all users from projects
 		for c in PiggyUser.objects.filter( projectuserrole__project=self.target_project.all() ):
-			emails.add( u.email )
+			emails.add( c.email )
 
 		# Update e-mails list
 		self.sent_emails = ", ".join(list(emails))
