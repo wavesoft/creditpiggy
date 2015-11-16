@@ -619,16 +619,17 @@ cpjs.dyn_tablist = function( hostDOM ) {
 
 	// Get all elements
 	hostDOM.find('[role="tab"]').each(function(i,e) {
-		var tab = $(e);
+		var tab = $(e),
+			tabID = "tab-"+$(this).attr("href").substr(1);
 
 		// Change hash when clicking on tab
 		tab.click(function(e) {
 			e.preventDefault();
-			window.location.hash = $(this).attr("href").substr(1);
+			window.location.hash = tabID;
 		});
 
 		// If this is the tab we are currently in, select
-		if (tab.attr("href") == window.location.hash)
+		if (("#"+tabID) == window.location.hash)
 			tab.click();
 
 	});
