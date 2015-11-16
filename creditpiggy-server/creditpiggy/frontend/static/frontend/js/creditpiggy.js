@@ -82,9 +82,14 @@ cpjs.initialize = function( webid ) {
 		$(msg).modal();
 	});
 
+	// Handle tabs into url hashes
+	$('[role="tablist"]').each((function(i,e) {
+		new this.dyn_tablist($(e));
+	}).bind(this))
+
 	// Opt-in to tooltips
 	$(function () {
-	  $('[data-toggle="tooltip"]').tooltip({container: 'body'})
+	  $('[data-toggle="tooltip"]').tooltip({container: 'body'});
 	})
 
 }
@@ -605,5 +610,30 @@ cpjs.dyn_pin_login = function( hostDOM ) {
 	});
 
 }
+
+
+/**
+ * Tab-list with reflection on the locatino hash
+ */
+cpjs.dyn_tablist = function( hostDOM ) {
+
+	// Get all elements
+	hostDOM.find('[role="tab"]').each(function(i,e) {
+		var tab = $(e);
+
+		// Change hash when clicking on tab
+		tab.click(function(e) {
+			e.preventDefault();
+			window.location.hash = $(this).attr("href").substr(1);
+		});
+
+		// If this is the tab we are currently in, select
+		if (tab.attr("href") == window.location.hash)
+			tab.click();
+
+	});
+
+
+};
 
 })(window);

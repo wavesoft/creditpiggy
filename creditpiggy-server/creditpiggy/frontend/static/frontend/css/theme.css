@@ -95,11 +95,10 @@ h3 {
   display: inline;
   background-image: url(../img/coink.png);
   background-repeat: no-repeat;
+  background-position: center;
   background-size: contain;
-  padding: 12px;
+  padding: 2px 11px;
   width: 24px;
-  line-height: 0;
-  vertical-align: middle;
 }
 .inactive {
   -webkit-filter: grayscale(100%);
@@ -120,6 +119,9 @@ h3 {
 .left-border {
   border-left: solid 1px #CCC;
   min-height: 100%;
+}
+.text-strong {
+  font-weight: bold;
 }
 div.back-splash {
   position: fixed;
