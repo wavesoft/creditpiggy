@@ -146,7 +146,7 @@ def personal_next_achievement( user, project=None, involvesMetrics=None ):
 	if project is None:
 		candidates = Achievement.objects.exclude(achievementinstance__user=user)
 	else:
-		candidates = project.achievements.exclude(achievementinstance__user=user)
+		candidates = project.achievements.exclude(achievementinstance__user=user, personal=True)
 
 	# Populate valid_metrics if we are invovling metrics
 	valid_metrics = None

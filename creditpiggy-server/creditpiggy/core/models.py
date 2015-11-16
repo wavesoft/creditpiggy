@@ -1161,21 +1161,26 @@ class ManualEmail(models.Model):
 		Send e-mail when saving this model
 		"""
 
+		# Populate e-mail targets
+		emails = set()
+
+		# Collect user e-mails
+		for u in self.target_user.all():
+			emails.add( u.email )
+
+		# Get all users from campaigns
+		for c in PiggyUser.objects.filter( campaignusercredit__campaign=self.target_campaign.all() ):
+			emails.add( u.email )
+
+		# Get all users from projects
+		for c in PiggyUser.objects.filter( projectuserrole__project=self.target_project.all() ):
+			emails.add( u.email )
+
+		# Update e-mails list
+		self.sent_emails = ", ".join(list(emails))
+
 		# Check if we should send this e-mail
 		if not self.draft:
-			emails = set()
-
-			# Collect user e-mails
-			for u in self.target_user.all():
-				emails.add( u.email )
-
-			# Get all users from campaigns
-			for c in PiggyUser.objects.filter( campaignusercredit__campaign=self.target_campaign.all() ):
-				emails.add( u.email )
-
-			# Get all users from projects
-			for c in PiggyUser.objects.filter( projectuserrole__project=self.target_project.all() ):
-				emails.add( u.email )
 
 			# Send custom e-mail
 			send_custom_email(
@@ -1186,7 +1191,6 @@ class ManualEmail(models.Model):
 
 			# Mark date sent
 			self.sent_date = timezone.now()
-			self.sent_emails = ", ".join(list(emails))
 
 		# Call super class
 		return super(ManualEmail, self).save( *args, **kwargs )
