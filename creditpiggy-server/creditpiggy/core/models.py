@@ -1194,6 +1194,14 @@ class ManualEmail(models.Model):
 	An e-mail sent from the interface non-automatically
 	"""
 
+	# Target filter choices
+	FILTER_CHOICES = (
+		(0, 'Achievement'),
+		(1, 'Project Update'),
+		(2, 'Feedback Questions'),
+		(3, 'Administrator (Bypasses user options)'),
+	)
+
 	#: The date it was created
 	created = models.DateTimeField(auto_now=True, editable=False)
 
@@ -1212,8 +1220,14 @@ class ManualEmail(models.Model):
 	#: Target project
 	target_project = models.ManyToManyField( PiggyProject, blank=True )
 
+	#: Target filter
+	target_filter = models.IntegerField( choices=FILTER_CHOICES, default=1 )
+
 	#: The date it was sent (or None if not sent)
 	sent_date = models.DateTimeField(default=None, null=True, editable=False)
+
+	# Recepient e-mails
+	sent_emails = models.TextField(default="", help_text="The people already received this e-mail")
 
 	#: A flag that denotes that this e-mail is draft and should not be sent 
 	draft = models.BooleanField(default=True, help_text="Uncheck this to send the e-mail")
@@ -1248,6 +1262,7 @@ class ManualEmail(models.Model):
 
 			# Mark date sent
 			self.sent_date = timezone.now()
+			self.sent_emails = ", ".join(list(emails))
 
 		# Call super class
 		return super(ManualEmail, self).save( *args, **kwargs )

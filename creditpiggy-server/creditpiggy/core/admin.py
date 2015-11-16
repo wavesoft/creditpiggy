@@ -29,6 +29,7 @@ from django.utils.safestring import mark_safe
 # Register your models here.
 
 class ManualEmailAdmin(admin.ModelAdmin):
+	readonly_fields=('sent_emails',)
 	list_display = ('subject', 'created', 'draft', 'sent_date')
 
 admin.site.register(ManualEmail, ManualEmailAdmin)
