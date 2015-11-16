@@ -93,7 +93,7 @@ def send_campaign_achievement_email( users, campaign_achievement, raiseException
 
 		)
 
-def send_personal_achievement_email( user, achievement, raiseExceptions=False ):
+def send_personal_achievement_email( user, achievement_instance, raiseExceptions=False ):
 	"""
 	Send an e-mail congratulating a user for his/her personal achievement
 	"""
@@ -107,17 +107,44 @@ def send_personal_achievement_email( user, achievement, raiseExceptions=False ):
 
 		# Recepient
 		"achievement", # Template
-		"Achievement Unlocked: %s" % achievement.name, # Subject
+		"Achievement Unlocked: %s" % achievement_instance.achievement.name, # Subject
 		user.email, # To
 		raiseExceptions,
 
 		# Context
-		achievement=achievement,
-		share_id=achievement.getShareID(),
+		achievement=achievement_instance.achievement,
+		share_id=achievement_instance.getShareID(),
 		project=None,
 		user=user,
 
 		)
+
+def send_project_achievement_email( project_user, achievement_instance, raiseExceptions=False ):
+	"""
+	Send an e-mail congratulating a user for his/her achievement
+	"""
+
+	# If user has opted-out from e-mails, do not send it
+	if not project_user.user.email_achievement:
+		return
+
+	# Otherwise send it
+	send_email(
+
+		# Recepient
+		"achievement", # Template
+		"Achievement Unlocked: %s" % achievement_instance.achievement.name, # Subject
+		project_user.user.email, # To
+		raiseExceptions,
+
+		# Context
+		achievement=achievement_instance.achievement,
+		share_id=achievement_instance.getShareID(),
+		project=project_user.project,
+		user=project_user.user,
+
+		)
+
 
 def send_achievement_email( user, project, achievement, raiseExceptions=False ):
 	"""

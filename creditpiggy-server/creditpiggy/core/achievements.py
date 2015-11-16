@@ -24,7 +24,7 @@ import logging
 from django.db.models import Q
 from creditpiggy.core.utils.metrics import VisualMetrics
 from creditpiggy.core.models import Achievement, AchievementInstance, PersonalAchievement, CampaignAchievementInstance, CampaignUserCredit, VisualMetric
-from creditpiggy.core.email import send_achievement_email, send_personal_achievement_email, send_campaign_achievement_email
+from creditpiggy.core.email import send_project_achievement_email, send_personal_achievement_email, send_campaign_achievement_email
 
 ################################################
 # 
@@ -274,7 +274,7 @@ def check_personal_achievements( user ):
 			ac.save()
 
 			# Send e-mail
-			send_personal_achievement_email( user, a )
+			send_personal_achievement_email( user, ac )
 
 def check_achievements( project_user_link ):
 	"""
@@ -301,5 +301,5 @@ def check_achievements( project_user_link ):
 			ac.save()
 
 			# Send e-mail
-			send_achievement_email( project_user_link.user, project_user_link.project, a )
+			send_project_achievement_email( project_user_link, ac )
 
