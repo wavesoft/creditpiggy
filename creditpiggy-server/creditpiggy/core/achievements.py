@@ -225,7 +225,7 @@ def check_campaign_achievements( campaign ):
 	m_counters = metrics.counters()
 
 	# Iterate over non-achieved achievements in the campaign instances
-	for a in campaign.achievements.exclude(campaignachievementinstance__campaign=campaign):
+	for a in campaign.achievements.exclude( campaignachievementinstance__campaign=campaign ):
 
 		# For each achievement, check if metrics are achieved
 		if metrics_achieved( m_counters, a.getMetrics() ):
@@ -258,13 +258,8 @@ def check_personal_achievements( user ):
 	metrics = user.metrics()
 	m_counters = metrics.counters()
 
-	# Get user's achievements for this project
-	user_achievements = []
-	for a in PersonalAchievement.objects.filter( user=user ):
-		user_achievements.append(a.achievement.id)
-
-	# Get non-achieved project achievements
-	for a in Achievement.objects.filter( Q(personal=True) & ~Q(id__in=user_achievements) ):
+	# Get non-achieved personal achievements
+	for a in Achievement.objects.filter(personal=True).exclude( personalachievement__user=user ):
 
 		# For each achievement, check if metrics are achieved
 		if metrics_achieved( m_counters, a.getMetrics() ):
@@ -288,13 +283,8 @@ def check_achievements( project_user_link ):
 	metrics = project_user_link.metrics()
 	m_counters = metrics.counters()
 
-	# Get user's achievements for this project
-	user_achievements = []
-	for a in AchievementInstance.objects.filter( user=project_user_link.user, project=project_user_link.project ):
-		user_achievements.append(a.achievement.id)
-
 	# Get non-achieved project achievements
-	for a in project_user_link.project.achievements.filter( ~Q(id__in=user_achievements) ):
+	for a in project_user_link.project.achievements.exclude( achievementinstance__user=project_user_link.user, achievementinstance__project=project_user_link.project ):
 
 		# For each achievement, check if metrics are achieved
 		if metrics_achieved( m_counters, a.getMetrics() ):
