@@ -147,6 +147,9 @@ def import_to_machine( slot ):
 	# Forward metrics to the user
 	import_to_user( slot, slot.machine.owner )
 
+	# Update machine's last action
+	slot.machine.save()
+
 
 def import_to_users_project( slot, user ):
 	"""
