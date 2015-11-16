@@ -154,7 +154,7 @@ def _key_rank_top( key, item_class, num_range=100, base=1 ):
 # Per entity details
 ####################################
 
-def leaderboard_user(user, num_range=100, base=1):
+def leaderboard_user(user, num_range=50, base=1):
 	"""
 	Get leaderboard of the specified user
 	"""
@@ -162,7 +162,7 @@ def leaderboard_user(user, num_range=100, base=1):
 	# Return leaderboard neighborhood of users
 	return _key_rank_around( "rank/users", user, PiggyUser, num_range, base )
 
-def leaderboard_project(project, num_range=100, base=1):
+def leaderboard_project(project, num_range=50, base=1):
 	"""
 	Get leaderboard of the specified project
 	"""
@@ -170,7 +170,7 @@ def leaderboard_project(project, num_range=100, base=1):
 	# Return leaderboard neighborhood of projects
 	return _key_rank_around( "rank/projects", project, PiggyProject, num_range, base )
 
-def leaderboard_user_campaign(user_campaign, num_range=100, base=1):
+def leaderboard_user_campaign(user_campaign, num_range=50, base=1):
 	"""
 	Get leaderboard of the specified user's contribution to a campaign
 	"""
@@ -178,7 +178,7 @@ def leaderboard_user_campaign(user_campaign, num_range=100, base=1):
 	# Return leaderboard neighborhood of projects
 	return _key_rank_around( "rank/campaign/%i/users" % user_campaign.campaign.id, user_campaign.user, PiggyUser, num_range, base )
 
-def leaderboard_user_project(user_project, num_range=100, base=1):
+def leaderboard_user_project(user_project, num_range=50, base=1):
 	"""
 	Get leaderboard of the specified user's contribution to project
 	"""
