@@ -70,6 +70,7 @@ class CampaignActiveFilter(admin.SimpleListFilter):
 
 class CampaignAdmin(admin.ModelAdmin):
 	list_display = ('name', 'start_time', 'end_time', 'published', 'active', 'public', 'website', 'is_running')
+	filter_horizontal = ('achievements',)
 	list_filter = (CampaignActiveFilter,)
 
 	def is_running(self, obj):
@@ -114,12 +115,12 @@ admin.site.register(UserLinkLogs, UserLinkLogsAdmin)
 
 class ComputingUnitAdmin(admin.ModelAdmin):
 	list_display = ('uuid', 'owner', 'website', 'firstAction', 'lastAction')
-	list_filter = ('owner',)
 
 admin.site.register(ComputingUnit, ComputingUnitAdmin)
 
 class PiggyProjectAdmin(admin.ModelAdmin):
 	list_display = ('display_name', 'uuid', 'image', 'project_url')
+	filter_horizontal = ('achievements', 'visual_metrics')
 
 	def image(self, obj):
 		return mark_safe('<img src="%s" style="width: 32px; vertical-align: absmiddle" />' % obj.profile_image)
@@ -176,12 +177,13 @@ admin.site.register(CreditSlot, CreditSlotAdmin)
 
 class AchievementInstanceAdmin(admin.ModelAdmin):
 	list_display = ('achievement', 'user', 'project', 'campaign', 'date')
-	list_filter = ('achievement','user','project','campaign')
+	list_filter = ('achievement','project','campaign')
 
 admin.site.register(AchievementInstance, AchievementInstanceAdmin)
 
 class WebsiteAdmin(admin.ModelAdmin):
 	list_display = ('name', 'short', 'image')
+	filter_horizontal = ('visual_metrics','projects')
 
 	def image(self, obj):
 		return mark_safe('<img src="%s" style="width: 32px; vertical-align: absmiddle" />' % obj.icon)
