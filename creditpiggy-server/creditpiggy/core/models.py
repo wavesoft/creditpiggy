@@ -39,8 +39,8 @@ from django.contrib.auth.models import AbstractUser
 from creditpiggy.core.metrics import MetricsModelMixin
 from creditpiggy.core.housekeeping import HousekeepingTask, periodical
 from creditpiggy.core.image import image_colors
-from creditpiggy.core.redis import share_redis_connection
 from creditpiggy.core.email import send_custom_email
+from creditpiggy.core.ranking import rank_user, rank_user_campaign
 
 from tinymce.models import HTMLField
 
@@ -313,25 +313,6 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 		# Locate instance (and raise exception if not found)
 		return PiggyUser.objects.get(id=userid)
 
-	def ranking(self, base=1):
-		"""
-		Get overall user ranking
-		"""
-
-		# Get user ranking
-		redis = share_redis_connection()
-		rank = redis.zrevrank(
-			"%srank/users" % (settings.REDIS_KEYS_PREFIX,),
-			self.id
-			)
-
-		# If missing return None
-		if rank is None:
-			return None
-
-		# Otherwise adapt to base-rank
-		return rank + base
-
 	def getRefererID(self):
 		"""
 		Return user's referer ID
@@ -365,7 +346,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 
 			# Get ranking and counters of first campaign
 			if user_campaigns.exists():
-				rank = user_campaigns[0].ranking()
+				rank =  rank_user_campaign( user_campaigns[0] )
 				counters = user_campaigns[0].metrics().counters()
 			else:
 				rank = 0
@@ -373,7 +354,7 @@ class PiggyUser(MetricsModelMixin, AbstractUser):
 
 		# Fallback to user ranking
 		if rank is None:
-			rank = self.ranking()
+			rank = rank_user( self )
 			counters = self.metrics().counters()
 
 		# Return profile
@@ -669,25 +650,6 @@ class PiggyProject(MetricsModelMixin, models.Model):
 	def __unicode__(self):
 		return u"%s" % self.display_name
 
-	def ranking(self, base=1):
-		"""
-		Get overall project ranking
-		"""
-
-		# Get user ranking
-		redis = share_redis_connection()
-		rank = redis.zrevrank(
-			"%srank/projects" % (settings.REDIS_KEYS_PREFIX,), 
-			self.id
-			)
-
-		# If missing return None
-		if rank is None:
-			return None
-
-		# Otherwise adapt to base-rank
-		return rank + base
-
 	def save(self, *args, **kwargs):
 		"""
 		Save model
@@ -889,25 +851,6 @@ class ProjectUserRole(MetricsModelMixin, models.Model):
 	#: The normalized of the user in this model
 	norm_credits = models.FloatField(default=0.0)
 
-	def ranking(self, base=1):
-		"""
-		Get user ranking in this project
-		"""
-
-		# Get user ranking
-		redis = share_redis_connection()
-		rank = redis.zrevrank(
-			"%srank/project/%i/users" % (settings.REDIS_KEYS_PREFIX, self.project.id), 
-			self.user.id
-			)
-
-		# If missing return None
-		if rank is None:
-			return None
-
-		# Otherwise adapt to base-rank
-		return rank + base
-
 class CreditSlot(MetricsModelMixin, models.Model):
 	"""
 	A slot allocated and claimed by the server
@@ -1088,25 +1031,6 @@ class CampaignUserCredit(MetricsModelMixin, models.Model):
 
 	#: Achievements related to this user contribution to the campaign
 	achievements = models.ManyToManyField( Achievement, blank=True )
-
-	def ranking(self, base=1):
-		"""
-		Return user's ranking in this campaign
-		"""
-
-		# Get user ranking
-		redis = share_redis_connection()
-		rank = redis.zrevrank(
-			"%srank/campaign/%i/users" % (settings.REDIS_KEYS_PREFIX, self.campaign.id),
-			self.user.id
-			)
-
-		# If missing return None
-		if rank is None:
-			return None
-
-		# Otherwise adapt to base-rank
-		return rank + base
 
 class PersonalAchievement(models.Model):
 	"""

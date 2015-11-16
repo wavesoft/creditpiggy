@@ -20,6 +20,7 @@
 from creditpiggy.core.models import *
 from creditpiggy.core.utils import VisualMetricsSum
 from creditpiggy.core.achievements import personal_next_achievement
+from creditpiggy.core.ranking import rank_user, rank_user_campaign
 
 def user(user):
 	"""
@@ -46,7 +47,7 @@ def user(user):
 		'achievements'			: sorted(u_user__achievements, key=lambda a: -int(a['achieved'])),
 		'candidate_achievement'	: u_user__candidateAchievement,
 		'credits' 				: int(user_counters.get('credits',0)),
-		'ranking' 				: user.ranking(),
+		'ranking' 				: rank_user( user ),
 		'details'				: to_dict( user ),
 	}
 
@@ -98,7 +99,7 @@ def user_website(user, website):
 		'achievements' 			: sorted(u_project__achievements, key=lambda a: -int(a['achieved'])),
 		'candidate_achievement'	: u_project__candidateAchievement,
 		'credits' 				: int(user.metrics().counter("credits",0)),
-		'ranking' 				: user.ranking(),
+		'ranking' 				: rank_user( user ),
 		'details'				: to_dict( website ),
 	}
 
@@ -144,6 +145,6 @@ def campaign_user_website(user, website):
 		'achievements'			: None,
 		'candidate_achievement'	: None,
 		'credits' 				: u_campaign__details.credits,
-		'ranking' 				: u_campaign__details.ranking(),
+		'ranking' 				: rank_user_campaign( u_campaign__details ),
 		'details'				: to_dict( u_campaign__details ),
 	}

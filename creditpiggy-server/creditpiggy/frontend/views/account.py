@@ -36,6 +36,7 @@ from django.template.loader import render_to_string
 
 from creditpiggy.frontend.views import context, url_suffix
 
+from creditpiggy.core.ranking import rank_user, rank_user_campaign, rank_user_project
 from creditpiggy.core.decorators import render_to
 from creditpiggy.core.models import *
 from creditpiggy.core.utils import VisualMetricsSum
@@ -361,7 +362,7 @@ def dashboard_overview_overall(request):
 		title="My overall participation",
 		profile=request.user,
 		credits=int(user_counters.get('credits',0)),
-		rank=request.user.ranking(),
+		rank=rank_user( request.user ),
 
 		)
 
@@ -403,7 +404,7 @@ def dashboard_overview_project(request, project):
 		overview_type="Project",
 		title="My participation in %s" % pur.project.display_name,
 		credits=pur.credits,
-		rank=pur.ranking(),
+		rank=rank_user_project( pur ),
 
 		)
 
@@ -466,7 +467,7 @@ def dashboard_overview_campagin(request, campaign):
 		campaign_achievements=sorted(campaign_achievements, key=lambda a: a['achievement'].id),
 		title="My participation in %s" % cur.campaign.name,
 		credits=cur.credits,
-		rank=cur.ranking(),
+		rank=rank_user_campaign( cur ),
 
 		)
 
