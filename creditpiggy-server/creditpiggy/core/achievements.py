@@ -19,6 +19,7 @@
 
 import time
 import random
+import logging
 
 from django.db.models import Q
 from creditpiggy.core.utils.metrics import VisualMetrics
@@ -210,6 +211,7 @@ def metrics_achieved( counters, achievement_metrics ):
 			if float(counters[k]) < float(v):
 				return False
 		except ValueError:
+			logging.error("ValueError while parsing counters[%k]=%r < %r" % (k, counters[k], v) )
 			return False
 
 	# Matched
