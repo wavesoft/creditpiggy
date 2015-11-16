@@ -31,6 +31,7 @@ from django.utils.safestring import mark_safe
 class ManualEmailAdmin(admin.ModelAdmin):
 	readonly_fields=('sent_emails',)
 	list_display = ('subject', 'created', 'draft', 'sent_date')
+	filter_horizontal = ('target_user', 'target_campaign', 'target_project')
 
 admin.site.register(ManualEmail, ManualEmailAdmin)
 
